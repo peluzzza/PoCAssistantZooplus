@@ -12,7 +12,7 @@
 | **0.1.0** | `v0.1.0` | P0 bootstrap | Repo scaffold, trace, stub API | G0, health endpoint | **on `main`** (`a6f9d26`) |
 | **0.2.0** | — | *(skipped)* | Would be EDA-only; folded into 1.0 | — | N/A |
 | **1.0.0** | `v1.0.0` | `dev` → `main` @ `72bbc4e` | T0–T6: EDA, RAG, MCP, dual-lane, `/chat`, README | B1–B9 DONE, G2–G6, 19 tests, CI quality job green | **RELEASED** |
-| **1.1.0** | `v1.1.0` | future `dev` | G1 load test artifact, `/chat/stream`, golden fixtures | p95 topic guard documented; streaming tests | Planned |
+| **1.1.0** | `v1.1.0` | `dev` (in progress) | G1 load test, `/chat/stream`, golden fixtures | Golden: **done** (`evaluate` CLI + 4 cases); streaming + G1 pending | **IN PROGRESS** |
 | **1.2.0** | `v1.2.0` | future `dev` | Hybrid retrieval, reranking, optional LLM synthesis | Integration tests for hybrid path | Planned |
 | **2.0.0** | `v2.0.0` | future `dev` | Production profile: container, managed vector DB, observability | Deploy smoke + runbook | Planned |
 
