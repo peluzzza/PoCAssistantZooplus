@@ -2,6 +2,16 @@
 
 **Remote:** [https://github.com/peluzzza/PoCAssistantZooplus.git](https://github.com/peluzzza/PoCAssistantZooplus.git)
 
+## Current local state (2026-06-03)
+
+| Branch | Commit | Notes |
+|--------|--------|-------|
+| `main` | `a6f9d26` | P0 bootstrap only |
+| `dev` | `d514225` | P0 + T1 EDA merged |
+| `feature/T1-eda` | `d514225` | Merged; can delete after push |
+
+**Push:** blocked until GitHub auth uses account `peluzzza` (not `peluzzzaZero`).
+
 ## Branches
 
 | Branch | Purpose |
