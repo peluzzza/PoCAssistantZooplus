@@ -1,8 +1,9 @@
-"""POST /chat — stub until T5."""
+"""POST /chat endpoint wired to dual-lane orchestrator."""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+from src.lanes.orchestrator import handle_chat
 from src.models.chat import ChatRequest, ChatResponse
 
 router = APIRouter()
@@ -10,7 +11,4 @@ router = APIRouter()
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(body: ChatRequest) -> ChatResponse:
-    raise HTTPException(
-        status_code=501,
-        detail="Chat pipeline not wired yet. See docs/trace/T5-api-contract.md",
-    )
+    return await handle_chat(body)

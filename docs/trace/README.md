@@ -17,10 +17,10 @@ See **[`PROGRESS.md`](PROGRESS.md)** (updated every session).
 | T0 | [`T0-repo-bootstrap.md`](T0-repo-bootstrap.md) | P0 | **DONE** |
 | T1 | [`T1-eda-run.md`](T1-eda-run.md) | P1 | **DONE** |
 | T2 | [`T2-rag-index.md`](T2-rag-index.md) | P2 | **DONE** |
-| T3 | [`T3-opencode-mcp-agents.md`](T3-opencode-mcp-agents.md) | P3 | PENDING |
-| T4 | [`T4-dual-lane-acp.md`](T4-dual-lane-acp.md) | P4 | PENDING |
-| T5 | [`T5-api-contract.md`](T5-api-contract.md) | P5 | PENDING |
-| T6 | [`T6-readme-submission.md`](T6-readme-submission.md) | P6 | PENDING |
+| T3 | [`T3-opencode-mcp-agents.md`](T3-opencode-mcp-agents.md) | P3 | **DONE** |
+| T4 | [`T4-dual-lane-acp.md`](T4-dual-lane-acp.md) | P4 | **DONE** |
+| T5 | [`T5-api-contract.md`](T5-api-contract.md) | P5 | **DONE** |
+| T6 | [`T6-readme-submission.md`](T6-readme-submission.md) | P6 | **DONE** |
 
 ---
 
