@@ -1,0 +1,29 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "zooplus_assistant": {
+      "type": "remote",
+      "url": "http://127.0.0.1:8080/mcp",
+      "enabled": false,
+      "timeout": 5000
+    }
+  },
+  "tools": {
+    "zooplus_*": false
+  },
+  "agent": {
+    "zooplus-conductor": {
+      "mode": "primary",
+      "description": "Fast user-facing orchestrator for zooplus Assistant PoC",
+      "permission": {
+        "task": {
+          "*": "deny",
+          "zooplus-topic-guard": "allow",
+          "zooplus-rag-worker": "allow",
+          "zooplus-logic-worker": "allow",
+          "zooplus-synthesis": "allow"
+        }
+      }
+    }
+  }
+}

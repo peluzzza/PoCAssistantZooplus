@@ -1,0 +1,15 @@
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+artifacts/index/
+artifacts/eda/*.html
+.chroma/
+*.egg-info/
+dist/
+.pytest_cache/
+.coverage
+htmlcov/
