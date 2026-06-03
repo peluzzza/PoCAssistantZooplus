@@ -25,8 +25,9 @@ def main(argv: list[str] | None = None) -> int:
 
         return run_ingest()
     if args.command == "evaluate":
-        print("evaluate: not implemented yet (T5)", file=sys.stderr)
-        return 1
+        from cli.commands.evaluate import run_evaluate
+
+        return run_evaluate()
     if args.command == "chat-local":
         print("chat-local: not implemented yet (T5)", file=sys.stderr)
         return 1
