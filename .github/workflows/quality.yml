@@ -1,0 +1,48 @@
+name: Quality gates
+
+on:
+  push:
+    branches: [main, dev, "feature/**"]
+  pull_request:
+    branches: [dev, main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -e ".[rag,dev]" pytest-cov
+
+      - name: Ruff lint
+        run: ruff check cli src tests
+
+      - name: Ruff format check
+        run: ruff format --check cli src tests
+
+      - name: Unit tests
+        run: pytest tests/unit -q --junitxml=reports/junit-unit.xml
+
+      - name: Integration tests
+        run: pytest tests/integration -q --junitxml=reports/junit-integration.xml
+
+      - name: E2E smoke tests
+        run: pytest tests/e2e -q --junitxml=reports/junit-e2e.xml
+
+      - name: Coverage (XML for Sonar)
+        run: |
+          mkdir -p reports
+          pytest tests/ -q --cov=cli --cov=src --cov-report=xml:coverage.xml \
+            --junitxml=reports/junit.xml
+
+      - name: SonarCloud Scan
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

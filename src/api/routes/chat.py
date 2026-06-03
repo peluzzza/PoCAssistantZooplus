@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
-
 from src.models.chat import ChatRequest, ChatResponse
 
 router = APIRouter()

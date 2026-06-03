@@ -56,7 +56,9 @@ def run_eda() -> int:
     price_outliers = [
         r
         for r in data
-        if r["price"] > 200 and r.get("pet_type") == "CATS" and "70 g" in (r.get("variant_name") or "")
+        if r["price"] > 200
+        and r.get("pet_type") == "CATS"
+        and "70 g" in (r.get("variant_name") or "")
     ]
 
     html_ratios = {
@@ -101,8 +103,8 @@ def run_eda() -> int:
 | Metric | Value |
 |--------|-------|
 | Records (variants) | {n} |
-| Unique `product_id` | {summary['unique_product_id']} |
-| Unique `variant_id` | {summary['unique_variant_id']} |
+| Unique `product_id` | {summary["unique_product_id"]} |
+| Unique `variant_id` | {summary["unique_variant_id"]} |
 
 ---
 
@@ -124,8 +126,8 @@ def run_eda() -> int:
 
 | pet_type | records |
 |----------|---------|
-| DOGS | {by_pet.get('DOGS', 0)} |
-| CATS | {by_pet.get('CATS', 0)} |
+| DOGS | {by_pet.get("DOGS", 0)} |
+| CATS | {by_pet.get("CATS", 0)} |
 
 ---
 
@@ -133,11 +135,11 @@ def run_eda() -> int:
 
 | Field | Non-empty rows | Notes |
 |-------|----------------|-------|
-| `ingredients` | {field_nonempty['ingredients']} | Food/supplements |
-| `feeding_recommendations` | {field_nonempty['feeding_recommendations']} | Food/supplements |
-| `discount_label` | {field_nonempty['discount_label']} | Promotions |
-| `summary` | {field_nonempty['summary']} | Short HTML text |
-| `description` | {field_nonempty['description']} | Long HTML text |
+| `ingredients` | {field_nonempty["ingredients"]} | Food/supplements |
+| `feeding_recommendations` | {field_nonempty["feeding_recommendations"]} | Food/supplements |
+| `discount_label` | {field_nonempty["discount_label"]} | Promotions |
+| `summary` | {field_nonempty["summary"]} | Short HTML text |
+| `description` | {field_nonempty["description"]} | Long HTML text |
 
 **Food-like rows** (ingredients or feeding populated): **{food_like}**
 
@@ -147,8 +149,8 @@ def run_eda() -> int:
 
 | Field | Avg. HTML tag density |
 |-------|---------------------|
-| `summary` | {html_ratios['summary']:.1%} |
-| `description` | {html_ratios['description']:.1%} |
+| `summary` | {html_ratios["summary"]:.1%} |
+| `description` | {html_ratios["description"]:.1%} |
 
 **Implication:** Strip HTML in ingest (`skill_04_html_normalize`); embed plain text only.
 
@@ -158,9 +160,9 @@ def run_eda() -> int:
 
 | Stat | EUR |
 |------|-----|
-| min | {summary['price_min']} |
-| max | {summary['price_max']} |
-| mean | {summary['price_mean']} |
+| min | {summary["price_min"]} |
+| max | {summary["price_max"]} |
+| mean | {summary["price_mean"]} |
 
 **Outliers flagged** (high price + small cat portion): {len(price_outliers)} — document, do not mutate raw JSON.
 

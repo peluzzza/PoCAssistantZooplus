@@ -31,6 +31,7 @@ git checkout dev
 | Index | [`docs/README.md`](docs/README.md) |
 | Proposal v2 | [`docs/plans/PROPOSAL.md`](docs/plans/PROPOSAL.md) |
 | Progress | [`docs/trace/PROGRESS.md`](docs/trace/PROGRESS.md) |
+| Quality gates | [`docs/QUALITY.md`](docs/QUALITY.md) |
 | Brief checklist | [`docs/00-brief-alignment.md`](docs/00-brief-alignment.md) |
 
 ## Layout

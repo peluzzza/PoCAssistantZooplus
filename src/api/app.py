@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
-
 from src.api.routes.chat import router as chat_router
 
 app = FastAPI(

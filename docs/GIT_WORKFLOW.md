@@ -20,6 +20,19 @@
 | `dev` | Integration branch — merge all `feature/*` here first |
 | `feature/<name>` | Short-lived work (T1, T2, …) |
 
+## Pre-merge quality (required)
+
+Run before every `feature/*` → `dev` merge:
+
+```bash
+pip install -e ".[rag,dev]"
+python scripts/run_quality_gates.py
+```
+
+Details: [`QUALITY.md`](QUALITY.md) — unit, integration, e2e, Ruff, SonarCloud (CI).
+
+---
+
 ## Flow
 
 ```mermaid
