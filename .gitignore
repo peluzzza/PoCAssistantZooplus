@@ -8,6 +8,7 @@ venv/
 artifacts/index/*
 !artifacts/index/manifest.json
 artifacts/eda/*.html
+artifacts/load/*.json
 .chroma/
 *.egg-info/
 dist/

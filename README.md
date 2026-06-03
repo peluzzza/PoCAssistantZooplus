@@ -22,6 +22,17 @@ flowchart LR
 
 ## Core API
 
+### `POST /chat/stream`
+
+Same body as `/chat`. Returns **NDJSON** (`application/x-ndjson`) events:
+
+| Event type | When |
+|------------|------|
+| `topic` | Fast lane decision (`ALLOW` / `DECLINE`) |
+| `products` | Retrieved catalog hits (in-scope only) |
+| `answer_chunk` | Streaming answer fragments |
+| `done` | Final `answer` + `retrieved_products` |
+
 ### `POST /chat`
 
 Request:
@@ -58,6 +69,8 @@ Useful checks:
 
 ```bash
 python scripts/run_quality_gates.py
+python -m cli evaluate
+py -3 scripts/topic_guard_load_test.py   # G1 p95 budget check
 ```
 
 ## Trade-offs
@@ -79,8 +92,8 @@ python scripts/run_quality_gates.py
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| `main` @ **v1.0.0** | MVP — brief-complete, tested (`POST /chat`, RAG, guardrails) |
-| `dev` | Integration for **v1.1.0+** (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
+| `main` @ **v1.1.0** | MVP + golden eval, `/chat/stream`, G1 load test |
+| `dev` | Integration for **v1.2.0+** (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
 
 ## Docs and trace
 

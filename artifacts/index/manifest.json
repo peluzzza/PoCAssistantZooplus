@@ -1,6 +1,6 @@
 {
   "records_ingested": 300,
-  "index_path": "C:\\Users\\peluz\\AppData\\Local\\Temp\\pytest-of-peluz\\pytest-212\\chroma0\\chroma",
+  "index_path": "C:\\Users\\peluz\\AppData\\Local\\Temp\\pytest-of-peluz\\pytest-234\\chroma0\\chroma",
   "collection": "zooplus_variants",
   "chunk_unit": "catalog_row",
   "source_rows": 300,
