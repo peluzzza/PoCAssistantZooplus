@@ -16,8 +16,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Verify Python version
+        run: python -c "import sys; assert sys.version_info[:2]==(3,11), sys.version"
+
       - name: Install dependencies
-        run: pip install -e ".[rag,dev]" pytest-cov
+        run: pip install -e ".[rag,dev]"
 
       - name: Ruff lint
         run: ruff check cli src tests

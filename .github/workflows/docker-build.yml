@@ -15,6 +15,10 @@ jobs:
       - name: Build image
         run: docker build -t zooplus-assistant:poc .
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Smoke in container
         run: |
           docker run -d --name zooplus-smoke -p 8080:8080 zooplus-assistant:poc
@@ -22,6 +26,5 @@ jobs:
             curl -sf http://127.0.0.1:8080/health && break
             sleep 5
           done
-          pip install httpx
           python scripts/deploy_smoke.py http://127.0.0.1:8080
           docker rm -f zooplus-smoke

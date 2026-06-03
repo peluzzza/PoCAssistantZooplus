@@ -3,8 +3,8 @@
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P6 done — T3 to T6 implemented  
-**Current step:** v2.0.0 production profile released on `main`  
-**Git:** `main` tag `v2.0.0`  
+**Current step:** v2.1.0 dependency alignment on `main`  
+**Git:** `main` tag `v2.1.0` — Python 3.11 policy  
 
 ---
 
@@ -28,7 +28,7 @@
 |------|-------------|--------|
 | G0 | Trace journal structure exists | **DONE** |
 | G0b | All code under PoC folder only | **DONE** |
-| G0c | Quality gates (Ruff + 38 tests) local + CI | **DONE** |
+| G0c | Quality gates (Ruff + 41 tests) local + CI | **DONE** |
 | G1 | Topic guard p95 < 300ms | **DONE** (`scripts/topic_guard_load_test.py`) |
 | G2 | Zero cross-`site_id` retrieval | **DONE** (T2 tests) |
 | G3 | MCP tools on server | **DONE** |

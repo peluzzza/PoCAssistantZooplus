@@ -60,7 +60,11 @@ Behavior:
 
 ## Setup
 
+**Python 3.11** (matches CI and Docker — see [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md)):
+
 ```bash
+py -3.11 -m venv .venv
+.venv\Scripts\activate   # Windows
 pip install -e ".[rag,dev]"
 python -m cli ingest
 uvicorn src.api.app:app --reload --port 8080
@@ -102,7 +106,7 @@ py -3 scripts/topic_guard_load_test.py   # G1 p95 budget check
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| `main` @ **v2.0.0** | Production profile: Docker, metrics, runbook |
+| `main` @ **v2.1.0** | Production profile + Python 3.11 / pinned deps |
 | `dev` | Post-v2 enhancements (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
 
 ## Docs and trace
