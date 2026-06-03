@@ -75,25 +75,28 @@ gh run list --repo peluzzza/PoCAssistantZooplus --limit 5
 
 ---
 
-## Step 6 — Post-fix push (pending)
-
-After commit `fix(ci): quality workflow validation`:
+## Step 6 — Post-fix push
 
 ```bash
-git push origin dev
+git push origin dev   # commit 5502a55
 gh run list --repo peluzzza/PoCAssistantZooplus --limit 3
 ```
+
+| Run ID | Branch | Result | Duration |
+|--------|--------|--------|----------|
+| [26902814269](https://github.com/peluzzza/PoCAssistantZooplus/actions/runs/26902814269) | `dev` | **success** | 2m25s |
+| 26902812340 | `feature/ci-quality-workflow-fix` | **success** | 2m22s |
 
 ---
 
 ## Verdict
 
-| Gate | Local | CI (after fix) |
-|------|-------|----------------|
-| Lint (Ruff) | PASS | Expected PASS |
-| Unit | PASS | Expected PASS |
-| Integration | PASS | Expected PASS |
-| E2E | PASS | Expected PASS |
-| Sonar | N/A local | Optional with secret |
+| Gate | Local | CI |
+|------|-------|-----|
+| Lint (Ruff) | PASS | PASS |
+| Unit | PASS | PASS |
+| Integration | PASS | PASS |
+| E2E | PASS | PASS |
+| Sonar | N/A local | Skipped/errors tolerated until `SONAR_TOKEN` set |
 
 **Merge policy:** run `python scripts/run_quality_gates.py` before each `feature/*` → `dev` merge.

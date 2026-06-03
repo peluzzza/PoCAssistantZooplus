@@ -2,9 +2,9 @@
 
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
-**Current phase:** P0 — bootstrap  
-**Current step:** Quality gates on `dev` → T3 next  
-**Git:** synced to [GitHub](https://github.com/peluzzza/PoCAssistantZooplus) (`main`, `dev`, `feature/T1-eda`)  
+**Current phase:** P2 done — quality gates verified local + CI  
+**Current step:** T3 OpenCode + MCP next  
+**Git:** [GitHub](https://github.com/peluzzza/PoCAssistantZooplus) — `dev` @ `5502a55`, CI [green](https://github.com/peluzzza/PoCAssistantZooplus/actions/runs/26902814269)  
 
 ---
 
@@ -28,6 +28,7 @@
 |------|-------------|--------|
 | G0 | Trace journal structure exists | **DONE** |
 | G0b | All code under PoC folder only | **DONE** |
+| G0c | Quality gates (Ruff + 15 tests) local + CI | **DONE** |
 | G1 | Topic guard p95 < 300ms | PENDING |
 | G2 | Zero cross-`site_id` retrieval | **DONE** (T2 tests) |
 | G3 | MCP tools on server | PENDING |
@@ -43,6 +44,7 @@
 |------|-----|
 | 2026-06-03 | [`sessions/2026-06-03-T01-canonical-root-relocate.md`](sessions/2026-06-03-T01-canonical-root-relocate.md) |
 | 2026-06-03 | [`sessions/2026-06-03-T00-zeus-trace-scaffold.md`](sessions/2026-06-03-T00-zeus-trace-scaffold.md) |
+| 2026-06-03 | [`sessions/2026-06-03-T04-zeus-quality-gates-run.md`](sessions/2026-06-03-T04-zeus-quality-gates-run.md) |
 
 ---
 
