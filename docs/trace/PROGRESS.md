@@ -3,7 +3,7 @@
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P0 — bootstrap  
-**Current step:** T2 **DONE** (pending merge to `dev`) → T3 next  
+**Current step:** Quality gates on `dev` → T3 next  
 **Git:** synced to [GitHub](https://github.com/peluzzza/PoCAssistantZooplus) (`main`, `dev`, `feature/T1-eda`)  
 
 ---
@@ -48,6 +48,6 @@
 
 ## Next actions
 
-1. Merge `feature/T2-rag-index` → `dev` and push
+1. Before each merge: `python scripts/run_quality_gates.py` (see `docs/QUALITY.md`)
 2. **T3:** `feature/T3-opencode-mcp-agents` from `dev`
 3. Copy `docs/constraints/constraints.yaml` → `src/guardian/` (T3)
