@@ -3,8 +3,8 @@
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P6 done — T3 to T6 implemented  
-**Current step:** Post-implementation verification and merge  
-**Git:** [GitHub](https://github.com/peluzzza/PoCAssistantZooplus) — `dev` (updated after merge), CI pending latest run  
+**Current step:** Ready for `dev` → `main` merge (user authorization)  
+**Git:** [GitHub](https://github.com/peluzzza/PoCAssistantZooplus) — `dev` @ `879c4ee`, CI [green](https://github.com/peluzzza/PoCAssistantZooplus/actions/runs/26903747487)  
 
 ---
 
@@ -51,6 +51,6 @@
 
 ## Next actions
 
-1. Run `python scripts/run_quality_gates.py` before every push.
-2. Keep `site_id` hard-filter tests green for retrieval and chat.
-3. Extend roadmap items from README for production hardening.
+1. **User:** authorize merge `dev` → `main` when demo-ready.
+2. Optional: add `SONAR_TOKEN` for SonarCloud.
+3. Production hardening per README roadmap (streaming, hybrid search, observability).

@@ -1,6 +1,9 @@
 """Unit tests for topic guard engine."""
 
+import pytest
 from src.guardian.engine import max_recommendations, must_ground_in_retrieval, topic_check
+
+pytestmark = pytest.mark.unit
 
 
 def test_topic_guard_declines_weather_queries() -> None:
