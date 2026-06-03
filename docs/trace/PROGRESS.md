@@ -50,6 +50,7 @@
 | 2026-06-03 | [`sessions/2026-06-03-release-v1.1.0.md`](sessions/2026-06-03-release-v1.1.0.md) |
 | 2026-06-03 | [`sessions/2026-06-03-release-v1.2.0.md`](sessions/2026-06-03-release-v1.2.0.md) |
 | 2026-06-03 | [`sessions/2026-06-03-release-v2.0.0.md`](sessions/2026-06-03-release-v2.0.0.md) |
+| 2026-06-03 | [`sessions/2026-06-03-release-v2.1.0.md`](sessions/2026-06-03-release-v2.1.0.md) |
 
 ---
 
