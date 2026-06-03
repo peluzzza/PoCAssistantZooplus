@@ -4,7 +4,7 @@
     "zooplus_assistant": {
       "type": "remote",
       "url": "http://127.0.0.1:8080/mcp",
-      "enabled": false,
+      "enabled": true,
       "timeout": 5000
     }
   },
@@ -15,6 +15,10 @@
     "zooplus-conductor": {
       "mode": "primary",
       "description": "Fast user-facing orchestrator for zooplus Assistant PoC",
+      "tools": {
+        "zooplus_topic_check": true,
+        "zooplus_constraints_get": true
+      },
       "permission": {
         "task": {
           "*": "deny",
@@ -23,6 +27,41 @@
           "zooplus-logic-worker": "allow",
           "zooplus-synthesis": "allow"
         }
+      }
+    },
+    "zooplus-topic-guard": {
+      "mode": "subagent",
+      "description": "Mandatory in-scope guard before retrieval",
+      "tools": {
+        "zooplus_topic_check": true
+      }
+    },
+    "zooplus-rag-worker": {
+      "mode": "subagent",
+      "description": "RAG retrieval worker scoped by site_id",
+      "tools": {
+        "zooplus_catalog_search": true
+      }
+    },
+    "zooplus-logic-worker": {
+      "mode": "subagent",
+      "description": "Recommendation shaping and ranking constraints",
+      "tools": {
+        "zooplus_catalog_search": true
+      }
+    },
+    "zooplus-rag-pipeline": {
+      "mode": "subagent",
+      "description": "Offline EDA and ingest operations",
+      "tools": {
+        "zooplus_catalog_search": false
+      }
+    },
+    "zooplus-synthesis": {
+      "mode": "subagent",
+      "description": "Grounded answer generation from retrieved products",
+      "tools": {
+        "zooplus_catalog_search": false
       }
     }
   }

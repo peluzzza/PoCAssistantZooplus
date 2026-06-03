@@ -4,7 +4,7 @@
 |-------|-------|
 | **Step** | T6 |
 | **Phase** | P6 |
-| **Status** | PENDING |
+| **Status** | **DONE** |
 | **Brief sections** | README: design, setup, trade-offs, roadmap |
 
 ---
@@ -12,6 +12,10 @@
 ## Objective
 
 Finalize GitHub README, architecture diagram, trade-offs, 3–5 production steps; link full trace journal.
+
+## Evidence
+
+- Updated `README.md` with architecture, setup, trade-offs, roadmap, and links to trace docs.
 
 ---
 

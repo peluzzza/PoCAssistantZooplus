@@ -1,0 +1,64 @@
+"""Process lane for retrieval and grounded answer synthesis."""
+
+from __future__ import annotations
+
+import asyncio
+
+from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
+from src.guardian.engine import empty_retrieval_message, max_recommendations
+from src.models.chat import RetrievedProduct
+from src.rag.retrieve import search_catalog
+
+
+def _distance_to_score(distance: float | None) -> float | None:
+    if distance is None:
+        return None
+    return round(1 / (1 + max(distance, 0.0)), 4)
+
+
+def _to_retrieved_product(hit: dict) -> RetrievedProduct:
+    metadata = hit.get("metadata", {})
+    return RetrievedProduct(
+        article_id=int(metadata["article_id"]),
+        product_id=int(metadata["product_id"]),
+        variant_id=str(metadata["variant_id"]),
+        product_name=str(metadata["product_name"]),
+        variant_name=None,
+        price=float(metadata["price"]),
+        currency="EUR",
+        pet_type=str(metadata["pet_type"]),
+        brands=str(metadata["brands"]),
+        relevance_score=_distance_to_score(hit.get("distance")),
+        recommendation_reason="Matches your request in this catalog.",
+    )
+
+
+def _synthesize_grounded_answer(products: list[RetrievedProduct]) -> str:
+    if not products:
+        return empty_retrieval_message()
+    lines = ["I found these options in your shop catalog:"]
+    for product in products:
+        lines.append(
+            f"- {product.product_name} ({product.brands}) - EUR {product.price:.2f} "
+            f"[article_id: {product.article_id}]"
+        )
+    lines.append("Tell me if you want a narrower budget, brand, or pet-type filter.")
+    return "\n".join(lines)
+
+
+async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
+    hits = await asyncio.to_thread(
+        search_catalog,
+        envelope.query,
+        envelope.site_id,
+        n_results=max_recommendations(),
+    )
+    products = [_to_retrieved_product(hit) for hit in hits][: max_recommendations()]
+    answer = _synthesize_grounded_answer(products)
+    return ProcessLaneReceipt(
+        dispatch_id=envelope.dispatch_id,
+        dispatch_ok=True,
+        status="ok",
+        answer=answer,
+        retrieved_products=products,
+    )

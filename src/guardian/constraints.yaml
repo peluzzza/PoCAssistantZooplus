@@ -1,0 +1,33 @@
+# zooplus Assistant — constraint policy (PoC)
+# Consumed by src/guardian/engine.py when implemented
+
+assistant_id: zooplus_assistant
+language: en
+
+allowed_intents:
+  - product_search
+  - product_comparison
+  - nutrition_ingredients
+  - feeding_guidance
+  - recommendation_by_pet_type
+
+decline_intents:
+  - weather
+  - datetime
+  - general_knowledge
+  - non_pet_products
+  - competitors
+
+response_policy:
+  tone: polite
+  max_recommendations: 4
+  must_ground_in_retrieval: true
+  empty_retrieval_message: >
+    I couldn't find matching products in this shop. Could you rephrase
+    or specify dog/cat and product type?
+
+interactive_lane:
+  topic_guard_max_ms_p95: 300
+
+process_lane:
+  dispatch_timeout_seconds: 15
