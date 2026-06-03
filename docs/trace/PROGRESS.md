@@ -47,6 +47,7 @@
 | 2026-06-03 | [`sessions/2026-06-03-T04-zeus-quality-gates-run.md`](sessions/2026-06-03-T04-zeus-quality-gates-run.md) |
 | 2026-06-03 | [`sessions/2026-06-03-T05-T3-T6-implementation.md`](sessions/2026-06-03-T05-T3-T6-implementation.md) |
 | 2026-06-03 | [`sessions/2026-06-03-release-v1.0.0.md`](sessions/2026-06-03-release-v1.0.0.md) |
+| 2026-06-03 | [`sessions/2026-06-03-release-v1.1.0.md`](sessions/2026-06-03-release-v1.1.0.md) |
 
 ---
 
