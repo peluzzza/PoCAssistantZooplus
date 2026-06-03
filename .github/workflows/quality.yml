@@ -25,6 +25,9 @@ jobs:
       - name: Ruff format check
         run: ruff format --check cli src tests
 
+      - name: Prepare reports directory
+        run: mkdir -p reports
+
       - name: Unit tests
         run: pytest tests/unit -q --junitxml=reports/junit-unit.xml
 
@@ -35,14 +38,20 @@ jobs:
         run: pytest tests/e2e -q --junitxml=reports/junit-e2e.xml
 
       - name: Coverage (XML for Sonar)
-        run: |
-          mkdir -p reports
-          pytest tests/ -q --cov=cli --cov=src --cov-report=xml:coverage.xml \
-            --junitxml=reports/junit.xml
+        run: pytest tests/ -q --cov=cli --cov=src --cov-report=xml:coverage.xml --junitxml=reports/junit.xml
 
+  sonar:
+    needs: quality
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'peluzzza/PoCAssistantZooplus' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
       - name: SonarCloud Scan
-        if: ${{ secrets.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@v4
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
