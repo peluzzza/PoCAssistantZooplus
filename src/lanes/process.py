@@ -7,13 +7,15 @@ import asyncio
 from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
 from src.guardian.engine import empty_retrieval_message, max_recommendations
 from src.models.chat import RetrievedProduct
+from src.rag.hybrid import retrieval_mode
+from src.rag.rerank import recommendation_reason, vector_similarity
 from src.rag.retrieve import search_catalog
 
 
-def _distance_to_score(distance: float | None) -> float | None:
-    if distance is None:
-        return None
-    return round(1 / (1 + max(distance, 0.0)), 4)
+def _hit_relevance_score(hit: dict) -> float | None:
+    if hit.get("hybrid_score") is not None:
+        return round(float(hit["hybrid_score"]), 4)
+    return round(vector_similarity(hit.get("distance")), 4)
 
 
 def _to_retrieved_product(hit: dict) -> RetrievedProduct:
@@ -28,8 +30,8 @@ def _to_retrieved_product(hit: dict) -> RetrievedProduct:
         currency="EUR",
         pet_type=str(metadata["pet_type"]),
         brands=str(metadata["brands"]),
-        relevance_score=_distance_to_score(hit.get("distance")),
-        recommendation_reason="Matches your request in this catalog.",
+        relevance_score=_hit_relevance_score(hit),
+        recommendation_reason=recommendation_reason(metadata, hybrid=retrieval_mode() == "hybrid"),
     )
 
 

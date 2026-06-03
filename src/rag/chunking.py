@@ -21,6 +21,8 @@ def record_to_index_item(record: dict) -> dict:
             "product_name": str(record["product_name"])[:300],
             "price": float(record["price"]),
             "stock_units": int(record["stock_units"]),
+            "rating_average": float(record.get("rating_average") or 0.0),
+            "monthly_sales_units": int(record.get("monthly_sales_units") or 0),
             "has_ingredients": bool((record.get("ingredients") or "").strip()),
         },
     }

@@ -3,8 +3,8 @@
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P6 done — T3 to T6 implemented  
-**Current step:** v1.1.0 released; next v1.2.0 hybrid retrieval on `dev`  
-**Git:** `main` tag `v1.1.0`; `dev` integration for v1.2.0  
+**Current step:** v1.2.0 released; next v2.0.0 production profile on `dev`  
+**Git:** `main` tag `v1.2.0`  
 
 ---
 
@@ -28,7 +28,7 @@
 |------|-------------|--------|
 | G0 | Trace journal structure exists | **DONE** |
 | G0b | All code under PoC folder only | **DONE** |
-| G0c | Quality gates (Ruff + 26 tests) local + CI | **DONE** |
+| G0c | Quality gates (Ruff + 33 tests) local + CI | **DONE** |
 | G1 | Topic guard p95 < 300ms | **DONE** (`scripts/topic_guard_load_test.py`) |
 | G2 | Zero cross-`site_id` retrieval | **DONE** (T2 tests) |
 | G3 | MCP tools on server | **DONE** |
@@ -53,6 +53,6 @@
 
 ## Next actions
 
-1. See [`docs/RELEASE_PLAN.md`](../RELEASE_PLAN.md) — v1.1.0 streaming + golden queries on `dev`.
+1. See [`docs/RELEASE_PLAN.md`](../RELEASE_PLAN.md) — v2.0.0 container + observability on `dev`.
 2. Optional: `SONAR_TOKEN` for SonarCloud.
 3. Production hardening per README roadmap.

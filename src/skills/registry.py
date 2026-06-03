@@ -13,6 +13,10 @@ SKILLS: dict[str, dict] = {
     },
     "skill_06_hybrid_retrieve": {
         "module": "src.rag.retrieve",
-        "description": "Semantic search with mandatory site_id filter",
+        "description": "Hybrid vector+BM25 search with site_id filter (v1.2)",
+    },
+    "skill_07_recommend_rank": {
+        "module": "src.rag.rerank",
+        "description": "Business rerank: rating, sales, stock",
     },
 }

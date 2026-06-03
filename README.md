@@ -16,7 +16,8 @@ flowchart LR
 ```
 
 - **Interactive lane** decides `ALLOW`/`DECLINE` quickly via topic guard.
-- **Process lane** runs retrieval and grounded response synthesis (max 4 products).
+- **Process lane** runs **hybrid retrieval** (vector candidates + BM25 + rating/sales/stock rerank).
+- Override: `ZOOPLUS_RETRIEVAL_MODE=vector` for vector-only A/B.
 - **MCP tools** expose `topic_check` and `catalog_search` on the same FastAPI host.
 - **Constraints** in `src/guardian/constraints.yaml` enforce recommendation caps and grounding.
 
@@ -92,8 +93,8 @@ py -3 scripts/topic_guard_load_test.py   # G1 p95 budget check
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| `main` @ **v1.1.0** | MVP + golden eval, `/chat/stream`, G1 load test |
-| `dev` | Integration for **v1.2.0+** (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
+| `main` @ **v1.2.0** | Hybrid retrieval (BM25 + vector + business rerank) |
+| `dev` | Integration for **v2.0.0+** (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
 
 ## Docs and trace
 

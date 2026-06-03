@@ -16,7 +16,8 @@
 | HTML handling | `src/rag/normalize.py` | EDA showed ~18–22% tag density |
 | Vector store | **Chroma** persistent (`artifacts/index/chroma`) | Zero external infra for PoC |
 | Embeddings | Chroma default (local) | No API key required for ingest smoke tests |
-| Retrieval | **Filter-then-score** | `where site_id == request.site_id` before ranking |
+| Retrieval | **Hybrid filter-then-score** (v1.2) | Chroma candidates + BM25 + business rerank |
+| Retrieval (legacy) | `ZOOPLUS_RETRIEVAL_MODE=vector` | Vector-only path for A/B tests |
 
 ---
 
@@ -34,7 +35,7 @@ flowchart LR
 |-------|--------|-----|
 | Normalize + chunk | `src/rag/chunking.py` | — |
 | Index build | `src/rag/pipeline.py` | `python -m cli ingest` |
-| Query | `src/rag/retrieve.py` | used by agents / tests |
+| Query | `src/rag/retrieve.py` | hybrid default; `hybrid.py`, `lexical.py`, `rerank.py` |
 
 ---
 
