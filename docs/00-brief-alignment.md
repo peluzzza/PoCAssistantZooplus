@@ -1,7 +1,7 @@
 # Brief alignment checklist (Coding Task)
 
 **Source:** `instructions/Coding Task.docx`  
-**Updated:** 2026-06-03 (T3–T6 complete on `dev`)
+**Updated:** 2026-06-03 (acceptance suite vs `docs/instructions/`)
 
 Mark each row when evidence exists in `trace/` or tests.
 
@@ -16,6 +16,8 @@ Mark each row when evidence exists in `trace/` or tests.
 | B7 | Production-oriented structure | T0, T6 | **DONE** | `cli/`, `src/`, `.opencode/` |
 | B8 | Git repo + README | T6 | **DONE** | `README.md`, GitHub remote |
 | B9 | Evaluation: rigor, RAG, data, trade-offs | T1–T6 | **DONE** | `docs/trace/`, `docs/01-eda-report.md` |
+
+**Acceptance run:** `tests/acceptance/test_coding_task_brief.py` + `docs/instructions/ACCEPTANCE.md` (catalog = `docs/instructions/product_catalog_dataset.json`).
 
 ---
 

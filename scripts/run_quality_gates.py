@@ -26,6 +26,10 @@ def main() -> int:
         ("ruff format", [py, "-m", "ruff", "format", "--check", "cli", "src", "tests"]),
         ("unit", [py, "-m", "pytest", "tests/unit", "-q", "-m", "unit"]),
         ("integration", [py, "-m", "pytest", "tests/integration", "-q", "-m", "integration"]),
+        (
+            "acceptance",
+            [py, "-m", "pytest", "tests/acceptance", "-q", "-m", "acceptance"],
+        ),
         ("e2e", [py, "-m", "pytest", "tests/e2e", "-q", "-m", "e2e"]),
     ]
     for name, cmd in steps:

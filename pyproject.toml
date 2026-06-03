@@ -41,6 +41,7 @@ markers = [
   "unit: fast tests, no vector DB",
   "integration: API + Chroma (local)",
   "e2e: full PoC path smoke",
+  "acceptance: Coding Task.docx + docs/instructions catalog",
 ]
 filterwarnings = [
   "ignore:Using `httpx` with `starlette.testclient`:UserWarning",

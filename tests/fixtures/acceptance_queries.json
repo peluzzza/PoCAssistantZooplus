@@ -1,0 +1,86 @@
+[
+  {
+    "id": "brief_example_puppy_sensitive",
+    "site_id": 3,
+    "query": "What's the best dry food for a puppy with a sensitive stomach?",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "product_lookup_dry_puppy",
+    "site_id": 3,
+    "query": "best dry food for puppy",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "cat_grain_free_site1",
+    "site_id": 1,
+    "query": "cat food grain free",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "dog_toy_site15",
+    "site_id": 15,
+    "query": "dog chew toy",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "ingredients_chicken",
+    "site_id": 3,
+    "query": "dog food with chicken ingredients",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "feeding_recommendation",
+    "site_id": 1,
+    "query": "feeding recommendation for adult dog food",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "price_discount",
+    "site_id": 3,
+    "query": "dog food on discount or sale",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "stock_available",
+    "site_id": 1,
+    "query": "in stock cat treats",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "popular_top_seller",
+    "site_id": 3,
+    "query": "most popular dog food best sellers",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "brand_lookup_eukanuba",
+    "site_id": 3,
+    "query": "Eukanuba puppy food",
+    "expect_decline": false,
+    "min_products": 1
+  },
+  {
+    "id": "off_topic_weather",
+    "site_id": 3,
+    "query": "What's the weather today?",
+    "expect_decline": true,
+    "max_products": 0
+  },
+  {
+    "id": "off_topic_news",
+    "site_id": 1,
+    "query": "latest world news headlines",
+    "expect_decline": true,
+    "max_products": 0
+  }
+]
