@@ -77,7 +77,8 @@ docker compose up --build -d
 python scripts/deploy_smoke.py http://127.0.0.1:8080
 ```
 
-Runbook: [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
+Runbook: [`docs/RUNBOOK.md`](docs/RUNBOOK.md)  
+**Demo completa:** [`docs/DEMO.md`](docs/DEMO.md) — `python scripts/demo_all.py`
 
 Useful checks:
 

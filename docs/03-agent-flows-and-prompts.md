@@ -1,6 +1,6 @@
 # Agent flows & prompts
 
-**Status:** PENDING — complete in **T3–T5**  
+**Status:** DONE — implemented T3–T5 (see trace + `.opencode/agents/`)  
 **Proposal reference:** [`plans/PROPOSAL.md`](plans/PROPOSAL.md) §9, §18
 
 ---

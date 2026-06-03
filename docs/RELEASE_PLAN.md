@@ -16,6 +16,8 @@
 | **1.2.0** | `v1.2.0` | `dev` → `main` | Hybrid BM25+vector, business rerank | `test_hybrid_retrieval.py` + 33 tests green | **RELEASED** |
 | **2.0.0** | `v2.0.0` | `dev` → `main` | Docker, `/ready`, `/metrics`, runbook, deploy smoke | `docs/RUNBOOK.md` + `deploy_smoke.py` + CI docker job | **RELEASED** |
 | **2.1.0** | `v2.1.0` | `dev` → `main` | Python 3.11 policy, pinned deps, `resolve_python` | `requires-python <3.13`, `DEPENDENCIES.md`, CI 3.11 | **RELEASED** |
+| **2.2.0** | `v2.2.0` | `dev` → `main` | Demo pack: `demo_all.py`, `DEMO.md`, Cloud Run guide | Local demo script PASS + docs | **RELEASED** |
+| **3.0.0** | — | optional | Vertex/Gemini RAG + síntesis LLM | GCP project + embedding index wired | Planned |
 
 ---
 

@@ -3,8 +3,8 @@
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P6 done — T3 to T6 implemented  
-**Current step:** v2.1.0 dependency alignment on `main`  
-**Git:** `main` tag `v2.1.0` — Python 3.11 policy  
+**Current step:** Plan complete — use `docs/DEMO.md` to test; optional v3 Vertex  
+**Git:** `main` — demo pack on `dev` (v2.2.0)  
 
 ---
 
@@ -56,6 +56,8 @@
 
 ## Next actions
 
-1. PoC plan complete through v2.0.0 — optional hardening (Sonar token, hosted Chroma).
+1. **Probar todo:** [`docs/DEMO.md`](../DEMO.md) + `python scripts/demo_all.py`
+2. Cloud opcional: [`docs/deploy/CLOUD_RUN.md`](../deploy/CLOUD_RUN.md)
+3. Futuro: v3.0 Vertex/Gemini (no cableado aún)
 2. Optional: `SONAR_TOKEN` for SonarCloud.
 3. Production hardening per README roadmap.
