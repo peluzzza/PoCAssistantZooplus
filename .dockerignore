@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+__pycache__
+.pytest_cache
+.coverage
+htmlcov
+coverage.xml
+reports
+artifacts/load
+.env
+*.md
+!README.md
+docs/trace

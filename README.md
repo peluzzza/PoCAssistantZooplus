@@ -66,6 +66,15 @@ python -m cli ingest
 uvicorn src.api.app:app --reload --port 8080
 ```
 
+**Docker (v2):**
+
+```bash
+docker compose up --build -d
+python scripts/deploy_smoke.py http://127.0.0.1:8080
+```
+
+Runbook: [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
+
 Useful checks:
 
 ```bash
@@ -93,8 +102,8 @@ py -3 scripts/topic_guard_load_test.py   # G1 p95 budget check
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| `main` @ **v1.2.0** | Hybrid retrieval (BM25 + vector + business rerank) |
-| `dev` | Integration for **v2.0.0+** (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
+| `main` @ **v2.0.0** | Production profile: Docker, metrics, runbook |
+| `dev` | Post-v2 enhancements (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
 
 ## Docs and trace
 

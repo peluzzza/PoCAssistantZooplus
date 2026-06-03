@@ -1,0 +1,27 @@
+name: Docker build
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t zooplus-assistant:poc .
+
+      - name: Smoke in container
+        run: |
+          docker run -d --name zooplus-smoke -p 8080:8080 zooplus-assistant:poc
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8080/health && break
+            sleep 5
+          done
+          pip install httpx
+          python scripts/deploy_smoke.py http://127.0.0.1:8080
+          docker rm -f zooplus-smoke

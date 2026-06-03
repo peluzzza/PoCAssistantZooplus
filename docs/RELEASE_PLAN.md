@@ -14,7 +14,7 @@
 | **1.0.0** | `v1.0.0` | `dev` → `main` @ `72bbc4e` | T0–T6: EDA, RAG, MCP, dual-lane, `/chat`, README | B1–B9 DONE, G2–G6, 19 tests, CI quality job green | **RELEASED** |
 | **1.1.0** | `v1.1.0` | `dev` → `main` | G1 load test, `/chat/stream`, golden fixtures | Golden + stream + G1 p95 < 300ms; 26 tests | **RELEASED** |
 | **1.2.0** | `v1.2.0` | `dev` → `main` | Hybrid BM25+vector, business rerank | `test_hybrid_retrieval.py` + 33 tests green | **RELEASED** |
-| **2.0.0** | `v2.0.0` | future `dev` | Production profile: container, managed vector DB, observability | Deploy smoke + runbook | Planned |
+| **2.0.0** | `v2.0.0` | `dev` → `main` | Docker, `/ready`, `/metrics`, runbook, deploy smoke | `docs/RUNBOOK.md` + `deploy_smoke.py` + CI docker job | **RELEASED** |
 
 ---
 
