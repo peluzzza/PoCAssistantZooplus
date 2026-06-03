@@ -5,7 +5,8 @@ __pycache__/
 venv/
 .env
 .env.*
-artifacts/index/
+artifacts/index/*
+!artifacts/index/manifest.json
 artifacts/eda/*.html
 .chroma/
 *.egg-info/

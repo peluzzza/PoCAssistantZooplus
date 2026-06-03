@@ -45,13 +45,14 @@ git checkout dev
 └── tests/
 ```
 
-## Quick start (when T5 complete)
+## Quick start
 
 ```bash
 # from this directory
-pip install -e .
+pip install -e ".[rag,dev]"
 python -m cli eda
 python -m cli ingest
+pytest tests/ -q
 uvicorn src.api.app:app --reload --port 8080
 ```
 

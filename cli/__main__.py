@@ -21,8 +21,9 @@ def main(argv: list[str] | None = None) -> int:
 
         return run_eda()
     if args.command == "ingest":
-        print("ingest: not implemented yet (T2)", file=sys.stderr)
-        return 1
+        from cli.commands.ingest import run as run_ingest
+
+        return run_ingest()
     if args.command == "evaluate":
         print("evaluate: not implemented yet (T5)", file=sys.stderr)
         return 1

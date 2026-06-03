@@ -1,0 +1,8 @@
+{
+  "records_ingested": 300,
+  "index_path": "D:\\temp\\review_clones\\PoC chatbot zooplus\\artifacts\\index\\chroma",
+  "collection": "zooplus_variants",
+  "chunk_unit": "catalog_row",
+  "source_rows": 300,
+  "indexed_ids": 300
+}
