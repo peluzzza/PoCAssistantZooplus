@@ -10,7 +10,7 @@
 | `dev` | `d514225` | P0 + T1 EDA merged |
 | `feature/T1-eda` | `d514225` | Merged; can delete after push |
 
-**Push:** blocked until GitHub auth uses account `peluzzza` (not `peluzzzaZero`).
+**Push:** synced 2026-06-03 — `origin/main`, `origin/dev`, `origin/feature/T1-eda`.
 
 ## Branches
 

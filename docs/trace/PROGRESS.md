@@ -4,7 +4,7 @@
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P0 — bootstrap  
 **Current step:** T1 **DONE** on `dev` → T2 RAG index next  
-**Git:** `main` + `dev` local; remote push pending auth (see below)  
+**Git:** synced to [GitHub](https://github.com/peluzzza/PoCAssistantZooplus) (`main`, `dev`, `feature/T1-eda`)  
 
 ---
 

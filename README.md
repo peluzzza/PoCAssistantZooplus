@@ -15,15 +15,13 @@ Async FastAPI chat API with agent-first RAG over the provided pet product catalo
 
 See [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md).
 
-### Push (first time — use account `peluzzza`)
+### Remote sync
 
-Local commits exist; push failed with `peluzzzaZero`. Fix auth, then:
+Branches on GitHub: `main` (P0 bootstrap), `dev` (P0 + T1 EDA), `feature/T1-eda`.
 
 ```bash
-git remote set-url origin https://github.com/peluzzza/PoCAssistantZooplus.git
-git push -u origin main
-git push -u origin dev
-git push -u origin feature/T1-eda
+git fetch origin
+git checkout dev
 ```
 
 ## Documentation
