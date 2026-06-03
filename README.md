@@ -75,8 +75,16 @@ python scripts/run_quality_gates.py
 4. Add hybrid search (vector + lexical fallback) for SKU/name exact-match robustness.
 5. Add production deployment profile (containerization + managed vector store).
 
+## Release status
+
+| Branch / tag | Meaning |
+|--------------|---------|
+| `main` @ **v1.0.0** | MVP — brief-complete, tested (`POST /chat`, RAG, guardrails) |
+| `dev` | Integration for **v1.1.0+** (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
+
 ## Docs and trace
 
+- Release plan: [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)
 - Main docs index: [`docs/README.md`](docs/README.md)
 - Proposal: [`docs/plans/PROPOSAL.md`](docs/plans/PROPOSAL.md)
 - Progress dashboard: [`docs/trace/PROGRESS.md`](docs/trace/PROGRESS.md)

@@ -3,8 +3,8 @@
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P6 done — T3 to T6 implemented  
-**Current step:** Ready for `dev` → `main` merge (user authorization)  
-**Git:** [GitHub](https://github.com/peluzzza/PoCAssistantZooplus) — `dev` @ `879c4ee`, CI [green](https://github.com/peluzzza/PoCAssistantZooplus/actions/runs/26903747487)  
+**Current step:** v1.0.0 released on `main`; next work on `dev` → v1.1.0  
+**Git:** `main` + tag `v1.0.0` (MVP); `dev` tracks v1.1.0 features  
 
 ---
 
@@ -28,7 +28,7 @@
 |------|-------------|--------|
 | G0 | Trace journal structure exists | **DONE** |
 | G0b | All code under PoC folder only | **DONE** |
-| G0c | Quality gates (Ruff + 15 tests) local + CI | **DONE** |
+| G0c | Quality gates (Ruff + 19 tests) local + CI | **DONE** |
 | G1 | Topic guard p95 < 300ms | PENDING |
 | G2 | Zero cross-`site_id` retrieval | **DONE** (T2 tests) |
 | G3 | MCP tools on server | **DONE** |
@@ -46,11 +46,12 @@
 | 2026-06-03 | [`sessions/2026-06-03-T00-zeus-trace-scaffold.md`](sessions/2026-06-03-T00-zeus-trace-scaffold.md) |
 | 2026-06-03 | [`sessions/2026-06-03-T04-zeus-quality-gates-run.md`](sessions/2026-06-03-T04-zeus-quality-gates-run.md) |
 | 2026-06-03 | [`sessions/2026-06-03-T05-T3-T6-implementation.md`](sessions/2026-06-03-T05-T3-T6-implementation.md) |
+| 2026-06-03 | [`sessions/2026-06-03-release-v1.0.0.md`](sessions/2026-06-03-release-v1.0.0.md) |
 
 ---
 
 ## Next actions
 
-1. **User:** authorize merge `dev` → `main` when demo-ready.
-2. Optional: add `SONAR_TOKEN` for SonarCloud.
-3. Production hardening per README roadmap (streaming, hybrid search, observability).
+1. See [`docs/RELEASE_PLAN.md`](../RELEASE_PLAN.md) — v1.1.0 streaming + golden queries on `dev`.
+2. Optional: `SONAR_TOKEN` for SonarCloud.
+3. Production hardening per README roadmap.

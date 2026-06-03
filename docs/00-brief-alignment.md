@@ -30,10 +30,10 @@ Mark each row when evidence exists in `trace/` or tests.
 
 ---
 
-## Pending for production (not blocking PoC)
+## Pending for production (not blocking v1.0.0)
 
-| Item | Notes |
-|------|-------|
-| G1 p95 topic guard < 300ms | Rule-based guard is fast; no load test artifact yet |
-| Merge `dev` → `main` | Requires explicit user authorization |
-| `SONAR_TOKEN` | Optional SonarCloud import |
+| Item | Target release | Notes |
+|------|----------------|-------|
+| G1 p95 topic guard < 300ms | v1.1.0 | Rule-based guard is fast; load test artifact TBD |
+| `SONAR_TOKEN` | optional | SonarCloud import |
+| Streaming `/chat/stream` | v1.1.0 | README roadmap |

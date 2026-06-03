@@ -2,66 +2,68 @@
 
 **Remote:** [https://github.com/peluzzza/PoCAssistantZooplus.git](https://github.com/peluzzza/PoCAssistantZooplus.git)
 
-## Current local state (2026-06-03)
+## Release policy
 
-| Branch | Commit | Notes |
-|--------|--------|-------|
-| `main` | `a6f9d26` | P0 bootstrap only |
-| `dev` | `d514225` | P0 + T1 EDA merged |
-| `feature/T1-eda` | `d514225` | Merged; can delete after push |
+Merges to `main` follow [`RELEASE_PLAN.md`](RELEASE_PLAN.md) — only when milestone exit criteria pass.
 
-**Push:** synced 2026-06-03 — `origin/main`, `origin/dev`, `origin/feature/T1-eda`.
+| Tag on `main` | When |
+|---------------|------|
+| `v0.1.0` | P0 bootstrap only |
+| `v1.0.0` | MVP — B1–B9, 19 tests, CI green |
+| `v1.1.0+` | Planned (streaming, golden queries, …) |
 
-## Branches
+## Current state
 
-| Branch | Purpose |
-|--------|---------|
-| `main` | Stable, demo-ready snapshots only |
-| `dev` | Integration branch — merge all `feature/*` here first |
-| `feature/<name>` | Short-lived work (T1, T2, …) |
+| Branch | Role |
+|--------|------|
+| `main` | Stable tagged releases |
+| `dev` | Integration — all `feature/*` merge here first |
+| `feature/<name>` | Short-lived steps |
 
 ## Pre-merge quality (required)
-
-Run before every `feature/*` → `dev` merge:
 
 ```bash
 pip install -e ".[rag,dev]"
 python scripts/run_quality_gates.py
 ```
 
-Details: [`QUALITY.md`](QUALITY.md) — unit, integration, e2e, Ruff, SonarCloud (CI).
-
----
+Details: [`QUALITY.md`](QUALITY.md).
 
 ## Flow
 
 ```mermaid
 gitGraph
-  commit id: "bootstrap"
+  commit id: "v0.1.0"
   branch dev
   checkout dev
-  branch feature/T1-eda
-  commit id: "T1 EDA"
-  checkout dev
-  merge feature/T1-eda
+  commit id: "T1-T6 MVP"
   checkout main
-  merge dev tag: "release when ready"
+  merge dev tag: "v1.0.0"
+  checkout dev
+  commit id: "v1.1 work"
 ```
 
-1. Branch `feature/<step>` from `dev`.
-2. Implement + update `docs/trace/`.
-3. Merge `feature/*` → `dev` (PR or local merge).
-4. When a milestone is ready to show: merge `dev` → `main` (or cherry-pick).
+1. `git checkout dev && git pull`
+2. `git checkout -b feature/<step>` → work → merge to `dev` → push
+3. When milestone ready: merge `dev` → `main`, tag `vX.Y.Z`, push (see `RELEASE_PLAN.md`)
 
-## Commands (from repo root)
+## Commands
 
 ```bash
 git fetch origin
-git checkout dev
-git pull origin dev
-git checkout -b feature/T1-eda
-# ... work ...
-git push -u origin feature/T1-eda
-git checkout dev && git merge feature/T1-eda
-git push origin dev
+git checkout dev && git pull origin dev
+git checkout -b feature/my-step
+# ... work, quality gates ...
+git push -u origin feature/my-step
+git checkout dev && git merge feature/my-step && git push origin dev
+```
+
+Release to main:
+
+```bash
+python scripts/run_quality_gates.py
+git checkout main && git pull origin main
+git merge dev -m "release: vX.Y.Z — title"
+git tag -a vX.Y.Z -m "vX.Y.Z — title"
+git push origin main && git push origin vX.Y.Z
 ```
