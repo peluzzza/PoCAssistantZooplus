@@ -1,0 +1,46 @@
+{
+  "records": 300,
+  "unique_product_id": 154,
+  "unique_variant_id": 287,
+  "by_site": {
+    "1": 100,
+    "3": 100,
+    "15": 100
+  },
+  "by_locale": {
+    "de-DE": 100,
+    "en-GB": 100,
+    "es-ES": 100
+  },
+  "by_pet": {
+    "DOGS": 150,
+    "CATS": 150
+  },
+  "field_nonempty": {
+    "ingredients": 223,
+    "feeding_recommendations": 214,
+    "discount_label": 190,
+    "summary": 300,
+    "description": 300
+  },
+  "food_like_records": 223,
+  "price_min": 0.75,
+  "price_max": 1000.0,
+  "price_mean": 100.24,
+  "price_outlier_count": 1,
+  "html_tag_density": {
+    "summary": 0.18105123172637524,
+    "description": 0.2165614431417625
+  },
+  "site_to_locales": {
+    "1": [
+      "de-DE"
+    ],
+    "3": [
+      "en-GB"
+    ],
+    "15": [
+      "es-ES"
+    ]
+  }
+}

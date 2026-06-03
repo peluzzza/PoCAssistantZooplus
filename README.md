@@ -1,8 +1,30 @@
 # zooplus Assistant (PoC)
 
-**Canonical project root:** this folder (`PoC chatbot zooplus`).
+**Canonical project root:** this folder (`PoC chatbot zooplus`).  
+**GitHub:** [peluzzza/PoCAssistantZooplus](https://github.com/peluzzza/PoCAssistantZooplus.git)
 
 Async FastAPI chat API with agent-first RAG over the provided pet product catalog.
+
+## Git branches
+
+| Branch | Role |
+|--------|------|
+| `main` | Stable / demo-ready |
+| `dev` | Integration (merge `feature/*` here) |
+| `feature/*` | Step work (e.g. `feature/T1-eda`) |
+
+See [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md).
+
+### Push (first time — use account `peluzzza`)
+
+Local commits exist; push failed with `peluzzzaZero`. Fix auth, then:
+
+```bash
+git remote set-url origin https://github.com/peluzzza/PoCAssistantZooplus.git
+git push -u origin main
+git push -u origin dev
+git push -u origin feature/T1-eda
+```
 
 ## Documentation
 

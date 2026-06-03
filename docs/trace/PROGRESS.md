@@ -3,7 +3,8 @@
 **Last updated:** 2026-06-03 (Zeus / Composer)  
 **Repo root:** `d:\temp\review_clones\PoC chatbot zooplus\` (**only** location for this PoC)  
 **Current phase:** P0 — bootstrap  
-**Current step:** T0 — repo scaffold **DONE** → T1 EDA next  
+**Current step:** T1 **DONE** on `dev` → T2 RAG index next  
+**Git:** `main` + `dev` local; remote push pending auth (see below)  
 
 ---
 
@@ -12,7 +13,7 @@
 | Phase | Name | Status | Complete artifact |
 |-------|------|--------|-------------------|
 | P0 | Bootstrap repo + docs trace | **DONE** | [`phases/P0-bootstrap-complete.md`](phases/P0-bootstrap-complete.md) |
-| P1 | EDA + constraints | PENDING | — |
+| P1 | EDA + constraints | **DONE** (EDA) | `trace/T1-eda-run.md` |
 | P2 | RAG index | PENDING | — |
 | P3 | OpenCode agents + MCP on server | PENDING | — |
 | P4 | Dual-lane + ACP | PENDING | — |

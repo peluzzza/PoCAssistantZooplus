@@ -15,7 +15,7 @@ See **[`PROGRESS.md`](PROGRESS.md)** (updated every session).
 | Step | File | Phase | Status |
 |------|------|-------|--------|
 | T0 | [`T0-repo-bootstrap.md`](T0-repo-bootstrap.md) | P0 | **DONE** |
-| T1 | [`T1-eda-run.md`](T1-eda-run.md) | P1 | PENDING |
+| T1 | [`T1-eda-run.md`](T1-eda-run.md) | P1 | **DONE** |
 | T2 | [`T2-rag-index.md`](T2-rag-index.md) | P2 | PENDING |
 | T3 | [`T3-opencode-mcp-agents.md`](T3-opencode-mcp-agents.md) | P3 | PENDING |
 | T4 | [`T4-dual-lane-acp.md`](T4-dual-lane-acp.md) | P4 | PENDING |
