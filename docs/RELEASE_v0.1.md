@@ -17,8 +17,8 @@ git checkout releases
 # http://127.0.0.1:8090/ui/
 ```
 
-## Catalog (Coding Task)
+## Deliverable (Coding Task)
 
-- `docs/instructions/product_catalog_dataset.json` — 300 rows, `site_id` 1|3|15, **DOGS/CATS only**
-- `docs/instructions/AGENT_BUNDLE.md` — agent policy
-- `Coding Task.docx` — place under `docs/instructions/` when available
+- [`docs/deliverables/v0.1/`](deliverables/v0.1/) — checklist + **PPT base**
+- `docs/instructions/` — catalog, `ACCEPTANCE.md`, `AGENT_BUNDLE.md`
+- Add `Coding Task.docx` under `docs/instructions/` for full acceptance B7
