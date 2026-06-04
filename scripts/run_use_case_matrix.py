@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -78,7 +79,7 @@ def main() -> int:
         **os.environ,
         "ZOOPLUS_INTENT_MODE": "oracle",
         "ZOOPLUS_SYNTHESIS_MODE": "template",
-        "ZOOPLUS_SOCIAL_SYNTHESIS": "template",
+        "ZOOPLUS_SOCIAL_SYNTHESIS": "agentic",
         "ZOOPLUS_AGENT_CASCADE": "0",
     }
     cmd = [

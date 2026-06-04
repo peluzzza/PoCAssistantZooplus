@@ -1001,24 +1001,6 @@
     "confidence": 1.0,
     "reason": "pytest_canonical"
   },
-  "what products do you have available": {
-    "lane": "catalog_search",
-    "social_kind": null,
-    "confidence": 1.0,
-    "reason": "product_browse"
-  },
-  "do you have product about horses?": {
-    "lane": "decline_off_topic",
-    "social_kind": null,
-    "confidence": 1.0,
-    "reason": "non_catalog_species"
-  },
-  "show me about dogs now": {
-    "lane": "catalog_search",
-    "social_kind": null,
-    "confidence": 1.0,
-    "reason": "pytest_canonical"
-  },
   "best dry food for puppy": {
     "lane": "catalog_search",
     "social_kind": null,

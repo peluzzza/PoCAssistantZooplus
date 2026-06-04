@@ -1,13 +1,9 @@
-"""Lightweight conversational intents — polite ask-and-respond without full RAG."""
+"""Conversation hints — classify social shape only; replies come from OpenCode agents."""
 
 from __future__ import annotations
 
-import os
 import re
 from enum import StrEnum
-
-from src.config import Settings, apply_settings
-from src.llm.opencode import synthesize_opencode_chat
 
 
 class ConvoKind(StrEnum):
@@ -51,8 +47,17 @@ _IDENTITY = re.compile(
     re.I,
 )
 
+_KIND_MAP: dict[ConvoKind, str] = {
+    ConvoKind.GREETING: "greeting",
+    ConvoKind.IDENTITY: "identity",
+    ConvoKind.THANKS: "thanks",
+    ConvoKind.HELP: "help",
+    ConvoKind.BYE: "bye",
+}
+
 
 def classify_conversation(query: str) -> ConvoKind:
+    """Lightweight hint when intent agent did not set social_kind (fallback paths only)."""
     text = query.strip()
     if _IDENTITY.search(text):
         return ConvoKind.IDENTITY
@@ -64,8 +69,6 @@ def classify_conversation(query: str) -> ConvoKind:
         return ConvoKind.BYE
     if _HELP.match(text) or _HELP_PHRASE.search(text):
         return ConvoKind.HELP
-    if _IDENTITY.match(text):
-        return ConvoKind.IDENTITY
     return ConvoKind.PRODUCT
 
 
@@ -73,105 +76,17 @@ def is_conversational_only(query: str) -> bool:
     return classify_conversation(query) != ConvoKind.PRODUCT
 
 
-def _template_reply(kind: ConvoKind, site_id: int, *, query: str = "") -> str:
-    from src.llm.response_variety import pick_variant, style_seed
-
-    key = style_seed(query or str(site_id), kind.value, str(site_id))
-    if kind == ConvoKind.GREETING:
-        return pick_variant(
-            key,
-            (
-                f"Hello! I help shoppers on site {site_id} pick dog and cat food, treats, and accessories. "
-                "What should we look for first — puppy kibble, grain-free cat food, something else?",
-                f"Hi — welcome to shop {site_id}. Tell me your pet (dog or cat) and what you need; "
-                "I'll suggest a few items from this catalog.",
-                "Hey there! I'm here to narrow down pet products in plain language. "
-                "Dry food, treats, toys — what are you after?",
-            ),
-        )
-    if kind == ConvoKind.THANKS:
-        return pick_variant(
-            key,
-            (
-                "Glad that helped! If you want more ideas, mention brand, budget, or dog vs cat.",
-                "You're welcome — happy to dig deeper anytime. Just say what pet and product type you need.",
-                "Anytime! I can refine suggestions with a bit more detail when you're ready.",
-            ),
-        )
-    if kind == ConvoKind.BYE:
-        return pick_variant(
-            key,
-            (
-                f"See you later — shop {site_id} is here whenever you need pet product ideas.",
-                "Bye for now! Come back with a dog or cat shopping question anytime.",
-                "Take care — I'll be here for food, treats, and accessories in this catalog.",
-            ),
-        )
-    if kind == ConvoKind.HELP:
-        return pick_variant(
-            key,
-            (
-                f"On site {site_id} I search this catalog in natural language and show up to four matches — "
-                'try "grain-free adult cat food" or "dog treats on sale". Off-topic stuff gets a polite redirect.',
-                "Ask like you're talking to a shop assistant: describe the pet and product. "
-                "I'll return a few grounded picks from our dog/cat data (no web search or weather).",
-                "I recommend from this shop's catalog only — dogs and cats. "
-                "Describe what you want and I'll surface a short list you can refine.",
-            ),
-        )
-    if kind == ConvoKind.IDENTITY:
-        return pick_variant(
-            key,
-            (
-                f"I'm the zooplus Assistant for shop {site_id} — catalog-only, dogs and cats. "
-                "No general knowledge or internet; just product help for this store.",
-                f"Shop assistant for site {site_id}: I use local product data for dogs and cats "
-                "(food, treats, litter, toys). Ask what you'd like to buy.",
-                "An AI helper tied to one pet catalog per site — I suggest real SKUs here, "
-                "not traffic, news, or human products.",
-            ),
-        )
-    return ""
+def social_kind_hint(query: str, *, intent_social_kind: str | None = None) -> str:
+    """Prefer intent agent social_kind; regex hint only when missing."""
+    if intent_social_kind:
+        return intent_social_kind
+    conv = classify_conversation(query)
+    return _KIND_MAP.get(conv, "greeting")
 
 
-_SOCIAL_KIND_TO_CONVO: dict[str, ConvoKind] = {
-    "greeting": ConvoKind.GREETING,
-    "identity": ConvoKind.IDENTITY,
-    "thanks": ConvoKind.THANKS,
-    "help": ConvoKind.HELP,
-    "bye": ConvoKind.BYE,
-}
-
-
-def conversational_reply(
-    query: str,
-    site_id: int,
-    *,
-    settings: Settings | None = None,
-    social_kind: str | None = None,
-) -> str:
-    """Polite short reply for greetings/thanks/help — optional OpenCode polish."""
-    cfg = settings or apply_settings()
-    kind = _SOCIAL_KIND_TO_CONVO.get(social_kind or "", classify_conversation(query))
-    fallback = _template_reply(kind, site_id, query=query)
-    if not fallback:
-        return ""
-
-    social_env = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "auto").lower()
-    synthesis_is_llm = (cfg.synthesis_mode or "").lower() == "opencode"
-    use_llm = social_env == "opencode" or (social_env == "auto" and synthesis_is_llm)
-    if not use_llm:
-        return fallback
-
-    llm = synthesize_opencode_chat(
-        query=query,
-        site_id=site_id,
-        context=(
-            f"Intent: {kind.value}. Reply in 2-4 short sentences. Be warm and professional. "
-            "Stay within pet-product shopping assistance for zooplus."
-        ),
-        products=[],
-        settings=cfg,
-        timeout_seconds=min(10, cfg.opencode_timeout_seconds),
+def emergency_social_fallback(site_id: int) -> str:
+    """Last resort when OpenCode social agents are unavailable (not a scripted dialog tree)."""
+    return (
+        f"I'm the zooplus Assistant for shop {site_id}. "
+        "Social agents are temporarily unavailable — please retry, or ask about dog or cat products in this catalog."
     )
-    return llm or fallback

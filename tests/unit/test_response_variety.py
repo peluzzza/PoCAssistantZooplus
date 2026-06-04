@@ -8,7 +8,7 @@ from src.agents.intent_hints import (
     looks_like_product_browse,
     looks_like_non_catalog_species,
 )
-from src.llm.conversation import _template_reply, ConvoKind
+from src.llm.conversation import emergency_social_fallback, social_kind_hint
 from src.llm.template import synthesize_template
 from src.models.chat import RetrievedProduct
 
@@ -45,12 +45,14 @@ def test_fallback_declines_horses() -> None:
     assert "horse" in d.decline_message.lower() or "dog" in d.decline_message.lower()
 
 
-def test_template_greeting_varies_by_query() -> None:
-    a = _template_reply(ConvoKind.GREETING, 3, query="hello")
-    b = _template_reply(ConvoKind.GREETING, 3, query="hi there friend")
-    assert a and b
-    # Different seeds → usually different copy (allow rare collision)
-    assert a != b or "shop" in a
+def test_social_kind_trusts_intent_over_regex() -> None:
+    assert social_kind_hint("hello", intent_social_kind="help") == "help"
+    assert social_kind_hint("danke!", intent_social_kind="thanks") == "thanks"
+
+
+def test_emergency_fallback_mentions_zooplus() -> None:
+    text = emergency_social_fallback(3)
+    assert "zooplus" in text.lower()
 
 
 def test_catalog_template_no_numbered_list() -> None:

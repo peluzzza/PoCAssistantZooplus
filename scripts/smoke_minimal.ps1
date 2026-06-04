@@ -5,7 +5,7 @@ Set-Location $Root
 
 $env:ZOOPLUS_INTENT_MODE = "oracle"
 $env:ZOOPLUS_SYNTHESIS_MODE = "template"
-$env:ZOOPLUS_SOCIAL_SYNTHESIS = "template"
+$env:ZOOPLUS_SOCIAL_SYNTHESIS = "agentic"
 $env:ZOOPLUS_AGENT_CASCADE = "0"
 
 Write-Host "==> Minimal smoke (unit + integration + 3 matrix cases)"

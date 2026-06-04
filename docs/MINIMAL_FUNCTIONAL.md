@@ -35,7 +35,7 @@ Abre **http://127.0.0.1:8080/ui/**
 |----------|------------|----------------------------|
 | `ZOOPLUS_INTENT_MODE` | `oracle` | `agentic` |
 | `ZOOPLUS_SYNTHESIS_MODE` | `template` | `opencode` |
-| `ZOOPLUS_SOCIAL_SYNTHESIS` | `template` | `auto` |
+| `ZOOPLUS_SOCIAL_SYNTHESIS` | `agentic` (matrix mocks agents) | `agentic` |
 | `ZOOPLUS_AGENT_CASCADE` | `0` | `1` |
 
 Sin auth OpenCode, `agentic` sigue funcionando vía **topic fallback** + plantillas variadas.

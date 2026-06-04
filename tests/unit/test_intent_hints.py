@@ -33,6 +33,7 @@ def test_catalog_browse_classified() -> None:
 def test_product_availability_not_declined(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
+    monkeypatch.setenv("ZOOPLUS_SOCIAL_SYNTHESIS", "agentic")
     client = TestClient(app)
     resp = client.post(
         "/chat",
@@ -46,6 +47,13 @@ def test_product_availability_not_declined(monkeypatch: pytest.MonkeyPatch) -> N
 def test_chat_help_and_catalog_no_decline(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
+    monkeypatch.setenv("ZOOPLUS_SOCIAL_SYNTHESIS", "agentic")
+    monkeypatch.setattr(
+        "src.agents.social_agent._run_social_agents",
+        lambda q, sid, ctx, *, settings: (
+            f"I'm the zooplus Assistant for shop {sid} — describe dog or cat products you need."
+        ),
+    )
     client = TestClient(app)
 
     for q in (

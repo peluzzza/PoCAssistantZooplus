@@ -253,6 +253,8 @@ def _decline_copy(reason: str, *, query: str) -> str:
         return polite_decline_for("off_topic_external_web", query=query)
     if looks_like_non_catalog_species(query):
         return polite_decline_for("off_topic_non_pet_species", query=query)
+    if any(w in q for w in ("weather", "wetter", "traffic", "news headline", "what time")):
+        return polite_decline_for("off_topic_life", query=query)
     code = reason if reason.startswith("off_topic") else "out_of_scope_default_deny"
     return polite_decline_for(code, query=query)
 

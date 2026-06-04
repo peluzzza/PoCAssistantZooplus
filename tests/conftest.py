@@ -11,7 +11,7 @@ import pytest
 # Deterministic CI/local smoke — production UI uses .env agentic/opencode.
 os.environ.setdefault("ZOOPLUS_INTENT_MODE", "oracle")
 os.environ.setdefault("ZOOPLUS_SYNTHESIS_MODE", "template")
-os.environ.setdefault("ZOOPLUS_SOCIAL_SYNTHESIS", "template")
+os.environ.setdefault("ZOOPLUS_SOCIAL_SYNTHESIS", "agentic")
 os.environ.setdefault("ZOOPLUS_AGENT_CASCADE", "0")
 
 ROOT = Path(__file__).resolve().parents[1]

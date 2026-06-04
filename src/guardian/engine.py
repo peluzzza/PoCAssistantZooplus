@@ -182,11 +182,11 @@ def polite_decline_for(reason_code: str, *, query: str = "") -> str:
 
     pools: dict[str, tuple[str, ...]] = {
         "out_of_scope_default_deny": (
-            "I can't help with that topic. This shop's catalog is for dog and cat products — "
-            "tell me what you'd like (food, treats, toys…) and I'll suggest a few options.",
-            "That one's outside what I cover here — I focus on dog and cat items in this catalog. "
+            "I can't help with that topic — zooplus Assistant, dog and cat catalog only. "
+            "Tell me what you'd like (food, treats, toys…) and I'll suggest a few options.",
+            "That one's outside what I cover as the zooplus Assistant — dog and cat items in this catalog. "
             "What food, treats, or accessories are you shopping for?",
-            "I'm only set up for pet products in this shop (dogs and cats). "
+            "zooplus Assistant here: pet products in this shop (dogs and cats). "
             "Ask in your own words what you need and I'll pull a few matching options.",
         ),
         "off_topic_non_pet_species": (
@@ -207,7 +207,9 @@ def polite_decline_for(reason_code: str, *, query: str = "") -> str:
     if options and len(options) > 1:
         key = style_seed(query or reason_code, reason_code)
         body = pick_variant(key, options)
-        return _zooplus_decline(body) if not body.startswith("I'm the zooplus") else body
+        if "zooplus" in body.lower():
+            return body
+        return _zooplus_decline(body)
     return _DECLINE_BY_REASON.get(reason_code, DEFAULT_DECLINE)
 
 
