@@ -11,6 +11,18 @@ python -m pytest tests/security -q -m security
 python scripts/run_quality_gates.py
 ```
 
+## Topic guard (default-deny firewall)
+
+**Default-deny:** only conversational turns (hello, thanks, help) and **in-scope pet catalog** queries reach RAG. Other topics are declined with **empty** `retrieved_products` (no “closest” vector matches).
+
+| Query | Expected |
+|-------|----------|
+| `best dry food for puppy` | Products from catalog |
+| `what about for humans` | Decline, 0 products |
+| `what is the weather today?` | Decline, 0 products |
+
+Policy: `src/guardian/constraints.yaml` (`topic_guard_mode: default_deny`, `allowed_intents`).
+
 ## Coverage
 
 | Category | Examples | Expected |

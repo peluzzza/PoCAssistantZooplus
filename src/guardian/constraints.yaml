@@ -4,6 +4,9 @@
 assistant_id: zooplus_assistant
 language: en
 
+# Topic guard: default-deny (firewall). Only allowed_intents + conversational pass.
+topic_guard_mode: default_deny
+
 allowed_intents:
   - product_search
   - product_comparison

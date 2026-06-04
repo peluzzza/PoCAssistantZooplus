@@ -88,6 +88,7 @@ def build_cases() -> list[dict]:
         ("competitor_price", 3, "compare prices on Amazon for dog food", "external"),
         ("crypto", 3, "best cryptocurrency to invest in 2026", "non_pet"),
         ("recipe_human", 3, "recipe for spaghetti carbonara", "non_pet"),
+        ("for_humans", 3, "what about for humans", "non_pet_consumer"),
     ]
     for tag, sid, q, note in declines:
         add(
@@ -195,15 +196,16 @@ def build_cases() -> list[dict]:
         notes="max_recommendations cap",
     )
     add(
-        "empty_retrieval_rephrase",
-        "B4",
+        "guardrail_decline",
+        "B6",
         3,
         "xyzzy_nonexistent_sku_99999_zxqvblm",
+        decline=True,
         min_products=0,
         max_products=0,
         grounded=False,
-        answer_contains=["couldn't find", "rephrase"],
-        notes="Honest empty retrieval",
+        answer_contains=["zooplus"],
+        notes="Gibberish SKU — default-deny before RAG",
     )
 
     # --- German / locale queries (dataset has de-DE) ---

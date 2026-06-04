@@ -41,6 +41,15 @@
     "max_products": 0
   },
   {
+    "id": "decline_for_humans",
+    "site_id": 3,
+    "query": "what about for humans",
+    "expect_status": 200,
+    "expect_decline": true,
+    "max_products": 0,
+    "answer_contains": "pet"
+  },
+  {
     "id": "decline_general_knowledge",
     "site_id": 3,
     "query": "who is the president of France?",

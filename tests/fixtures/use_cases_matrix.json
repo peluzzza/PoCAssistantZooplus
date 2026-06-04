@@ -248,6 +248,25 @@
   },
   {
     "id": "UC-014",
+    "branch": "guardrail_decline",
+    "requirement": "B6",
+    "site_id": 3,
+    "query": "what about for humans",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "products_grounded": false
+    },
+    "notes": "non_pet_consumer"
+  },
+  {
+    "id": "UC-015",
     "branch": "brief_example",
     "requirement": "B2+B4",
     "site_id": 3,
@@ -264,7 +283,7 @@
     "notes": "Exact Coding Task.docx example query"
   },
   {
-    "id": "UC-015",
+    "id": "UC-016",
     "branch": "conversational",
     "requirement": "B3+B6",
     "site_id": 3,
@@ -281,7 +300,7 @@
     "notes": "Social / polite exchange"
   },
   {
-    "id": "UC-016",
+    "id": "UC-017",
     "branch": "conversational",
     "requirement": "B3+B6",
     "site_id": 3,
@@ -298,7 +317,7 @@
     "notes": "Social / polite exchange"
   },
   {
-    "id": "UC-017",
+    "id": "UC-018",
     "branch": "conversational",
     "requirement": "B3+B6",
     "site_id": 3,
@@ -315,7 +334,7 @@
     "notes": "Social / polite exchange"
   },
   {
-    "id": "UC-018",
+    "id": "UC-019",
     "branch": "conversational",
     "requirement": "B3+B6",
     "site_id": 3,
@@ -332,7 +351,7 @@
     "notes": "Social / polite exchange"
   },
   {
-    "id": "UC-019",
+    "id": "UC-020",
     "branch": "conversational",
     "requirement": "B3+B6",
     "site_id": 3,
@@ -349,7 +368,7 @@
     "notes": "Social / polite exchange"
   },
   {
-    "id": "UC-020",
+    "id": "UC-021",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -366,7 +385,7 @@
     "notes": "Spanish in-scope product query"
   },
   {
-    "id": "UC-021",
+    "id": "UC-022",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -383,7 +402,7 @@
     "notes": "Catalog-backed site 1"
   },
   {
-    "id": "UC-022",
+    "id": "UC-023",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -400,7 +419,7 @@
     "notes": "Catalog-backed site 1"
   },
   {
-    "id": "UC-023",
+    "id": "UC-024",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -417,7 +436,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-024",
+    "id": "UC-025",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -434,7 +453,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-025",
+    "id": "UC-026",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -451,7 +470,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-026",
+    "id": "UC-027",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -468,7 +487,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-027",
+    "id": "UC-028",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -485,7 +504,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-028",
+    "id": "UC-029",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -502,7 +521,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-029",
+    "id": "UC-030",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 15,
@@ -519,7 +538,7 @@
     "notes": "Catalog-backed site 15"
   },
   {
-    "id": "UC-030",
+    "id": "UC-031",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 15,
@@ -536,7 +555,7 @@
     "notes": "Catalog-backed site 15"
   },
   {
-    "id": "UC-031",
+    "id": "UC-032",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 15,
@@ -553,7 +572,7 @@
     "notes": "Catalog-backed site 15"
   },
   {
-    "id": "UC-032",
+    "id": "UC-033",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -570,7 +589,7 @@
     "notes": "Catalog-backed site 1"
   },
   {
-    "id": "UC-033",
+    "id": "UC-034",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -587,7 +606,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-034",
+    "id": "UC-035",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -604,7 +623,7 @@
     "notes": "Catalog-backed site 3"
   },
   {
-    "id": "UC-035",
+    "id": "UC-036",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -621,7 +640,7 @@
     "notes": "Catalog-backed site 1"
   },
   {
-    "id": "UC-036",
+    "id": "UC-037",
     "branch": "site_isolation",
     "requirement": "B5",
     "site_id": 3,
@@ -638,7 +657,7 @@
     "notes": "Products must all be site_id=3"
   },
   {
-    "id": "UC-037",
+    "id": "UC-038",
     "branch": "policy_max_four",
     "requirement": "B4+P1",
     "site_id": 3,
@@ -655,27 +674,26 @@
     "notes": "max_recommendations cap"
   },
   {
-    "id": "UC-038",
-    "branch": "empty_retrieval_rephrase",
-    "requirement": "B4",
+    "id": "UC-039",
+    "branch": "guardrail_decline",
+    "requirement": "B6",
     "site_id": 3,
     "query": "xyzzy_nonexistent_sku_99999_zxqvblm",
     "target_article_id": null,
     "expect": {
       "status": 200,
-      "decline": false,
+      "decline": true,
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [
-        "couldn't find",
-        "rephrase"
+        "zooplus"
       ],
       "products_grounded": false
     },
-    "notes": "Honest empty retrieval"
+    "notes": "Gibberish SKU — default-deny before RAG"
   },
   {
-    "id": "UC-039",
+    "id": "UC-040",
     "branch": "locale_de",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -692,7 +710,7 @@
     "notes": "German query against de-DE catalog rows"
   },
   {
-    "id": "UC-040",
+    "id": "UC-041",
     "branch": "guardrail_decline",
     "requirement": "B6",
     "site_id": 3,
@@ -709,7 +727,7 @@
     "notes": ""
   },
   {
-    "id": "UC-041",
+    "id": "UC-042",
     "branch": "guardrail_decline",
     "requirement": "B6",
     "site_id": 3,
@@ -726,7 +744,7 @@
     "notes": ""
   },
   {
-    "id": "UC-042",
+    "id": "UC-043",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -743,7 +761,7 @@
     "notes": ""
   },
   {
-    "id": "UC-043",
+    "id": "UC-044",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -760,7 +778,7 @@
     "notes": ""
   },
   {
-    "id": "UC-044",
+    "id": "UC-045",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -777,7 +795,7 @@
     "notes": ""
   },
   {
-    "id": "UC-045",
+    "id": "UC-046",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -794,7 +812,7 @@
     "notes": ""
   },
   {
-    "id": "UC-046",
+    "id": "UC-047",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -811,7 +829,7 @@
     "notes": ""
   },
   {
-    "id": "UC-047",
+    "id": "UC-048",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 15,
@@ -828,7 +846,7 @@
     "notes": ""
   },
   {
-    "id": "UC-048",
+    "id": "UC-049",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 15,
@@ -845,7 +863,7 @@
     "notes": ""
   },
   {
-    "id": "UC-049",
+    "id": "UC-050",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -862,7 +880,7 @@
     "notes": ""
   },
   {
-    "id": "UC-050",
+    "id": "UC-051",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -879,7 +897,7 @@
     "notes": ""
   },
   {
-    "id": "UC-051",
+    "id": "UC-052",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 15,
@@ -896,7 +914,7 @@
     "notes": ""
   },
   {
-    "id": "UC-052",
+    "id": "UC-053",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -913,7 +931,7 @@
     "notes": ""
   },
   {
-    "id": "UC-053",
+    "id": "UC-054",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 1,
@@ -930,7 +948,7 @@
     "notes": ""
   },
   {
-    "id": "UC-054",
+    "id": "UC-055",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 3,
@@ -947,7 +965,7 @@
     "notes": ""
   },
   {
-    "id": "UC-055",
+    "id": "UC-056",
     "branch": "product_search",
     "requirement": "B4+B5",
     "site_id": 15,
@@ -964,7 +982,7 @@
     "notes": ""
   },
   {
-    "id": "UC-056",
+    "id": "UC-057",
     "branch": "guardrail_edge",
     "requirement": "B6",
     "site_id": 3,
