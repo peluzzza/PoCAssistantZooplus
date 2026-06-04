@@ -42,14 +42,22 @@ Open **http://127.0.0.1:8080/ui/** (root `/` redirects there).
 
    The `.opencode/data/` folder is **gitignored** — never commit `auth.json`.
 
-3. Enable LLM synthesis:
+3. Copy your real login (never committed):
 
-   ```bash
-   set ZOOPLUS_SYNTHESIS_MODE=opencode
-   set ZOOPLUS_OPENCODE_MODEL=opencode-go/qwen3.6-plus
-   uvicorn src.api.app:app --reload --port 8080
+   ```powershell
+   .\scripts\setup_opencode_local.ps1
    ```
 
-   Pick any model your account exposes (`opencode models`). On failure, the API **falls back** to template synthesis.
+4. Enable local OpenCode in `.env`:
+
+   ```env
+   ZOOPLUS_SYNTHESIS_MODE=opencode
+   ZOOPLUS_OPENCODE_MODEL=opencode-go/deepseek-v4-flash
+   ZOOPLUS_OPENCODE_DATA_DIR=.opencode/data
+   ```
+
+5. Restart API: `uvicorn src.api.app:app --reload --port 8080`
+
+**Conversation:** greetings (`Hello`), thanks, and help skip catalog search and reply politely. Product questions use RAG + OpenCode (or template fallback within ~12s).
 
 See [`.env.example`](../.env.example) for all variables.

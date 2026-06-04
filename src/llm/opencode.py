@@ -46,22 +46,86 @@ def _parse_opencode_json(raw: str) -> str:
     return "".join(text_parts).strip() or raw.strip()
 
 
-def _build_prompt(query: str, site_id: int, products: list[RetrievedProduct]) -> str:
+def _build_prompt(
+    query: str,
+    site_id: int,
+    products: list[RetrievedProduct],
+    *,
+    extra_context: str = "",
+) -> str:
     payload = [p.model_dump() for p in products]
     catalog = json.dumps(payload, ensure_ascii=False, indent=2)
+    ctx = f"{extra_context}\n" if extra_context else ""
     return (
-        "You are the zooplus Assistant for a pet-product shop.\n"
+        "You are the zooplus Assistant — a friendly, professional pet-shop advisor.\n"
+        "Style: natural ask-and-answer conversation (not a bullet dump). Be polite and helpful.\n"
         f"Shop site_id: {site_id}\n"
-        f"Customer question: {query}\n\n"
-        "Retrieved catalog products (use ONLY these; do not invent SKUs or prices):\n"
+        f"Customer: {query}\n"
+        f"{ctx}\n"
+        "Retrieved catalog products (use ONLY these; never invent SKUs, brands, or prices):\n"
         f"{catalog}\n\n"
         "Rules:\n"
-        "- Ground every claim in the list above.\n"
-        "- If the list is empty, say no matches were found and suggest rephrasing.\n"
-        "- Mention at most 4 products.\n"
-        "- Reply in the same language as the customer question when possible.\n"
-        "- Be polite and concise.\n"
+        "- Ground every product mention in the list above.\n"
+        "- If the list is empty, apologise and suggest how to rephrase (dog/cat, food type).\n"
+        "- Mention at most 4 products, woven into prose.\n"
+        "- Match the customer's language when possible.\n"
+        "- End with one short follow-up question when appropriate.\n"
     )
+
+
+def _run_opencode_prompt(
+    prompt: str,
+    *,
+    settings: Settings,
+    timeout_seconds: int | None = None,
+) -> str | None:
+    model = settings.opencode_model or DEFAULT_MODEL
+    timeout = timeout_seconds if timeout_seconds is not None else settings.opencode_timeout_seconds
+    cmd = ["opencode", "run", "--format", "json", "--model", model, prompt]
+    try:
+        result = subprocess.run(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=timeout,
+            env=_opencode_env(settings),
+            cwd=str(Path(__file__).resolve().parents[2]),
+        )
+    except FileNotFoundError:
+        logger.warning("opencode CLI not found in PATH; falling back to template synthesis")
+        return None
+    except subprocess.TimeoutExpired:
+        logger.warning("opencode synthesis timed out after %ss", timeout)
+        return None
+    if result.returncode != 0:
+        logger.warning("opencode exit %s: %s", result.returncode, result.stderr[:500])
+        return None
+    text = _parse_opencode_json(result.stdout)
+    return text if text else None
+
+
+def synthesize_opencode_chat(
+    query: str,
+    site_id: int,
+    *,
+    context: str,
+    products: list[RetrievedProduct] | None = None,
+    settings: Settings | None = None,
+    timeout_seconds: int | None = None,
+) -> str | None:
+    """Short conversational turn via local OpenCode (your auth.json)."""
+    from src.config import Settings as SettingsCls
+
+    cfg = settings or SettingsCls.from_env()
+    prompt = _build_prompt(
+        query,
+        site_id,
+        products or [],
+        extra_context=context,
+    )
+    return _run_opencode_prompt(prompt, settings=cfg, timeout_seconds=timeout_seconds)
 
 
 def synthesize_opencode(
@@ -75,34 +139,8 @@ def synthesize_opencode(
     from src.config import Settings as SettingsCls
 
     cfg = settings or SettingsCls.from_env()
-    model = cfg.opencode_model or DEFAULT_MODEL
     prompt = _build_prompt(query, site_id, products)
-    cmd = ["opencode", "run", "--format", "json", "--model", model, prompt]
-
-    try:
-        result = subprocess.run(
-            cmd,
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=cfg.opencode_timeout_seconds,
-            env=_opencode_env(cfg),
-            cwd=str(Path(__file__).resolve().parents[2]),
-        )
-    except FileNotFoundError:
-        logger.warning("opencode CLI not found in PATH; falling back to template synthesis")
-        return None
-    except subprocess.TimeoutExpired:
-        logger.warning("opencode synthesis timed out after %ss", cfg.opencode_timeout_seconds)
-        return None
-
-    if result.returncode != 0:
-        logger.warning("opencode exit %s: %s", result.returncode, result.stderr[:500])
-        return None
-
-    text = _parse_opencode_json(result.stdout)
-    return text if text else None
+    return _run_opencode_prompt(prompt, settings=cfg)
 
 
 def opencode_auth_present(settings: Settings | None = None) -> bool:

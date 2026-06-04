@@ -21,9 +21,9 @@ def _sample_product() -> RetrievedProduct:
 
 
 def test_template_synthesis_lists_products() -> None:
-    text = synthesize_template([_sample_product()])
+    text = synthesize_template("dog food", [_sample_product()])
     assert "Test Kibble" in text
-    assert "article_id: 100" in text
+    assert "happy to help" in text.lower()
 
 
 def test_synthesis_router_template_mode(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -34,6 +34,7 @@ def test_synthesis_router_template_mode(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_synthesis_router_opencode_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "opencode")
+    monkeypatch.setenv("ZOOPLUS_OPENCODE_TIMEOUT", "3")
     answer = synthesize_answer("dog food", 3, [])
     assert isinstance(answer, str)
     assert len(answer) > 5
