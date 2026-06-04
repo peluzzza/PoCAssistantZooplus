@@ -22,7 +22,8 @@ def _load_dotenv() -> None:
         key = key.strip()
         value = value.strip().strip('"').strip("'")
         if key:
-            os.environ[key] = value
+            # Do not override vars already set (pytest, CI, or shell take precedence).
+            os.environ.setdefault(key, value)
 
 
 @dataclass(frozen=True)

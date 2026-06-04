@@ -74,6 +74,13 @@ def main() -> int:
     cases = json.loads(FIXTURE.read_text(encoding="utf-8"))
     MARKDOWN.write_text(_generate_markdown(cases), encoding="utf-8")
 
+    matrix_env = {
+        **os.environ,
+        "ZOOPLUS_INTENT_MODE": "oracle",
+        "ZOOPLUS_SYNTHESIS_MODE": "template",
+        "ZOOPLUS_SOCIAL_SYNTHESIS": "template",
+        "ZOOPLUS_AGENT_CASCADE": "0",
+    }
     cmd = [
         sys.executable,
         "-m",
@@ -83,10 +90,16 @@ def main() -> int:
         "-m",
         "social",
         "--tb=no",
-        "-q",
     ]
     print("+", " ".join(cmd), flush=True)
-    proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8")
+    proc = subprocess.run(
+        cmd,
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=matrix_env,
+    )
     print(proc.stdout)
     if proc.stderr:
         print(proc.stderr, file=sys.stderr)
