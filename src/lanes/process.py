@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 
 from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
-from src.guardian.engine import max_recommendations
+from src.guardian.engine import load_constraints, max_recommendations
 from src.llm.synthesis import synthesize_answer
 from src.models.chat import RetrievedProduct
 from src.rag.hybrid import retrieval_mode
@@ -44,7 +44,26 @@ async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
         n_results=max_recommendations(),
     )
     products = [_to_retrieved_product(hit) for hit in hits][: max_recommendations()]
-    answer = synthesize_answer(envelope.query, envelope.site_id, products)
+
+    constraints = load_constraints()
+    process_cfg = constraints.get("process_lane", {})
+    synth_timeout = float(process_cfg.get("synthesis_timeout_seconds", 12))
+
+    try:
+        answer = await asyncio.wait_for(
+            asyncio.to_thread(
+                synthesize_answer,
+                envelope.query,
+                envelope.site_id,
+                products,
+            ),
+            timeout=synth_timeout,
+        )
+    except TimeoutError:
+        from src.llm.template import synthesize_template
+
+        answer = synthesize_template(products)
+
     return ProcessLaneReceipt(
         dispatch_id=envelope.dispatch_id,
         dispatch_ok=True,

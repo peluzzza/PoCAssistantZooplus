@@ -34,13 +34,13 @@ class Settings:
     metrics_enabled: bool = True
     synthesis_mode: str = "template"
     opencode_model: str = "opencode-go/deepseek-v4-flash"
-    opencode_timeout_seconds: int = 90
+    opencode_timeout_seconds: int = 25
     opencode_data_dir: str | None = None
     opencode_config_dir: str | None = None
 
     @classmethod
     def from_env(cls) -> Settings:
-        timeout_raw = os.environ.get("ZOOPLUS_OPENCODE_TIMEOUT", "90")
+        timeout_raw = os.environ.get("ZOOPLUS_OPENCODE_TIMEOUT", "25")
         try:
             timeout = max(10, int(timeout_raw))
         except ValueError:
