@@ -14,7 +14,7 @@
   "agent": {
     "zooplus-conductor": {
       "mode": "primary",
-      "description": "Fast user-facing orchestrator for zooplus Assistant PoC",
+      "description": "Agentic-first shop orchestrator (intent → social | catalog pipeline)",
       "tools": {
         "zooplus_topic_check": true,
         "zooplus_constraints_get": true
@@ -22,6 +22,8 @@
       "permission": {
         "task": {
           "*": "deny",
+          "zooplus-intent-agent": "allow",
+          "zooplus-social-agent": "allow",
           "zooplus-topic-guard": "allow",
           "zooplus-rag-worker": "allow",
           "zooplus-logic-worker": "allow",
@@ -29,9 +31,24 @@
         }
       }
     },
+    "zooplus-intent-agent": {
+      "mode": "subagent",
+      "description": "Default-deny intent router (conversational | catalog | decline)",
+      "tools": {
+        "zooplus_topic_check": true,
+        "zooplus_constraints_get": true
+      }
+    },
+    "zooplus-social-agent": {
+      "mode": "subagent",
+      "description": "Sociable replies without catalog retrieval",
+      "tools": {
+        "zooplus_constraints_get": true
+      }
+    },
     "zooplus-topic-guard": {
       "mode": "subagent",
-      "description": "Mandatory in-scope guard before retrieval",
+      "description": "MCP topic_check compat (prefer intent-agent)",
       "tools": {
         "zooplus_topic_check": true
       }
@@ -59,9 +76,9 @@
     },
     "zooplus-synthesis": {
       "mode": "subagent",
-      "description": "Grounded answer generation from retrieved products",
+      "description": "Grounded sociable answer from retrieved products",
       "tools": {
-        "zooplus_catalog_search": false
+        "zooplus_constraints_get": true
       }
     }
   }

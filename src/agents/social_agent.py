@@ -7,6 +7,7 @@ import logging
 from src.agents.intent_agent import IntentDecision, SocialKind
 from src.agents.prompts import (
     SOCIAL_BYE_CONTEXT,
+    SOCIAL_DECLINE_CONTEXT,
     SOCIAL_GREETING_CONTEXT,
     SOCIAL_HELP_CONTEXT,
     SOCIAL_IDENTITY_CONTEXT,
@@ -20,7 +21,9 @@ from src.llm.opencode import synthesize_opencode_chat
 logger = logging.getLogger(__name__)
 
 
-def _context_for_kind(kind: SocialKind, query: str) -> str:
+def _context_for_kind(kind: SocialKind, query: str, intent: IntentDecision) -> str:
+    if intent.lane == "decline_off_topic":
+        return SOCIAL_DECLINE_CONTEXT
     if kind == "identity":
         return SOCIAL_IDENTITY_CONTEXT
     if kind == "greeting":
@@ -48,7 +51,7 @@ def social_reply(
     """Generate a sociable reply without product retrieval."""
     cfg = settings or apply_settings()
     kind = intent.social_kind or "greeting"
-    ctx = f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query)}"
+    ctx = f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}"
 
     if (cfg.synthesis_mode or "").lower() == "opencode":
         llm = synthesize_opencode_chat(

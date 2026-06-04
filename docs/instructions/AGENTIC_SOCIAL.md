@@ -1,6 +1,7 @@
 # Agentic social behavior (instructions-aligned)
 
-Source of truth: `docs/instructions/Coding Task.docx`, `product_catalog_dataset.json`, `ACCEPTANCE.md`.
+Source of truth: **`docs/instructions/AGENT_BUNDLE.md`** (master), `Coding Task.docx`, `product_catalog_dataset.json`, `ACCEPTANCE.md`.  
+OpenCode agents: `.opencode/agents/` (see `README.md` there).
 
 ## Architecture (no keyword routing in production)
 
