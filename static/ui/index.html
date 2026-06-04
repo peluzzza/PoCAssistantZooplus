@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>zooplus Assistant — PoC Chat</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div>
+          <h1>zooplus Assistant</h1>
+          <p class="subtitle">Local PoC — RAG over your shop catalog</p>
+        </div>
+        <div class="controls">
+          <label>
+            Shop
+            <select id="siteId" aria-label="Site ID"></select>
+          </label>
+          <span id="modeBadge" class="badge">…</span>
+        </div>
+      </header>
+
+      <main id="messages" class="messages" aria-live="polite"></main>
+
+      <form id="chatForm" class="composer">
+        <textarea
+          id="queryInput"
+          rows="2"
+          placeholder="Ask about pet food, treats, toys…"
+          required
+        ></textarea>
+        <button type="submit" id="sendBtn">Send</button>
+      </form>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
