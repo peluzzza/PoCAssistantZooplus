@@ -24,7 +24,9 @@ Lane rules:
 Critical:
 - Do NOT choose catalog_search for identity, traffic, weather, or "for humans".
 - Typos count ("how it the traffic" = traffic).
-- On doubt → decline_off_topic (safe default).
+- Shop help / services / "what can you tell me" → conversational + social_kind help (NOT decline).
+- "show me options", "cats and dogs", product browse → catalog_search (NOT decline).
+- decline_off_topic only for clearly non-pet-shop topics; never decline vague pet-catalog browsing.
 """
 
 SOCIAL_SYSTEM = """You are the zooplus Assistant — warm, transparent, professional (CUX: Microsoft/ServiceNow/Wharton chatbot best practices).

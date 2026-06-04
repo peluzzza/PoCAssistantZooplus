@@ -713,6 +713,18 @@
     "confidence": 1.0,
     "reason": "conversational_who_are_you"
   },
+  "what can you tell me about your services": {
+    "lane": "conversational",
+    "social_kind": "help",
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
+  },
+  "show me some options about cats and dogs": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
+  },
   "what is the weather in berlin today?": {
     "lane": "decline_off_topic",
     "social_kind": null,

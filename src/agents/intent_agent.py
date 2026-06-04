@@ -9,6 +9,7 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
+from src.agents.intent_hints import looks_like_catalog_search, looks_like_help_about_shop
 from src.agents.prompts import INTENT_SYSTEM
 from src.config import Settings, apply_settings
 from src.guardian.engine import EXTERNAL_WEB_DECLINE, polite_decline_for
@@ -83,9 +84,52 @@ def _normalize_social_kind(value: str | None) -> SocialKind:
     return None
 
 
+def try_fast_catalog_intent(query: str) -> IntentDecision | None:
+    """Allow-list fast path for obvious in-scope product browse (before OpenCode)."""
+    if not looks_like_catalog_search(query):
+        return None
+    return IntentDecision(
+        lane="catalog_search",
+        confidence=1.0,
+        reason="fast_catalog",
+        source="fast_catalog",
+    )
+
+
+def _repair_agentic_misroute(query: str, decision: IntentDecision) -> IntentDecision:
+    """If the LLM declined an obvious help/catalog turn, override (allow-list only)."""
+    if decision.lane != "decline_off_topic":
+        return decision
+    if looks_like_help_about_shop(query):
+        return IntentDecision(
+            lane="conversational",
+            social_kind="help",
+            confidence=1.0,
+            reason="repair_help",
+            source="repair",
+        )
+    if looks_like_catalog_search(query):
+        return IntentDecision(
+            lane="catalog_search",
+            confidence=1.0,
+            reason="repair_catalog",
+            source="repair",
+        )
+    return decision
+
+
 def try_fast_conversational_intent(query: str) -> IntentDecision | None:
     """Skip OpenCode for obvious social turns (latency); policy routing stays agentic for catalog/decline."""
     from src.llm.conversation import ConvoKind, classify_conversation
+
+    if looks_like_help_about_shop(query):
+        return IntentDecision(
+            lane="conversational",
+            social_kind="help",
+            confidence=1.0,
+            reason="fast_help",
+            source="fast_social",
+        )
 
     kind = classify_conversation(query)
     if kind == ConvoKind.PRODUCT:
@@ -156,7 +200,7 @@ def classify_intent_agentic(
     if lane == "decline_off_topic":
         decline_msg = _decline_copy(reason, query=query)
 
-    return IntentDecision(
+    decision = IntentDecision(
         lane=lane,
         social_kind=kind if lane == "conversational" else None,
         confidence=confidence,
@@ -164,6 +208,7 @@ def classify_intent_agentic(
         source="opencode",
         decline_message=decline_msg,
     )
+    return _repair_agentic_misroute(query, decision)
 
 
 def load_oracle_decision(query: str) -> IntentDecision | None:
@@ -227,8 +272,11 @@ def classify_intent(
         fast = try_fast_conversational_intent(text)
         if fast:
             return fast
+        fast_catalog = try_fast_catalog_intent(text)
+        if fast_catalog:
+            return fast_catalog
         decision = classify_intent_agentic(text, site_id, settings=cfg)
-        if decision.source == "opencode":
+        if decision.source in ("opencode", "repair"):
             return decision
         oracle = load_oracle_decision(text)
         if oracle:

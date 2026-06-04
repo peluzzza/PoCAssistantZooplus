@@ -397,6 +397,8 @@ def build_intent_oracle(cases: list[dict]) -> dict[str, dict]:
         ("thanks", "conversational", "thanks"),
         ("help", "conversational", "help"),
         ("goodbye", "conversational", "bye"),
+        ("what can you tell me about your services", "conversational", "help"),
+        ("show me some options about cats and dogs", "catalog_search", None),
     ]
     for q, lane, kind in extras:
         oracle[q.strip().lower()] = {

@@ -36,7 +36,10 @@ _HELP = re.compile(
     re.I,
 )
 _HELP_PHRASE = re.compile(
-    r"\b(help\s+me\s+understand|what\s+you\s+offer|what\s+can\s+you\s+do\s+for\s+me)\b",
+    r"\b("
+    r"help\s+me\s+understand|what\s+you\s+offer|what\s+can\s+you\s+do\s+for\s+me|"
+    r"your\s+services?|what\s+can\s+you\s+tell\s+me|about\s+your|capabilities"
+    r")\b",
     re.I,
 )
 _IDENTITY = re.compile(
