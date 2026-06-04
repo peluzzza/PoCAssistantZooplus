@@ -11,6 +11,7 @@ WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY cli ./cli
 COPY src ./src
+COPY static ./static
 COPY data ./data
 COPY scripts ./scripts
 
