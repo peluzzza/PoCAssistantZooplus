@@ -26,11 +26,17 @@ Open **http://127.0.0.1:8080/ui/** (root `/` redirects there).
 
    Credentials are stored in `~/.local/share/opencode/auth.json` by default.
 
-2. Or use a **project-local** profile (recommended for this repo):
+2. **Project-local** profile (recommended; never pushed to GitHub):
 
-   ```bash
-   set ZOOPLUS_OPENCODE_DATA_DIR=.opencode/data
-   set OPENCODE_DATA_DIR=.opencode/data
+   ```powershell
+   .\scripts\setup_opencode_local.ps1
+   ```
+
+   Copies your existing `~/.local/share/opencode/auth.json` into `.opencode/data/` (gitignored).
+   For a fresh login instead:
+
+   ```powershell
+   $env:OPENCODE_DATA_DIR = "$PWD\.opencode\data"
    opencode auth login
    ```
 

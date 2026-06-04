@@ -13,7 +13,7 @@ from src.models.chat import RetrievedProduct
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "opencode-go/qwen3.6-plus"
+DEFAULT_MODEL = "opencode-go/deepseek-v4-flash"
 
 
 def _opencode_env(settings: Settings) -> dict[str, str]:
