@@ -27,7 +27,34 @@ OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
         ),
         "off_topic_general_knowledge",
     ),
+    (
+        re.compile(
+            r"\b("
+            r"search\s+(in\s+)?(the\s+)?internet|internet\s+search|search\s+online|"
+            r"browse\s+the\s+web|google\s+it|look\s+up\s+online|web\s+search|"
+            r"search\s+the\s+web|use\s+the\s+internet"
+            r")\b",
+            re.IGNORECASE,
+        ),
+        "off_topic_external_web",
+    ),
+    (
+        re.compile(
+            r"(ignore\s+(all\s+)?(previous|prior)\s+instructions|"
+            r"disregard\s+(your\s+)?(rules|instructions)|"
+            r"you\s+are\s+now\s+(a|an)|system\s*:\s*|"
+            r"<\s*/?\s*system\s*>|jailbreak|DAN\s+mode)",
+            re.IGNORECASE,
+        ),
+        "off_topic_prompt_injection",
+    ),
 ]
+
+EXTERNAL_WEB_DECLINE = (
+    "I'm the zooplus Assistant and can only use this shop's product catalog — "
+    "I can't search the internet. Ask me about pet food, treats, or accessories "
+    "available in your shop and I'll recommend options from our data."
+)
 
 
 @dataclass(frozen=True)
@@ -85,9 +112,12 @@ def must_ground_in_retrieval() -> bool:
 def topic_check(query: str) -> TopicDecision:
     for pattern, reason_code in OFF_TOPIC_PATTERNS:
         if pattern.search(query):
+            decline = DEFAULT_DECLINE
+            if reason_code == "off_topic_external_web":
+                decline = EXTERNAL_WEB_DECLINE
             return TopicDecision(
                 decision="DECLINE",
                 reason_code=reason_code,
-                polite_decline=DEFAULT_DECLINE,
+                polite_decline=decline,
             )
     return TopicDecision(decision="ALLOW", reason_code="in_scope_pet_catalog", polite_decline=None)

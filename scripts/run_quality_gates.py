@@ -30,6 +30,10 @@ def main() -> int:
             "acceptance",
             [py, "-m", "pytest", "tests/acceptance", "-q", "-m", "acceptance"],
         ),
+        (
+            "security",
+            [py, "-m", "pytest", "tests/security", "-q", "-m", "security"],
+        ),
         ("e2e", [py, "-m", "pytest", "tests/e2e", "-q", "-m", "e2e"]),
     ]
     for name, cmd in steps:

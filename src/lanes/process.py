@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 
 from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
 from src.guardian.engine import load_constraints, max_recommendations
@@ -11,6 +12,8 @@ from src.models.chat import RetrievedProduct
 from src.rag.hybrid import retrieval_mode
 from src.rag.rerank import recommendation_reason, vector_similarity
 from src.rag.retrieve import search_catalog
+
+logger = logging.getLogger(__name__)
 
 
 def _hit_relevance_score(hit: dict) -> float | None:
@@ -62,7 +65,12 @@ async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
     except TimeoutError:
         from src.llm.template import synthesize_template
 
-        answer = synthesize_template(products)
+        answer = synthesize_template(envelope.query, products)
+    except Exception as exc:
+        from src.llm.template import synthesize_template
+
+        logger.warning("synthesis failed, template fallback: %s", exc)
+        answer = synthesize_template(envelope.query, products)
 
     return ProcessLaneReceipt(
         dispatch_id=envelope.dispatch_id,
