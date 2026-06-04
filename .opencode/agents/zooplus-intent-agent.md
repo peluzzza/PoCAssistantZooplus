@@ -55,17 +55,15 @@ Everything else → **decline_off_topic** (traffic, weather, news, humans, medic
 ```json
 {
   "lane": "conversational",
-  "topic": "shop_social",
-  "social_kind": "help",
+  "social_kind": "identity",
   "confidence": 0.95,
-  "reason": "User asks what services the assistant provides"
+  "reason": "User asks who the assistant is; no product request"
 }
 ```
 
 | Field | Values |
 |-------|--------|
 | `lane` | `conversational` \| `catalog_search` \| `decline_off_topic` |
-| `topic` | `shop_social` \| `pet_catalog` \| `off_topic` |
 | `social_kind` | `greeting` \| `identity` \| `thanks` \| `help` \| `bye` \| `clarify` \| null |
 | `confidence` | 0.0–1.0 |
 | `reason` | One short sentence |
@@ -75,8 +73,6 @@ Everything else → **decline_off_topic** (traffic, weather, news, humans, medic
 | User message | lane | social_kind |
 |--------------|------|-------------|
 | hello, who are you | conversational | identity |
-| hello, what services do you provide | conversational | help |
-| show me some options about cats and dogs | catalog_search | null |
 | best dry food for puppy | catalog_search | null |
 | how is the traffic today | decline_off_topic | null |
 | what about for humans | decline_off_topic | null |

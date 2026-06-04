@@ -70,17 +70,7 @@ python -m cli ingest
 uvicorn src.api.app:app --reload --port 8080
 ```
 
-**Chat UI:** after the server is running, open [http://127.0.0.1:8080/ui/](http://127.0.0.1:8080/ui/)
-
-```powershell
-.\scripts\setup_opencode_local.ps1   # once — local auth (gitignored)
-.\scripts\run_dev.ps1
-```
-
-Set in `.env`: `ZOOPLUS_INTENT_MODE=agentic` (LLM routing) and `ZOOPLUS_SYNTHESIS_MODE=opencode` (sociable answers).  
-Release notes: [`docs/RELEASE_v2.5.0.md`](docs/RELEASE_v2.5.0.md) · Agentic design: [`docs/instructions/AGENTIC_SOCIAL.md`](docs/instructions/AGENTIC_SOCIAL.md)
-
-If the page is blank or “can’t connect”, the API is not running — **restart** after `git pull`. Details: [`docs/CHAT_UI.md`](docs/CHAT_UI.md).
+**Chat UI:** open [http://127.0.0.1:8080/ui/](http://127.0.0.1:8080/ui/) after the server starts. Details: [`docs/CHAT_UI.md`](docs/CHAT_UI.md).
 
 **Docker (v2):**
 

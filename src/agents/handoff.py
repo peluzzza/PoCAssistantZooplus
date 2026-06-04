@@ -1,4 +1,4 @@
-"""Agent handoff — topic + brief passed from intent to social / catalog workers."""
+"""Internal routing context between OpenCode steps (invisible to shopper)."""
 
 from __future__ import annotations
 
@@ -20,18 +20,25 @@ class AgentHandoff:
     source: str
 
     def brief(self) -> str:
-        """Context block for downstream agents (social, rag, synthesis)."""
         parts = [
             f"site_id={self.site_id}",
             f"topic={self.topic}",
             f"lane={self.lane}",
+            f"step={self._step()}",
         ]
         if self.social_kind:
             parts.append(f"social_kind={self.social_kind}")
         if self.reason:
-            parts.append(f"intent_reason={self.reason}")
+            parts.append(f"reason={self.reason}")
         parts.append(f'user_message="{self.user_message[:500]}"')
-        return "Handoff from @zooplus-intent-agent: " + "; ".join(parts)
+        return "Internal routing: " + "; ".join(parts)
+
+    def _step(self) -> str:
+        if self.lane == "catalog_search":
+            return "catalog_retrieve_then_synthesis"
+        if self.lane == "decline_off_topic":
+            return "polite_boundary"
+        return "conversational_reply"
 
 
 def normalize_topic(value: str | None, *, lane: str) -> str:
@@ -59,12 +66,11 @@ def build_handoff(
     reason: str,
     source: str,
 ) -> AgentHandoff:
-    topic_norm = normalize_topic(topic, lane=lane)
     return AgentHandoff(
         site_id=site_id,
         user_message=query,
         lane=lane,
-        topic=topic_norm,
+        topic=normalize_topic(topic, lane=lane),
         social_kind=social_kind,
         reason=reason,
         source=source,

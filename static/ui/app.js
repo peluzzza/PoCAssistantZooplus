@@ -39,6 +39,24 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
+/** LLM sometimes returns `{"answer":"..."}` — show prose only. */
+function normalizeAnswer(text) {
+  if (!text) return "";
+  let raw = String(text).trim();
+  const fenced = raw.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i);
+  if (fenced) raw = fenced[1].trim();
+  if (raw.startsWith("{")) {
+    try {
+      const data = JSON.parse(raw);
+      if (typeof data.answer === "string") return data.answer.trim();
+      if (typeof data.text === "string") return data.text.trim();
+    } catch (_) {
+      /* keep raw */
+    }
+  }
+  return raw;
+}
+
 function setModeBadge() {
   const mode = uiConfig.synthesis_mode || "template";
   if (mode === "opencode") {
@@ -59,10 +77,11 @@ async function loadConfig() {
     /* use defaults */
   }
   siteSelect.innerHTML = "";
+  const labels = uiConfig.site_labels || {};
   for (const id of uiConfig.sites || [1, 3, 15]) {
     const opt = document.createElement("option");
     opt.value = String(id);
-    opt.textContent = `Site ${id}`;
+    opt.textContent = labels[id] || labels[String(id)] || `Shop site_id ${id}`;
     siteSelect.appendChild(opt);
   }
   siteSelect.value = String(uiConfig.default_site_id || 3);
@@ -81,12 +100,11 @@ form.addEventListener("submit", async (e) => {
 
   const typing = document.createElement("div");
   typing.className = "typing";
-  typing.textContent = "One moment…";
+  typing.textContent = "Searching catalog…";
   messagesEl.appendChild(typing);
 
   const controller = new AbortController();
-  const timeoutMs = Number(uiConfig.chat_timeout_ms) || 45000;
-  const clientTimeout = setTimeout(() => controller.abort(), timeoutMs);
+  const clientTimeout = setTimeout(() => controller.abort(), 25000);
 
   try {
     const res = await fetch("/chat", {
@@ -106,18 +124,14 @@ form.addEventListener("submit", async (e) => {
 
     const data = await res.json();
     const products = data.retrieved_products || [];
-    const decline =
-      products.length === 0 &&
-      /can't help|couldn't find|not able to help|don't have live|zooplus Assistant|only help with|outside what I can/i.test(
-        data.answer || "",
-      );
-    appendMessage("bot", data.answer || "(empty)", products, { decline });
+    const decline = products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(data.answer || "");
+    appendMessage("bot", normalizeAnswer(data.answer) || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
     typing.remove();
     const msg =
       err.name === "AbortError"
-        ? `Request timed out (${Math.round(timeoutMs / 1000)}s). For faster greetings, social replies use templates; catalog may need a longer ZOOPLUS_CHAT_CLIENT_TIMEOUT_MS.`
+        ? "Request timed out (25s). Try a shorter question or check scripts/run_dev.ps1 and OpenCode auth."
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {
@@ -129,7 +143,6 @@ form.addEventListener("submit", async (e) => {
 loadConfig().then(() => {
   appendMessage(
     "bot",
-    "Hi! I'm the zooplus shop assistant — ask about dog or cat food, treats, toys, and more. " +
-      "You can also say hello or ask who I am. Traffic, weather, and other off-topic questions I'll politely redirect.",
+    "Hi! Pick a shop (site_id) and ask about pet products. Off-topic questions are declined.",
   );
 });

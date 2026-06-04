@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TypeVar
 
+from src.agents.agent_body import wrap_prompt_with_agent
 from src.agents.registry import AgentRole, agent_chain_for_role, format_agent_roster
 from src.config import Settings
 from src.llm.opencode import run_opencode_agent
@@ -28,8 +29,9 @@ def _per_agent_timeout(settings: Settings, chain_len: int) -> int:
     total = max(10, settings.opencode_timeout_seconds)
     if chain_len <= 0:
         return total
-    # Cap each attempt so we do not blackout the UI on serial timeouts
-    return max(6, min(12, total // chain_len))
+    # Cap each attempt; allow longer when total budget is high (integration / dev)
+    cap = 12 if total <= 25 else min(25, total // max(1, chain_len))
+    return max(8, cap)
 
 
 def run_agent_cascade(
@@ -50,15 +52,9 @@ def run_agent_cascade(
         logger.warning("no opencode agents configured for role=%s", role)
         return CascadeResult(None, None, None, ())
 
-    from src.llm.response_variety import variation_directive
-
     full_prompt = prompt
     if attach_roster and role in ("intent", "conductor"):
         full_prompt = f"{prompt}\n\n{format_agent_roster()}\n"
-    if role in ("social", "synthesis", "intent"):
-        # Extract customer line for seed when present
-        seed_q = prompt.split("Customer:")[-1].strip()[:200] if "Customer:" in prompt else prompt[:200]
-        full_prompt = f"{variation_directive(seed_q, role)}\n\n{full_prompt}"
 
     timeout = _per_agent_timeout(settings, len(chain))
     tried: list[str] = []
@@ -67,7 +63,7 @@ def run_agent_cascade(
         tried.append(agent_id)
         logger.info("opencode cascade role=%s trying agent=%s", role, agent_id)
         raw = run_opencode_agent(
-            full_prompt,
+            wrap_prompt_with_agent(agent_id, full_prompt),
             settings=settings,
             agent_id=agent_id,
             timeout_seconds=timeout,

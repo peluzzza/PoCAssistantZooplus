@@ -11,6 +11,7 @@ from src.agents.intent_agent import classify_intent
 from src.agents.social_agent import social_reply
 from src.guardian.engine import load_constraints
 from src.lanes.process import run_process_lane
+from src.llm.answer_sanitize import normalize_shopper_answer
 from src.models.chat import ChatRequest, ChatResponse
 from src.observability.metrics import record_chat_outcome
 
@@ -41,7 +42,7 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
         )
         record_chat_outcome(declined=True)
         return ChatResponse(
-            answer=answer or intent.decline_message or "",
+            answer=normalize_shopper_answer(answer),
             retrieved_products=[],
         )
 
@@ -54,7 +55,10 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
             handoff.brief(),
         )
         record_chat_outcome(declined=False)
-        return ChatResponse(answer=answer, retrieved_products=[])
+        return ChatResponse(
+            answer=normalize_shopper_answer(answer),
+            retrieved_products=[],
+        )
 
     constraints = load_constraints()
     process_cfg = constraints.get("process_lane", {})
@@ -71,6 +75,6 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     receipt = await process_task
     record_chat_outcome(declined=False)
     return ChatResponse(
-        answer=receipt.answer,
+        answer=normalize_shopper_answer(receipt.answer),
         retrieved_products=receipt.retrieved_products,
     )

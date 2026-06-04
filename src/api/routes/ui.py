@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
-from src.config import Settings
+from src.config import apply_settings
 from src.llm.opencode import opencode_auth_present
 
 router = APIRouter()
@@ -59,24 +58,19 @@ async def ui_asset(asset: str) -> FileResponse:
 
 @router.get("/api/ui/config")
 async def ui_config() -> dict:
-    settings = Settings.from_env()
-    timeout_ms = int(os.environ.get("ZOOPLUS_CHAT_CLIENT_TIMEOUT_MS", "0"))
-    if timeout_ms <= 0:
-        # Intent + RAG + synthesis can stack; default above single OpenCode timeout.
-        timeout_ms = max(45000, settings.opencode_timeout_seconds * 2000 + 15000)
-    from src.agents.registry import agent_chain_for_role, list_available_agent_ids
-
+    settings = apply_settings()
     return {
         "sites": [1, 3, 15],
+        "site_labels": {
+            1: "Shop 1 (100 variants · dogs & cats)",
+            3: "Shop 3 (100 variants · dogs & cats)",
+            15: "Shop 15 (100 variants · dogs & cats)",
+        },
+        "catalog_scope": "DOGS and CATS only — 300 variants across 3 site_id shops",
         "default_site_id": 3,
         "synthesis_mode": settings.synthesis_mode,
         "opencode_model": settings.opencode_model,
         "opencode_auth_configured": opencode_auth_present(settings),
-        "chat_timeout_ms": timeout_ms,
-        "agent_cascade_enabled": os.environ.get("ZOOPLUS_AGENT_CASCADE", "1").lower()
-        not in ("0", "false", "no"),
-        "available_agents": list_available_agent_ids(),
-        "intent_agent_chain": list(agent_chain_for_role("intent")),
         "chat_endpoint": "/chat",
         "stream_endpoint": "/chat/stream",
     }

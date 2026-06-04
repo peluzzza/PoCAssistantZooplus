@@ -1,4 +1,4 @@
-"""Process lane for retrieval and grounded answer synthesis."""
+"""Process lane — RAG + OpenCode synthesis (internal agents)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import asyncio
 import logging
 
 from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
-from src.guardian.engine import load_constraints, max_recommendations
+from src.guardian.engine import max_recommendations
 from src.llm.synthesis import synthesize_answer
 from src.models.chat import RetrievedProduct
 from src.rag.hybrid import retrieval_mode
@@ -48,30 +48,25 @@ async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
     )
     products = [_to_retrieved_product(hit) for hit in hits][: max_recommendations()]
 
-    constraints = load_constraints()
-    process_cfg = constraints.get("process_lane", {})
-    synth_timeout = float(process_cfg.get("synthesis_timeout_seconds", 12))
+    handoff = getattr(envelope, "intent_handoff", None)
 
     try:
-        answer = await asyncio.wait_for(
-            asyncio.to_thread(
-                synthesize_answer,
-                envelope.query,
-                envelope.site_id,
-                products,
-                handoff_context=envelope.intent_handoff,
-            ),
-            timeout=synth_timeout,
+        answer = await asyncio.to_thread(
+            synthesize_answer,
+            envelope.query,
+            envelope.site_id,
+            products,
+            handoff_context=handoff,
         )
-    except TimeoutError:
-        from src.llm.template import synthesize_template
-
-        answer = synthesize_template(envelope.query, products)
     except Exception as exc:
-        from src.llm.template import synthesize_template
-
-        logger.warning("synthesis failed, template fallback: %s", exc)
-        answer = synthesize_template(envelope.query, products)
+        logger.warning("synthesis error, retry: %s", exc)
+        answer = await asyncio.to_thread(
+            synthesize_answer,
+            envelope.query,
+            envelope.site_id,
+            products,
+            handoff_context=handoff,
+        )
 
     return ProcessLaneReceipt(
         dispatch_id=envelope.dispatch_id,
