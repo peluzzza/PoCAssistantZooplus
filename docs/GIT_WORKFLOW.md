@@ -2,70 +2,76 @@
 
 **Remote:** [https://github.com/peluzzza/PoCAssistantZooplus.git](https://github.com/peluzzza/PoCAssistantZooplus.git)
 
-## Release policy
+## Branch hierarchy (top → bottom)
 
-Merges to `main` follow [`RELEASE_PLAN.md`](RELEASE_PLAN.md) — only when milestone exit criteria pass.
+```text
+releases   ← production / tagged releases (v0.1.0, …) — ABOVE main
+main       ← stable integration promoted from dev
+dev        ← daily integration (feature/*, bugfix/*)
+```
 
-| Tag on `main` | When |
-|---------------|------|
-| `v0.1.0` | Agentic PoC baseline (`releases` branch) |
-| `v1.0.0` | MVP — B1–B9, 19 tests, CI green |
-| `v1.1.0+` | Planned (streaming, golden queries, …) |
-
-## Current state
+Promotion flow: **`dev` → `main` → `releases`** (never skip `main` unless hotfix policy says so).
 
 | Branch | Role |
 |--------|------|
-| `main` | Production-stable (tags after `releases` sign-off) |
-| `releases` | Release candidate line (e.g. `v0.1.0` PoC baseline) |
-| `dev` | Integration — all `feature/*` and `bugfix/*` merge here first |
-| `feature/<name>` | Short-lived steps |
-| `bugfix/<name>` | Hotfixes from a tag or `releases` |
+| **`releases`** | Top line: tags `v0.x.y`, demo/POC entregables, Coding Task sign-off |
+| **`main`** | Stable; merge from `dev` when milestone passes quality gates |
+| **`dev`** | Integration branch for all short-lived work |
+| `feature/*`, `bugfix/*` | Short-lived; merge into `dev` |
 
-## Pre-merge quality (required)
+## Version tags (on `releases`)
 
-```bash
-pip install -e ".[rag,dev]"
-python scripts/run_quality_gates.py
+| Tag | Base | Notes |
+|-----|------|--------|
+| **`v0.1.0`** | `main` @ merge | Agentic PoC baseline (OpenCode internal, UI, no template runtime) |
+| `v1.x` (legacy) | old `main` | Historical v2.x tags remain on old commits |
+
+## Pre-promotion quality (required)
+
+```powershell
+.\scripts\run_release_verify.ps1
 ```
 
-Details: [`QUALITY.md`](QUALITY.md).
-
-## Flow
-
-```mermaid
-gitGraph
-  commit id: "v0.1.0"
-  branch dev
-  checkout dev
-  commit id: "T1-T6 MVP"
-  checkout main
-  merge dev tag: "v1.0.0"
-  checkout dev
-  commit id: "v1.1 work"
-```
-
-1. `git checkout dev && git pull`
-2. `git checkout -b feature/<step>` → work → merge to `dev` → push
-3. When milestone ready: merge `dev` → `main`, tag `vX.Y.Z`, push (see `RELEASE_PLAN.md`)
+Or: `python scripts/run_quality_gates.py` + agentic + social (see `docs/RELEASE_v0.1.md`).
 
 ## Commands
 
+### Day-to-day (dev)
+
 ```bash
-git fetch origin
 git checkout dev && git pull origin dev
 git checkout -b feature/my-step
-# ... work, quality gates ...
+# ... work ...
 git push -u origin feature/my-step
 git checkout dev && git merge feature/my-step && git push origin dev
 ```
 
-Release to main:
+### Promote to main
 
 ```bash
-python scripts/run_quality_gates.py
+.\scripts\run_release_verify.ps1
 git checkout main && git pull origin main
-git merge dev -m "release: vX.Y.Z — title"
-git tag -a vX.Y.Z -m "vX.Y.Z — title"
-git push origin main && git push origin vX.Y.Z
+git merge dev -m "release: integrate dev into main"
+git push origin main
+```
+
+### Promote to releases (tag)
+
+```bash
+git checkout releases && git pull origin releases
+git merge main -m "release: promote main to releases for v0.x.y"
+# bump version in pyproject.toml if needed
+git tag -a v0.1.0 -m "v0.1.0 — title"
+git push origin releases && git push origin v0.1.0
+```
+
+`releases` is created from `main`:
+
+```bash
+git checkout main
+git checkout -B releases
+git merge <feature-or-dev-commit> -m "release(v0.1.0): ..."
+git tag -a v0.1.0 -m "v0.1.0"
+git push -u origin releases --force-with-lease
+git push origin v0.1.0
 ```

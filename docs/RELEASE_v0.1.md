@@ -1,33 +1,24 @@
-# Release v0.1.0 — agentic PoC baseline
+# Release v0.1.0 — `releases` branch (above `main`)
 
-**Branch:** `releases` (promoted from `dev`)  
-**Tag:** `v0.1.0`  
-**Compliance:** `docs/instructions/AGENT_BUNDLE.md`, `product_catalog_dataset.json`, Coding Task (docx when present in `docs/instructions/`)
+**Line:** `releases` is the top branch; **`v0.1.0` is cut from `main`** + PoC agentic merge.  
+**Tag:** `v0.1.0` on branch `releases` (not on `main`).
 
-## Scope
-
-- 3 shops: `site_id` 1, 3, 15 — 100 variants each (50 DOGS + 50 CATS)
-- Shopper-facing: **zooplus Assistant** only; OpenCode agents internal
-- `POST /chat` → `{ answer, retrieved_products }` (max 4 products)
-
-## Verify before tag
+## Verify
 
 ```powershell
 .\scripts\run_release_verify.ps1
 ```
 
-## Git promote (from clean `dev`)
+## Run locally
 
 ```powershell
-git checkout dev
-git merge bugfix/agentic-from-v2.2
-git checkout -b releases
-git tag -a v0.1.0 -m "v0.1.0 — agentic baseline, OpenCode, UI, no template runtime"
-git push -u origin releases
-git push origin v0.1.0
+git checkout releases
+.\scripts\run_dev.ps1
+# http://127.0.0.1:8090/ui/
 ```
 
-## Next (v0.2+)
+## Catalog (Coding Task)
 
-- Deliverables folder under `docs/deliverables/v0.1/`
-- Presentation (PPT): architecture, demo screenshots, Coding Task checklist, catalog stats
+- `docs/instructions/product_catalog_dataset.json` — 300 rows, `site_id` 1|3|15, **DOGS/CATS only**
+- `docs/instructions/AGENT_BUNDLE.md` — agent policy
+- `Coding Task.docx` — place under `docs/instructions/` when available
