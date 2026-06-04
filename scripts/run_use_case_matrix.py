@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run 50+ use-case matrix and write trace report."""
+"""Run 100+ use-case matrix (Coding Task × instructions catalog) and write trace report."""
 
 from __future__ import annotations
 

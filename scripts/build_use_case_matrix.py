@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import random
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +55,7 @@ def build_cases() -> list[dict]:
         intent_lane: str | None = None,
         social_kind: str | None = None,
         forbid_answer: list[str] | None = None,
+        catalog_ref: dict | None = None,
     ) -> None:
         nonlocal n
         n += 1
@@ -86,6 +88,17 @@ def build_cases() -> list[dict]:
                 "notes": notes,
             }
         )
+        if catalog_ref:
+            cases[-1]["catalog_ref"] = catalog_ref
+
+    seen_queries: set[str] = set()
+
+    def add_unique(*args, **kwargs) -> None:
+        q = (kwargs.get("query") if "query" in kwargs else args[3]).strip().lower()
+        if q in seen_queries:
+            return
+        seen_queries.add(q)
+        add(*args, **kwargs)
 
     # --- B6 / guardrails (must NOT) ---
     declines = [
@@ -105,6 +118,7 @@ def build_cases() -> list[dict]:
         ("for_humans", 3, "what about for humans", "non_pet_consumer"),
     ]
     for tag, sid, q, note in declines:
+        seen_queries.add(q.strip().lower())
         add(
             "guardrail_decline",
             "B6",
@@ -365,9 +379,97 @@ def build_cases() -> list[dict]:
         (15, "fish cat food"),
     ]
     for sid, q in more_catalog:
+        seen_queries.add(q.strip().lower())
         add("product_search", "B4+B5", sid, q, min_products=1, intent_lane="catalog_search")
 
+    # --- Catalog-backed sweep (instructions dataset — 100+ total matrix) ---
+    rng = random.Random(42)
+    indices = list(range(len(recs)))
+    rng.shuffle(indices)
+    sweep_added = 0
+    for idx in indices:
+        if sweep_added >= 50:
+            break
+        row = recs[idx]
+        sid = int(row["site_id"])
+        aid = int(row["article_id"])
+        brand = str(row.get("brands") or "").strip()
+        pet = str(row.get("pet_type") or "DOGS")
+        pet_word = "dog" if pet == "DOGS" else "cat"
+        name = str(row.get("product_name") or "").strip()
+        short_name = name[:42] if name else brand
+        for q in (
+            f"{brand} {pet_word} product",
+            f"{pet_word} food from {brand}",
+            f"looking for {short_name}",
+            f"shop {pet_word} {brand}",
+        ):
+            key = q.strip().lower()
+            if key in seen_queries:
+                continue
+            seen_queries.add(key)
+            add(
+                "catalog_backed",
+                "B4+B5+CATALOG",
+                sid,
+                q,
+                min_products=1,
+                target_article_id=aid,
+                catalog_ref={
+                    "site_id": sid,
+                    "article_id": aid,
+                    "brands": brand,
+                    "pet_type": pet,
+                    "product_name": name,
+                },
+                notes=f"Derived from instructions catalog row site={sid} article={aid}",
+            )
+            sweep_added += 1
+            break
+
+    # Coding Task.docx — extra requirement coverage
+    coding_task_extras = [
+        (3, "what can you tell me about your services", "B3", "conversational", "help", 0),
+        (3, "show me some options about cats and dogs", "B4", "catalog_search", None, 1),
+        (3, "best dry food for puppy", "B4", "catalog_search", None, 1),
+        (1, "cat food grain free", "B4", "catalog_search", None, 1),
+        (15, "dog chew toy", "B4", "catalog_search", None, 1),
+    ]
+    for sid, q, req, lane, skind, min_p in coding_task_extras:
+        add_unique(
+            "coding_task",
+            req,
+            sid,
+            q,
+            decline=False,
+            min_products=min_p,
+            max_products=4 if min_p else 0,
+            grounded=bool(min_p),
+            intent_lane=lane,
+            social_kind=skind,
+        )
+
     return cases
+
+
+def validate_cases_against_catalog(cases: list[dict], recs: list[dict]) -> list[str]:
+    """Ensure catalog_ref / target_article_id rows exist in instructions catalog."""
+    index = {(int(r["site_id"]), int(r["article_id"])): r for r in recs}
+    errors: list[str] = []
+    for case in cases:
+        sid = int(case["site_id"])
+        ref = case.get("catalog_ref") or {}
+        aid = case.get("target_article_id") or ref.get("article_id")
+        if aid is None:
+            continue
+        key = (sid, int(aid))
+        if key not in index:
+            errors.append(f"{case['id']}: catalog row missing {key}")
+            continue
+        row = index[key]
+        if ref.get("brands") and ref["brands"] != row.get("brands"):
+            errors.append(f"{case['id']}: brand mismatch for article {aid}")
+    return errors
 
 
 def build_intent_oracle(cases: list[dict]) -> dict[str, dict]:
@@ -433,13 +535,25 @@ def build_intent_oracle(cases: list[dict]) -> dict[str, dict]:
 
 
 def main() -> int:
+    recs = _load_catalog()
     cases = build_cases()
+    errors = validate_cases_against_catalog(cases, recs)
+    if errors:
+        for err in errors[:20]:
+            print(f"VALIDATION ERROR: {err}", flush=True)
+        return 1
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(cases, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     oracle = build_intent_oracle(cases)
     ORACLE_OUT.write_text(json.dumps(oracle, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    product_cases = sum(
+        1 for c in cases if c["expect"].get("min_products") and not c["expect"].get("decline")
+    )
+    decline_cases = sum(1 for c in cases if c["expect"].get("decline"))
     print(f"Wrote {len(cases)} cases -> {OUT}")
+    print(f"  catalog product cases: {product_cases}, declines: {decline_cases}")
     print(f"Wrote {len(oracle)} oracle entries -> {ORACLE_OUT}")
+    print(f"Catalog source: {CATALOG} ({len(recs)} records)")
     return 0
 
 

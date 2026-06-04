@@ -665,7 +665,313 @@
     "confidence": 1.0,
     "reason": "UC-114"
   },
-  "best dry food for adult dogs": {
+  "eukanuba dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-115"
+  },
+  "lucky jim dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-116"
+  },
+  "hyper pet dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-117"
+  },
+  "schesir cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-118"
+  },
+  "dog food from eukanuba": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-119"
+  },
+  "purina one cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-120"
+  },
+  "tiaki cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-121"
+  },
+  "tubidog dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-122"
+  },
+  "chuckit! dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-123"
+  },
+  "josera dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-124"
+  },
+  "dog food from hyper pet": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-125"
+  },
+  "hardys love affair cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-126"
+  },
+  "looking for eukanuba special care adult large weight c": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-127"
+  },
+  "trixie dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-128"
+  },
+  "dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-129"
+  },
+  "cat food from hardys love affair": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-130"
+  },
+  "kerbl pet cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-131"
+  },
+  "looking for hyper pet fire hose flyers eule": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-132"
+  },
+  "smilla cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-133"
+  },
+  "cosma cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-134"
+  },
+  "dog food from lucky jim": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-135"
+  },
+  "dog food from chuckit!": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-136"
+  },
+  "dog food from josera": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-137"
+  },
+  "cat food from purina one": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-138"
+  },
+  "wolf of wilderness dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-139"
+  },
+  "royal canin breed dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-140"
+  },
+  "looking for lucky jim gymies 75g snacks para perros": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-141"
+  },
+  "looking for eukanuba special care working & endurance": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-142"
+  },
+  "natural trainer cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-143"
+  },
+  "looking for chuckit! fetch & fold mini ball launcher": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-144"
+  },
+  "gimcat cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-145"
+  },
+  "royal canin veterinary diet dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-146"
+  },
+  "cat food from smilla": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-147"
+  },
+  "rocco diet care dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-148"
+  },
+  "kerbl pet dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-149"
+  },
+  "cat food from cosma": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-150"
+  },
+  "looking for purina one 4 x 85 g": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-151"
+  },
+  "looking for eukanuba special care adult overweight": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-152"
+  },
+  "8in1 dog product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-153"
+  },
+  "looking for chuckit! rugged flyer orange": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-154"
+  },
+  "shop cat purina one": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-155"
+  },
+  "shop dog lucky jim": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-156"
+  },
+  "canada litter cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-157"
+  },
+  "noba cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-158"
+  },
+  "looking for eukanuba special care puppy sensitive dige": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-159"
+  },
+  "whiskas cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-160"
+  },
+  "looking for smilla special needs hair & skin pouches c": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-161"
+  },
+  "looking for eukanuba special care sensitive skin adult": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-162"
+  },
+  "flamingo cat product": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-163"
+  },
+  "looking for chuckit! birthday fetch ball": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-164"
+  },
+  "what can you tell me about your services": {
+    "lane": "conversational",
+    "social_kind": "help",
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
+  },
+  "show me some options about cats and dogs": {
     "lane": "catalog_search",
     "social_kind": null,
     "confidence": 1.0,
@@ -676,6 +982,18 @@
     "social_kind": null,
     "confidence": 1.0,
     "reason": "product_lookup_dry_puppy"
+  },
+  "cat food grain free": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "cat_grain_free_site1"
+  },
+  "best dry food for adult dogs": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
   },
   "what is the weather in berlin?": {
     "lane": "decline_off_topic",
@@ -713,18 +1031,6 @@
     "confidence": 1.0,
     "reason": "conversational_who_are_you"
   },
-  "what can you tell me about your services": {
-    "lane": "conversational",
-    "social_kind": "help",
-    "confidence": 1.0,
-    "reason": "pytest_canonical"
-  },
-  "show me some options about cats and dogs": {
-    "lane": "catalog_search",
-    "social_kind": null,
-    "confidence": 1.0,
-    "reason": "pytest_canonical"
-  },
   "what is the weather in berlin today?": {
     "lane": "decline_off_topic",
     "social_kind": null,
@@ -754,12 +1060,6 @@
     "social_kind": null,
     "confidence": 1.0,
     "reason": "brand_lookup_eukanuba"
-  },
-  "cat food grain free": {
-    "lane": "catalog_search",
-    "social_kind": null,
-    "confidence": 1.0,
-    "reason": "cat_grain_free_site1"
   },
   "dog food with chicken ingredients": {
     "lane": "catalog_search",

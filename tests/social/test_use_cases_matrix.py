@@ -1,4 +1,4 @@
-"""56+ use cases from Coding Task + instructions catalog (social/chat E2E)."""
+"""100+ use cases from Coding Task + instructions catalog (social/chat E2E)."""
 
 from __future__ import annotations
 
