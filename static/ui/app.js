@@ -84,12 +84,17 @@ form.addEventListener("submit", async (e) => {
   typing.textContent = "Searching catalog…";
   messagesEl.appendChild(typing);
 
+  const controller = new AbortController();
+  const clientTimeout = setTimeout(() => controller.abort(), 25000);
+
   try {
     const res = await fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ site_id: siteId, query }),
+      signal: controller.signal,
     });
+    clearTimeout(clientTimeout);
     typing.remove();
 
     if (!res.ok) {
@@ -103,8 +108,13 @@ form.addEventListener("submit", async (e) => {
     const decline = products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(data.answer || "");
     appendMessage("bot", data.answer || "(empty)", products, { decline });
   } catch (err) {
+    clearTimeout(clientTimeout);
     typing.remove();
-    appendMessage("bot", `Network error: ${err.message}`, [], { error: true });
+    const msg =
+      err.name === "AbortError"
+        ? "Request timed out (25s). Try a shorter question or set ZOOPLUS_SYNTHESIS_MODE=template in .env."
+        : `Network error: ${err.message}`;
+    appendMessage("bot", msg, [], { error: true });
   } finally {
     sendBtn.disabled = false;
     queryInput.focus();
