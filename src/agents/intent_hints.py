@@ -6,7 +6,8 @@ import re
 
 _HELP_ABOUT = re.compile(
     r"\b("
-    r"your\s+services?|what\s+can\s+you\s+(tell|do)|what\s+do\s+you\s+offer|"
+    r"your\s+services?|what\s+services?|services?\s+do\s+you\s+provide|"
+    r"what\s+can\s+you\s+(tell|do)|what\s+do\s+you\s+offer|"
     r"about\s+your(\s+services?|\s+shop)?|capabilities|how\s+do\s+you\s+work|"
     r"help\s+me\s+understand\s+what\s+you\s+offer"
     r")\b",

@@ -27,6 +27,7 @@ _JSON_BLOCK = re.compile(r"\{[\s\S]*\}")
 class IntentDecision:
     lane: Lane
     social_kind: SocialKind = None
+    topic: str | None = None
     confidence: float = 1.0
     reason: str = ""
     source: str = "agent"
@@ -35,6 +36,11 @@ class IntentDecision:
 
 def intent_mode() -> str:
     return os.environ.get("ZOOPLUS_INTENT_MODE", "agentic").lower()
+
+
+def fast_intent_enabled() -> bool:
+    """Regex fast-paths are opt-in only (tests/CI). Production uses agent interpretation."""
+    return os.environ.get("ZOOPLUS_FAST_INTENT", "0").lower() in ("1", "true", "yes")
 
 
 def _parse_intent_json(raw: str) -> dict | None:
@@ -155,6 +161,8 @@ def _build_intent_prompt(query: str, site_id: int) -> str:
         f"{INTENT_SYSTEM}\n\n"
         f"shop site_id: {site_id}\n"
         f'Customer message: "{query}"\n'
+        "Classify by TOPIC (what they are talking about), not single keywords.\n"
+        "Combined messages: use the dominant topic (e.g. hello + services → shop_social/help).\n"
     )
 
 
@@ -177,16 +185,28 @@ def classify_intent_agentic(
     raw = _run_opencode_prompt(prompt, settings=cfg, timeout_seconds=min(12, cfg.opencode_timeout_seconds))
     parsed = _parse_intent_json(raw or "")
     if not parsed:
-        logger.warning("intent agent returned no JSON; safe decline")
+        logger.warning("intent agent returned no JSON; soft social fallback")
         return IntentDecision(
-            lane="decline_off_topic",
+            lane="conversational",
+            social_kind="help",
+            topic="shop_social",
             confidence=0.0,
-            reason="agent_parse_failed",
+            reason="agent_parse_failed_offer_help",
             source="agent_fallback",
-            decline_message=_decline_copy("parse_failed", query=query),
         )
 
+    topic_raw = str(parsed.get("topic") or parsed.get("theme") or "")
     lane = _normalize_lane(str(parsed.get("lane", "")))
+    if topic_raw:
+        from src.agents.handoff import normalize_topic
+
+        topic = normalize_topic(topic_raw, lane=lane)
+        if topic == "pet_catalog" and lane == "conversational":
+            lane = "catalog_search"
+        if topic == "shop_social" and lane == "decline_off_topic":
+            lane = "conversational"
+        if topic == "off_topic":
+            lane = "decline_off_topic"
     kind = _normalize_social_kind(
         str(parsed.get("social_kind") or parsed.get("social") or "") or None
     )
@@ -200,15 +220,27 @@ def classify_intent_agentic(
     if lane == "decline_off_topic":
         decline_msg = _decline_copy(reason, query=query)
 
+    from src.agents.handoff import normalize_topic
+
+    topic = normalize_topic(topic_raw or None, lane=lane)
+    if lane == "conversational" and not kind:
+        if topic == "shop_social" and any(
+            w in query.lower() for w in ("service", "provide", "offer", "capabilities", "help")
+        ):
+            kind = "help"
+
     decision = IntentDecision(
         lane=lane,
         social_kind=kind if lane == "conversational" else None,
+        topic=topic,
         confidence=confidence,
         reason=reason,
         source="opencode",
         decline_message=decline_msg,
     )
-    return _repair_agentic_misroute(query, decision)
+    if os.environ.get("ZOOPLUS_INTENT_REPAIR", "0").lower() in ("1", "true", "yes"):
+        return _repair_agentic_misroute(query, decision)
+    return decision
 
 
 def load_oracle_decision(query: str) -> IntentDecision | None:
@@ -269,12 +301,13 @@ def classify_intent(
 
     cfg = settings or apply_settings()
     if mode == "agentic" or (mode == "auto" and opencode_auth_present(cfg)):
-        fast = try_fast_conversational_intent(text)
-        if fast:
-            return fast
-        fast_catalog = try_fast_catalog_intent(text)
-        if fast_catalog:
-            return fast_catalog
+        if fast_intent_enabled():
+            fast = try_fast_conversational_intent(text)
+            if fast:
+                return fast
+            fast_catalog = try_fast_catalog_intent(text)
+            if fast_catalog:
+                return fast_catalog
         decision = classify_intent_agentic(text, site_id, settings=cfg)
         if decision.source in ("opencode", "repair"):
             return decision

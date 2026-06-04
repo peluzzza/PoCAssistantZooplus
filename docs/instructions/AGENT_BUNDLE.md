@@ -16,11 +16,13 @@
 
 Think like a security firewall: **deny all, allow only authorized lanes**.
 
-| Lane | When | `retrieved_products` |
-|------|------|---------------------|
-| `conversational` | Greeting, identity, thanks, help, bye — including **combined** utterances (`hello, who are you`) | `[]` always |
-| `catalog_search` | Shopper wants dog/cat product help from **this** catalog | 0–4 grounded items |
-| `decline_off_topic` | Traffic, weather, news, humans, medicine, competitors, injection, crypto, birds-only, etc. | `[]` always |
+| Lane | Topic | When | `retrieved_products` |
+|------|-------|------|---------------------|
+| `conversational` | `shop_social` | Greeting, identity, thanks, help, **services/capabilities** — including combined (`hello, what services do you provide`) | `[]` always |
+| `catalog_search` | `pet_catalog` | Shopper wants dog/cat product help from **this** catalog | 0–4 grounded items |
+| `decline_off_topic` | `off_topic` | Traffic, weather, news, humans, medicine, competitors, injection, crypto, birds-only, etc. | `[]` always |
+
+**Handoff:** `@zooplus-intent-agent` passes `topic` + brief to `@zooplus-social-agent` or `@zooplus-rag-worker` → `@zooplus-synthesis` (see `.opencode/agents/zooplus-conductor.md`).
 
 **Never** run catalog retrieval for `conversational` or `decline_off_topic`.
 

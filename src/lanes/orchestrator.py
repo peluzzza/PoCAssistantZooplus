@@ -6,6 +6,7 @@ import asyncio
 
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
+from src.agents.handoff import build_handoff
 from src.agents.intent_agent import classify_intent
 from src.agents.social_agent import social_reply
 from src.guardian.engine import load_constraints
@@ -19,6 +20,15 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
         classify_intent,
         request.query,
         request.site_id,
+    )
+    handoff = build_handoff(
+        query=request.query,
+        site_id=request.site_id,
+        lane=intent.lane,
+        topic=intent.topic,
+        social_kind=intent.social_kind,
+        reason=intent.reason,
+        source=intent.source,
     )
 
     if intent.lane == "decline_off_topic":
@@ -34,6 +44,7 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
             request.query,
             request.site_id,
             intent,
+            handoff.brief(),
         )
         record_chat_outcome(declined=False)
         return ChatResponse(answer=answer, retrieved_products=[])
@@ -42,7 +53,11 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     process_cfg = constraints.get("process_lane", {})
     timeout_seconds = float(process_cfg.get("dispatch_timeout_seconds", 20))
 
-    envelope = ChatProcessEnvelope(site_id=request.site_id, query=request.query)
+    envelope = ChatProcessEnvelope(
+        site_id=request.site_id,
+        query=request.query,
+        intent_handoff=handoff.brief(),
+    )
     process_task = asyncio.create_task(
         dispatch_process(envelope, run_process_lane, timeout_seconds=timeout_seconds)
     )

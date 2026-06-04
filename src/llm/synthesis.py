@@ -18,12 +18,19 @@ def synthesize_answer(
     products: list[RetrievedProduct],
     *,
     settings: Settings | None = None,
+    handoff_context: str | None = None,
 ) -> str:
     cfg = settings or apply_settings()
     mode = (cfg.synthesis_mode or "template").lower()
 
     if mode == "opencode":
-        llm_answer = synthesize_opencode(query, site_id, products, settings=cfg)
+        llm_answer = synthesize_opencode(
+            query,
+            site_id,
+            products,
+            settings=cfg,
+            extra_context=handoff_context or "",
+        )
         if llm_answer:
             return llm_answer
         logger.info("OpenCode synthesis failed; using template fallback")

@@ -31,19 +31,20 @@ def test_catalog_browse_classified() -> None:
 
 
 def test_chat_help_and_catalog_no_decline(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "agentic")
+    monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
     client = TestClient(app)
 
-    help_resp = client.post(
-        "/chat",
-        json={"site_id": 3, "query": "what can you tell me about your services"},
-    )
-    assert help_resp.status_code == 200
-    help_payload = help_resp.json()
-    assert help_payload["retrieved_products"] == []
-    assert "can't help with that topic" not in help_payload["answer"].lower()
-    assert "zooplus" in help_payload["answer"].lower()
+    for q in (
+        "what can you tell me about your services",
+        "hello, what services do you provide",
+    ):
+        help_resp = client.post("/chat", json={"site_id": 3, "query": q})
+        assert help_resp.status_code == 200
+        help_payload = help_resp.json()
+        assert help_payload["retrieved_products"] == []
+        assert "can't help with that topic" not in help_payload["answer"].lower()
+        assert "zooplus" in help_payload["answer"].lower()
 
     cat_resp = client.post(
         "/chat",

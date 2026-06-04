@@ -59,6 +59,7 @@ async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
                 envelope.query,
                 envelope.site_id,
                 products,
+                handoff_context=envelope.intent_handoff,
             ),
             timeout=synth_timeout,
         )

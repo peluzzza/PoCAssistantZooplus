@@ -46,13 +46,19 @@ def social_reply(
     query: str,
     site_id: int,
     intent: IntentDecision,
+    handoff_brief: str | None = None,
     *,
     settings: Settings | None = None,
 ) -> str:
     """Generate a sociable reply without product retrieval."""
     cfg = settings or apply_settings()
     kind = intent.social_kind or "greeting"
-    ctx = f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}"
+    if intent.topic == "shop_social" and kind == "greeting" and any(
+        w in query.lower() for w in ("service", "provide", "offer", "capabilities")
+    ):
+        kind = "help"
+    handoff_line = f"{handoff_brief}\n\n" if handoff_brief else ""
+    ctx = f"{SOCIAL_SYSTEM}\n\n{handoff_line}{_context_for_kind(kind, query, intent)}"
 
     # Social lane: always template for sub-second UX (catalog synthesis still uses OpenCode).
     use_opencode_social = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "template").lower() == "opencode"

@@ -13,6 +13,7 @@ from src.models.chat import RetrievedProduct
 class ChatProcessEnvelope:
     site_id: int
     query: str
+    intent_handoff: str | None = None
     dispatch_id: str = field(default_factory=lambda: str(uuid4()))
     source_surface: str = "api/chat"
     created_at: float = field(default_factory=time)

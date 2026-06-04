@@ -134,12 +134,13 @@ def synthesize_opencode(
     products: list[RetrievedProduct],
     *,
     settings: Settings | None = None,
+    extra_context: str = "",
 ) -> str | None:
     """Return answer text, or None if OpenCode is unavailable or fails."""
     from src.config import Settings as SettingsCls
 
     cfg = settings or SettingsCls.from_env()
-    prompt = _build_prompt(query, site_id, products)
+    prompt = _build_prompt(query, site_id, products, extra_context=extra_context)
     return _run_opencode_prompt(prompt, settings=cfg)
 
 

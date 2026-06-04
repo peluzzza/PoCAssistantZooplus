@@ -3845,6 +3845,26 @@
   {
     "id": "UC-166",
     "branch": "coding_task",
+    "requirement": "B3",
+    "site_id": 3,
+    "query": "hello, what services do you provide",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "help"
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-167",
+    "branch": "coding_task",
     "requirement": "B4",
     "site_id": 3,
     "query": "show me some options about cats and dogs",
@@ -3863,7 +3883,7 @@
     "notes": ""
   },
   {
-    "id": "UC-167",
+    "id": "UC-168",
     "branch": "coding_task",
     "requirement": "B4",
     "site_id": 3,
@@ -3883,7 +3903,7 @@
     "notes": ""
   },
   {
-    "id": "UC-168",
+    "id": "UC-169",
     "branch": "coding_task",
     "requirement": "B4",
     "site_id": 1,
@@ -3903,7 +3923,7 @@
     "notes": ""
   },
   {
-    "id": "UC-169",
+    "id": "UC-170",
     "branch": "coding_task",
     "requirement": "B4",
     "site_id": 15,

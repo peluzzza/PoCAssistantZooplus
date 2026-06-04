@@ -971,6 +971,12 @@
     "confidence": 1.0,
     "reason": "pytest_canonical"
   },
+  "hello, what services do you provide": {
+    "lane": "conversational",
+    "social_kind": "help",
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
+  },
   "show me some options about cats and dogs": {
     "lane": "catalog_search",
     "social_kind": null,

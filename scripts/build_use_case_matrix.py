@@ -430,6 +430,7 @@ def build_cases() -> list[dict]:
     # Coding Task.docx — extra requirement coverage
     coding_task_extras = [
         (3, "what can you tell me about your services", "B3", "conversational", "help", 0),
+        (3, "hello, what services do you provide", "B3", "conversational", "help", 0),
         (3, "show me some options about cats and dogs", "B4", "catalog_search", None, 1),
         (3, "best dry food for puppy", "B4", "catalog_search", None, 1),
         (1, "cat food grain free", "B4", "catalog_search", None, 1),
@@ -501,6 +502,7 @@ def build_intent_oracle(cases: list[dict]) -> dict[str, dict]:
         ("goodbye", "conversational", "bye"),
         ("what can you tell me about your services", "conversational", "help"),
         ("show me some options about cats and dogs", "catalog_search", None),
+        ("hello, what services do you provide", "conversational", "help"),
     ]
     for q, lane, kind in extras:
         oracle[q.strip().lower()] = {
