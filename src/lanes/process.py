@@ -5,7 +5,8 @@ from __future__ import annotations
 import asyncio
 
 from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
-from src.guardian.engine import empty_retrieval_message, max_recommendations
+from src.guardian.engine import max_recommendations
+from src.llm.synthesis import synthesize_answer
 from src.models.chat import RetrievedProduct
 from src.rag.hybrid import retrieval_mode
 from src.rag.rerank import recommendation_reason, vector_similarity
@@ -35,19 +36,6 @@ def _to_retrieved_product(hit: dict) -> RetrievedProduct:
     )
 
 
-def _synthesize_grounded_answer(products: list[RetrievedProduct]) -> str:
-    if not products:
-        return empty_retrieval_message()
-    lines = ["I found these options in your shop catalog:"]
-    for product in products:
-        lines.append(
-            f"- {product.product_name} ({product.brands}) - EUR {product.price:.2f} "
-            f"[article_id: {product.article_id}]"
-        )
-    lines.append("Tell me if you want a narrower budget, brand, or pet-type filter.")
-    return "\n".join(lines)
-
-
 async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
     hits = await asyncio.to_thread(
         search_catalog,
@@ -56,7 +44,7 @@ async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
         n_results=max_recommendations(),
     )
     products = [_to_retrieved_product(hit) for hit in hits][: max_recommendations()]
-    answer = _synthesize_grounded_answer(products)
+    answer = synthesize_answer(envelope.query, envelope.site_id, products)
     return ProcessLaneReceipt(
         dispatch_id=envelope.dispatch_id,
         dispatch_ok=True,

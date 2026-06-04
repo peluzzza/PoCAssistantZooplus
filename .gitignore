@@ -5,6 +5,14 @@ __pycache__/
 venv/
 .env
 .env.*
+!.env.example
+
+# OpenCode credentials — never commit (use `opencode auth login` locally)
+auth.json
+.opencode/auth.json
+.opencode/data/*
+!.opencode/data/.gitkeep
+.opencode/*.local.json
 artifacts/index/*
 !artifacts/index/manifest.json
 artifacts/eda/*.html

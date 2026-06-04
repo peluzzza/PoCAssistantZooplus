@@ -70,6 +70,8 @@ python -m cli ingest
 uvicorn src.api.app:app --reload --port 8080
 ```
 
+**Chat UI:** open [http://127.0.0.1:8080/ui/](http://127.0.0.1:8080/ui/) after the server starts. Details: [`docs/CHAT_UI.md`](docs/CHAT_UI.md).
+
 **Docker (v2):**
 
 ```bash
@@ -88,11 +90,24 @@ python -m cli evaluate
 py -3 scripts/topic_guard_load_test.py   # G1 p95 budget check
 ```
 
+## OpenCode LLM (optional, user-configured)
+
+By default answers use **template synthesis** (no API keys). To use **free-tier models from your OpenCode account**:
+
+1. Copy [`.env.example`](.env.example) → `.env` (`.env` is gitignored).
+2. Run `opencode auth login` — credentials go to `~/.local/share/opencode/auth.json`, **never commit this file**.
+3. Optional project-local profile: set `ZOOPLUS_OPENCODE_DATA_DIR=.opencode/data` and `OPENCODE_DATA_DIR=.opencode/data` before login; that directory is gitignored.
+4. Set `ZOOPLUS_SYNTHESIS_MODE=opencode` and `ZOOPLUS_OPENCODE_MODEL` (see `opencode models`).
+
+**Never commit:** `auth.json`, `.opencode/auth.json`, `.opencode/data/auth.json`, or `.env`. They are listed in [`.gitignore`](.gitignore).
+
+If OpenCode is missing or fails, the API **falls back** to template synthesis automatically.
+
 ## Trade-offs
 
 - **Local Chroma over hosted vector DB:** fastest PoC setup, not production-scale.
 - **Rule-first topic guard:** deterministic and low latency, less nuanced than full classifier models.
-- **Template synthesis without external LLM keys:** reproducible and safe for take-home, less natural language richness.
+- **Template synthesis (default):** reproducible without keys; set `ZOOPLUS_SYNTHESIS_MODE=opencode` for richer LLM replies via your OpenCode login.
 - **Max 4 recommendations:** clear UX and constraint-compliant, may omit longer-tail candidates.
 
 ## Roadmap
