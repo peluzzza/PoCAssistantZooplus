@@ -4,7 +4,7 @@
     "zooplus_assistant": {
       "type": "remote",
       "url": "http://127.0.0.1:8080/mcp",
-      "enabled": true,
+      "enabled": false,
       "timeout": 5000
     }
   },

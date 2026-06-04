@@ -43,18 +43,14 @@ SOCIAL_IDENTITY_CONTEXT = (
     "Combined greetings OK (user said hello and who are you)."
 )
 
-SOCIAL_GREETING_CONTEXT = (
-    "social_kind=greeting. Warm welcome; invite a specific pet product question (puppy food, cat treats, etc.)."
-)
+SOCIAL_GREETING_CONTEXT = "social_kind=greeting. Warm welcome; invite a specific pet product question (puppy food, cat treats, etc.)."
 
 SOCIAL_HELP_CONTEXT = (
     "social_kind=help. Explain natural-language catalog search, max 4 picks, sites 1/3/15, "
     "polite decline for off-topic."
 )
 
-SOCIAL_THANKS_CONTEXT = (
-    "social_kind=thanks. Thank warmly; offer to narrow by pet type, brand, or budget if they continue."
-)
+SOCIAL_THANKS_CONTEXT = "social_kind=thanks. Thank warmly; offer to narrow by pet type, brand, or budget if they continue."
 
 SOCIAL_BYE_CONTEXT = (
     "social_kind=bye. Friendly goodbye; available for pet product questions anytime."

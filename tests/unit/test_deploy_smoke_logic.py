@@ -9,12 +9,10 @@ pytestmark = pytest.mark.unit
 
 
 def test_run_smoke_against_testclient_server(indexed_catalog: dict) -> None:
-    """Use TestClient in-process; smoke script needs real URL — test via direct client."""
+    """Use TestClient in-process; /chat needs OpenCode (see integration agentic tests)."""
     client = TestClient(app)
     assert client.get("/health").json() == {"status": "ok"}
     assert client.get("/ready").json()["index_present"] is True
-    chat = client.post("/chat", json={"site_id": 3, "query": "puppy food"})
-    assert chat.status_code == 200
     assert client.get("/metrics").status_code == 200
 
 

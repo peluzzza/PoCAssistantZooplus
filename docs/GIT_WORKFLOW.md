@@ -8,7 +8,7 @@ Merges to `main` follow [`RELEASE_PLAN.md`](RELEASE_PLAN.md) — only when miles
 
 | Tag on `main` | When |
 |---------------|------|
-| `v0.1.0` | P0 bootstrap only |
+| `v0.1.0` | Agentic PoC baseline (`releases` branch) |
 | `v1.0.0` | MVP — B1–B9, 19 tests, CI green |
 | `v1.1.0+` | Planned (streaming, golden queries, …) |
 
@@ -16,9 +16,11 @@ Merges to `main` follow [`RELEASE_PLAN.md`](RELEASE_PLAN.md) — only when miles
 
 | Branch | Role |
 |--------|------|
-| `main` | Stable tagged releases |
-| `dev` | Integration — all `feature/*` merge here first |
+| `main` | Production-stable (tags after `releases` sign-off) |
+| `releases` | Release candidate line (e.g. `v0.1.0` PoC baseline) |
+| `dev` | Integration — all `feature/*` and `bugfix/*` merge here first |
 | `feature/<name>` | Short-lived steps |
+| `bugfix/<name>` | Hotfixes from a tag or `releases` |
 
 ## Pre-merge quality (required)
 

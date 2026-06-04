@@ -1,9 +1,11 @@
-"""Agentic social replies — warm conversational lane (OpenCode + template fallback)."""
+"""Social lane — internal OpenCode; shopper sees zooplus Assistant only."""
 
 from __future__ import annotations
 
 import logging
 
+from src.agents.agent_cascade import run_agent_cascade
+from src.agents.instructions_skill import instructions_skill_context
 from src.agents.intent_agent import IntentDecision, SocialKind
 from src.agents.prompts import (
     SOCIAL_BYE_CONTEXT,
@@ -15,7 +17,6 @@ from src.agents.prompts import (
     SOCIAL_THANKS_CONTEXT,
 )
 from src.config import Settings, apply_settings
-from src.llm.conversation import conversational_reply as template_conversational_reply
 from src.llm.opencode import synthesize_opencode_chat
 
 logger = logging.getLogger(__name__)
@@ -34,10 +35,6 @@ def _context_for_kind(kind: SocialKind, query: str, intent: IntentDecision) -> s
         return SOCIAL_THANKS_CONTEXT
     if kind == "bye":
         return SOCIAL_BYE_CONTEXT
-    if "who" in query.lower() and "you" in query.lower():
-        return SOCIAL_IDENTITY_CONTEXT
-    if any(w in query.lower() for w in ("hello", "hi ", "hey", "hola")):
-        return SOCIAL_GREETING_CONTEXT
     return SOCIAL_GREETING_CONTEXT
 
 
@@ -45,24 +42,44 @@ def social_reply(
     query: str,
     site_id: int,
     intent: IntentDecision,
+    handoff_brief: str | None = None,
     *,
     settings: Settings | None = None,
 ) -> str:
-    """Generate a sociable reply without product retrieval."""
     cfg = settings or apply_settings()
-    kind = intent.social_kind or "greeting"
-    ctx = f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}"
+    kind: SocialKind = intent.social_kind or "greeting"  # type: ignore[assignment]
+    skill = instructions_skill_context(site_id=site_id)
+    handoff = f"{handoff_brief}\n\n" if handoff_brief else ""
+    ctx = f"{skill}\n\n{SOCIAL_SYSTEM}\n\n{handoff}{_context_for_kind(kind, query, intent)}"
+    prompt = (
+        f"{ctx}\n\nsite_id={site_id}\nCustomer: {query}\n"
+        "Reply as zooplus Assistant (2-5 sentences)."
+    )
 
-    if (cfg.synthesis_mode or "").lower() == "opencode":
-        llm = synthesize_opencode_chat(
-            query=query,
-            site_id=site_id,
-            context=ctx,
-            products=[],
-            settings=cfg,
-            timeout_seconds=min(14, cfg.opencode_timeout_seconds),
-        )
-        if llm:
-            return llm.strip()
+    def _ok(raw: str) -> str | None:
+        t = raw.strip()
+        return t if len(t) > 15 else None
 
-    return template_conversational_reply(query, site_id, settings=cfg)
+    result = run_agent_cascade("social", prompt, settings=cfg, parse=_ok)
+    if result.value:
+        return str(result.value).strip()
+
+    llm = synthesize_opencode_chat(
+        query=query,
+        site_id=site_id,
+        context=ctx,
+        products=[],
+        settings=cfg,
+        timeout_seconds=min(14, cfg.opencode_timeout_seconds),
+    )
+    if llm:
+        return llm.strip()
+
+    fb = run_agent_cascade("conductor", prompt, settings=cfg, parse=_ok)
+    if fb.value:
+        return str(fb.value).strip()
+
+    return (
+        "I'm the zooplus Assistant for this shop. I'm having trouble responding — "
+        "please try again or ask about dog or cat products."
+    )

@@ -39,6 +39,24 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
+/** LLM sometimes returns `{"answer":"..."}` — show prose only. */
+function normalizeAnswer(text) {
+  if (!text) return "";
+  let raw = String(text).trim();
+  const fenced = raw.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i);
+  if (fenced) raw = fenced[1].trim();
+  if (raw.startsWith("{")) {
+    try {
+      const data = JSON.parse(raw);
+      if (typeof data.answer === "string") return data.answer.trim();
+      if (typeof data.text === "string") return data.text.trim();
+    } catch (_) {
+      /* keep raw */
+    }
+  }
+  return raw;
+}
+
 function setModeBadge() {
   const mode = uiConfig.synthesis_mode || "template";
   if (mode === "opencode") {
@@ -59,10 +77,11 @@ async function loadConfig() {
     /* use defaults */
   }
   siteSelect.innerHTML = "";
+  const labels = uiConfig.site_labels || {};
   for (const id of uiConfig.sites || [1, 3, 15]) {
     const opt = document.createElement("option");
     opt.value = String(id);
-    opt.textContent = `Site ${id}`;
+    opt.textContent = labels[id] || labels[String(id)] || `Shop site_id ${id}`;
     siteSelect.appendChild(opt);
   }
   siteSelect.value = String(uiConfig.default_site_id || 3);
@@ -106,13 +125,13 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
     const products = data.retrieved_products || [];
     const decline = products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(data.answer || "");
-    appendMessage("bot", data.answer || "(empty)", products, { decline });
+    appendMessage("bot", normalizeAnswer(data.answer) || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
     typing.remove();
     const msg =
       err.name === "AbortError"
-        ? "Request timed out (25s). Try a shorter question or set ZOOPLUS_SYNTHESIS_MODE=template in .env."
+        ? "Request timed out (25s). Try a shorter question or check scripts/run_dev.ps1 and OpenCode auth."
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {

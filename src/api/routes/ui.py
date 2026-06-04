@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
-from src.config import Settings
+from src.config import apply_settings
 from src.llm.opencode import opencode_auth_present
 
 router = APIRouter()
@@ -58,9 +58,15 @@ async def ui_asset(asset: str) -> FileResponse:
 
 @router.get("/api/ui/config")
 async def ui_config() -> dict:
-    settings = Settings.from_env()
+    settings = apply_settings()
     return {
         "sites": [1, 3, 15],
+        "site_labels": {
+            1: "Shop 1 (100 variants · dogs & cats)",
+            3: "Shop 3 (100 variants · dogs & cats)",
+            15: "Shop 15 (100 variants · dogs & cats)",
+        },
+        "catalog_scope": "DOGS and CATS only — 300 variants across 3 site_id shops",
         "default_site_id": 3,
         "synthesis_mode": settings.synthesis_mode,
         "opencode_model": settings.opencode_model,

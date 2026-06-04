@@ -60,8 +60,8 @@ def _template_reply(kind: ConvoKind, site_id: int) -> str:
     if kind == ConvoKind.HELP:
         return (
             "I can search this shop's catalog and recommend up to four products. "
-            "Ask in natural language — e.g. \"best dry food for a sensitive puppy\" or "
-            "\"popular cat treats in stock\". Off-topic questions (weather, news, etc.) "
+            'Ask in natural language — e.g. "best dry food for a sensitive puppy" or '
+            '"popular cat treats in stock". Off-topic questions (weather, news, etc.) '
             "I'll politely decline."
         )
     return ""

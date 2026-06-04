@@ -21,7 +21,7 @@ def _load_dotenv() -> None:
         key, _, value = line.partition("=")
         key = key.strip()
         value = value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
+        if key:
             os.environ[key] = value
 
 
@@ -32,8 +32,8 @@ class Settings:
     retrieval_mode: str = "hybrid"
     chroma_path: str | None = None
     metrics_enabled: bool = True
-    synthesis_mode: str = "template"
-    opencode_model: str = "opencode-go/deepseek-v4-flash"
+    synthesis_mode: str = "opencode"
+    opencode_model: str = "opencode/deepseek-v4-flash-free"
     opencode_timeout_seconds: int = 25
     opencode_data_dir: str | None = None
     opencode_config_dir: str | None = None
@@ -50,10 +50,10 @@ class Settings:
             retrieval_mode=os.environ.get("ZOOPLUS_RETRIEVAL_MODE", "hybrid").lower(),
             chroma_path=os.environ.get("ZOOPLUS_CHROMA_PATH"),
             metrics_enabled=os.environ.get("ZOOPLUS_METRICS", "1") not in ("0", "false", "no"),
-            synthesis_mode=os.environ.get("ZOOPLUS_SYNTHESIS_MODE", "template").lower(),
+            synthesis_mode=os.environ.get("ZOOPLUS_SYNTHESIS_MODE", "opencode").lower(),
             opencode_model=os.environ.get(
                 "ZOOPLUS_OPENCODE_MODEL",
-                "opencode-go/deepseek-v4-flash",
+                "opencode/deepseek-v4-flash-free",
             ),
             opencode_timeout_seconds=timeout,
             opencode_data_dir=os.environ.get("ZOOPLUS_OPENCODE_DATA_DIR"),

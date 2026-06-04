@@ -14,12 +14,16 @@ def test_conversational_only_detects_hello() -> None:
 
 
 def test_conversational_reply_template(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("src.config._load_dotenv", lambda: None)
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
     answer = conversational_reply("Hello", 3)
     assert "zooplus Assistant" in answer
     assert "shop 3" in answer
 
 
+@pytest.mark.skip(
+    reason="POST /chat uses agentic OpenCode — run tests/integration/test_chat_agentic.py"
+)
 def test_chat_hello_fast_path_no_hang(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
     client = TestClient(app)
