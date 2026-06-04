@@ -17,7 +17,7 @@ DEFAULT_DECLINE = (
 )
 
 OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
-    (re.compile(r"\bweather\b", re.IGNORECASE), "off_topic_weather"),
+    (re.compile(r"\b(weather|wetter)\b", re.IGNORECASE), "off_topic_weather"),
     (re.compile(r"\b(time|datetime|date)\b", re.IGNORECASE), "off_topic_datetime"),
     (re.compile(r"\bnews\b", re.IGNORECASE), "off_topic_news"),
     (
@@ -48,6 +48,20 @@ OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
         ),
         "off_topic_prompt_injection",
     ),
+    (
+        re.compile(
+            r"\b("
+            r"medicine\s+should\s+i\s+take|headache\s+pill|take\s+for\s+my\s+headache|"
+            r"amazon\.com|compare\s+prices\s+on\s+amazon|"
+            r"cryptocurrency|bitcoin|invest\s+in\s+2026|"
+            r"spaghetti\s+carbonara|recipe\s+for\s+(?!dog|cat|pet)|"
+            r"hack\s+a\s+website|write\s+python\s+code\s+to\s+hack"
+            r")\b",
+            re.IGNORECASE,
+        ),
+        "off_topic_non_pet_or_abuse",
+    ),
+    (re.compile(r"\bbird\s+food\b", re.IGNORECASE), "off_topic_non_pet_species"),
 ]
 
 EXTERNAL_WEB_DECLINE = (

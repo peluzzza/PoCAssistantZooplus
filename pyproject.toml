@@ -43,6 +43,7 @@ markers = [
   "e2e: full PoC path smoke",
   "acceptance: Coding Task.docx + docs/instructions catalog",
   "security: guardrails, injection, off-topic matrix",
+  "social: 50+ use-case chat matrix from instructions",
 ]
 filterwarnings = [
   "ignore:Using `httpx` with `starlette.testclient`:UserWarning",

@@ -6,6 +6,7 @@ Track defects found during guardrail / acceptance testing. Each incident links t
 |----|----------|---------|--------|--------|
 | [INC-001](INC-001-synthesis-500.md) | **P0** | HTTP 500 on product search — wrong `synthesize_template()` call on timeout | `bugfix/INC-001-synthesis-500` | **FIXED** |
 | [INC-002](INC-002-external-search-guard.md) | P1 | “Search internet” allowed → should decline (catalog-only) | `bugfix/INC-002-external-search-guard` | **FIXED** |
+| [INC-003](INC-003-hybrid-candidate-pool.md) | P1 | Valid site-15 toy query empty; gibberish SKU returned hits | `dev` | **FIXED** |
 
 **Source of truth:** `docs/instructions/Coding Task.docx`, `docs/instructions/product_catalog_dataset.json`
 

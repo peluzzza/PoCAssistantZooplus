@@ -34,6 +34,7 @@ def main() -> int:
             "security",
             [py, "-m", "pytest", "tests/security", "-q", "-m", "security"],
         ),
+        ("social", [py, "-m", "pytest", "tests/social", "-q", "-m", "social"]),
         ("e2e", [py, "-m", "pytest", "tests/e2e", "-q", "-m", "e2e"]),
     ]
     for name, cmd in steps:

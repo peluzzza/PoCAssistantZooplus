@@ -18,7 +18,7 @@ class ConvoKind(StrEnum):
 
 
 _GREETING = re.compile(
-    r"^(hi|hello|hey|hola|buenas|good\s+(morning|afternoon|evening))[!?.\s]*$",
+    r"^(hi|hello|hey|hola|buenas|hi\s+there|good\s+(morning|afternoon|evening))[!?.\s]*$",
     re.I,
 )
 _THANKS = re.compile(r"^(thanks|thank\s+you|gracias|muchas\s+gracias|danke)[!?.\s]*$", re.I)
@@ -60,8 +60,8 @@ def _template_reply(kind: ConvoKind, site_id: int) -> str:
     if kind == ConvoKind.HELP:
         return (
             "I can search this shop's catalog and recommend up to four products. "
-            "Ask in natural language — e.g. \"best dry food for a sensitive puppy\" or "
-            "\"popular cat treats in stock\". Off-topic questions (weather, news, etc.) "
+            'Ask in natural language — e.g. "best dry food for a sensitive puppy" or '
+            '"popular cat treats in stock". Off-topic questions (weather, news, etc.) '
             "I'll politely decline."
         )
     return ""
