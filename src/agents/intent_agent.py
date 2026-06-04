@@ -166,6 +166,75 @@ def _build_intent_prompt(query: str, site_id: int) -> str:
     )
 
 
+def _fallback_intent_decision(query: str, *, site_id: int, reason: str) -> IntentDecision:
+    """Topic-based routing when OpenCode intent agent fails — never repeat generic help."""
+    from src.agents.handoff import TOPIC_OFF_TOPIC, TOPIC_PET_CATALOG, TOPIC_SHOP_SOCIAL
+    from src.agents.intent_hints import (
+        looks_like_catalog_search,
+        looks_like_help_about_shop,
+        looks_like_off_topic,
+    )
+    from src.llm.conversation import ConvoKind, classify_conversation
+
+    text = query.strip()
+    if looks_like_off_topic(text):
+        return IntentDecision(
+            lane="decline_off_topic",
+            topic=TOPIC_OFF_TOPIC,
+            confidence=0.5,
+            reason=reason,
+            source="topic_fallback",
+            decline_message=_decline_copy(reason, query=text),
+        )
+
+    if looks_like_catalog_search(text):
+        return IntentDecision(
+            lane="catalog_search",
+            topic=TOPIC_PET_CATALOG,
+            confidence=0.5,
+            reason=reason,
+            source="topic_fallback",
+        )
+
+    conv = classify_conversation(text)
+    if conv != ConvoKind.PRODUCT:
+        social_map = {
+            ConvoKind.GREETING: "greeting",
+            ConvoKind.IDENTITY: "identity",
+            ConvoKind.THANKS: "thanks",
+            ConvoKind.HELP: "help",
+            ConvoKind.BYE: "bye",
+        }
+        kind = social_map.get(conv, "greeting")
+        return IntentDecision(
+            lane="conversational",
+            social_kind=kind or "greeting",
+            topic=TOPIC_SHOP_SOCIAL,
+            confidence=0.5,
+            reason=reason,
+            source="topic_fallback",
+        )
+
+    if looks_like_help_about_shop(text):
+        return IntentDecision(
+            lane="conversational",
+            social_kind="help",
+            topic=TOPIC_SHOP_SOCIAL,
+            confidence=0.5,
+            reason=reason,
+            source="topic_fallback",
+        )
+
+    return IntentDecision(
+        lane="decline_off_topic",
+        topic=TOPIC_OFF_TOPIC,
+        confidence=0.3,
+        reason=f"{reason}_ambiguous",
+        source="topic_fallback",
+        decline_message=polite_decline_for("out_of_scope_default_deny"),
+    )
+
+
 def _decline_copy(_reason: str, *, query: str) -> str:
     q = query.lower()
     if "internet" in q or "browse the web" in q or "web search" in q:
@@ -185,14 +254,11 @@ def classify_intent_agentic(
     raw = _run_opencode_prompt(prompt, settings=cfg, timeout_seconds=min(12, cfg.opencode_timeout_seconds))
     parsed = _parse_intent_json(raw or "")
     if not parsed:
-        logger.warning("intent agent returned no JSON; soft social fallback")
-        return IntentDecision(
-            lane="conversational",
-            social_kind="help",
-            topic="shop_social",
-            confidence=0.0,
-            reason="agent_parse_failed_offer_help",
-            source="agent_fallback",
+        logger.warning("intent agent returned no JSON; using topic fallback")
+        return _fallback_intent_decision(
+            query,
+            site_id=site_id,
+            reason="agent_parse_failed",
         )
 
     topic_raw = str(parsed.get("topic") or parsed.get("theme") or "")
@@ -309,7 +375,7 @@ def classify_intent(
             if fast_catalog:
                 return fast_catalog
         decision = classify_intent_agentic(text, site_id, settings=cfg)
-        if decision.source in ("opencode", "repair"):
+        if decision.source in ("opencode", "repair", "topic_fallback"):
             return decision
         oracle = load_oracle_decision(text)
         if oracle:

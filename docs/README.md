@@ -13,6 +13,8 @@
 
 | Path | Purpose |
 |------|---------|
+| [**`INTERVIEW_DEFENSE.md`**](INTERVIEW_DEFENSE.md) | **Interview pack** — pitch, diagrams, screenshot plan, Q&A (English) |
+| [`interview/EVIDENCE_SNAPSHOT.md`](interview/EVIDENCE_SNAPSHOT.md) | Auto-generated test/catalog stats before the interview |
 | [`00-brief-alignment.md`](00-brief-alignment.md) | Living checklist vs Coding Task |
 | [`01-eda-report.md`](01-eda-report.md) | Dataset EDA (filled in T1) |
 | [`02-rag-architecture.md`](02-rag-architecture.md) | RAG + index design |

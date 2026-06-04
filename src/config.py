@@ -21,7 +21,7 @@ def _load_dotenv() -> None:
         key, _, value = line.partition("=")
         key = key.strip()
         value = value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
+        if key:
             os.environ[key] = value
 
 
@@ -40,6 +40,7 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> Settings:
+        _load_dotenv()
         timeout_raw = os.environ.get("ZOOPLUS_OPENCODE_TIMEOUT", "25")
         try:
             timeout = max(10, int(timeout_raw))

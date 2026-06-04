@@ -52,8 +52,19 @@ def social_reply(
 ) -> str:
     """Generate a sociable reply without product retrieval."""
     cfg = settings or apply_settings()
+    from src.llm.conversation import ConvoKind, classify_conversation
+
+    conv = classify_conversation(query)
     kind = intent.social_kind or "greeting"
-    if intent.topic == "shop_social" and kind == "greeting" and any(
+    if conv != ConvoKind.PRODUCT:
+        kind = {
+            ConvoKind.GREETING: "greeting",
+            ConvoKind.IDENTITY: "identity",
+            ConvoKind.THANKS: "thanks",
+            ConvoKind.HELP: "help",
+            ConvoKind.BYE: "bye",
+        }.get(conv, kind)
+    elif intent.topic == "shop_social" and any(
         w in query.lower() for w in ("service", "provide", "offer", "capabilities")
     ):
         kind = "help"

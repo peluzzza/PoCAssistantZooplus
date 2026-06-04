@@ -135,6 +135,11 @@ If OpenCode is missing or fails, the API **falls back** to template synthesis au
 | `main` @ **v2.1.0** | Production profile + Python 3.11 / pinned deps |
 | `dev` | Post-v2 enhancements (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
 
+## Interview / submission defense
+
+- **English defense pack:** [`docs/INTERVIEW_DEFENSE.md`](docs/INTERVIEW_DEFENSE.md) (diagrams, screenshot checklist, Q&A)
+- Refresh evidence: `python scripts/export_interview_evidence.py`
+
 ## Docs and trace
 
 - Release plan: [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)

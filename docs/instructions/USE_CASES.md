@@ -1,7 +1,7 @@
 # Use case matrix (Coding Task + instructions catalog)
 
-**Generated:** 2026-06-04 11:14 UTC  
-**Total cases:** 170  
+**Generated:** 2026-06-04 11:37 UTC  
+**Total cases:** 173  
 **Source of truth:** `docs/instructions/Coding Task.docx`, `docs/instructions/product_catalog_dataset.json`
 
 | ID | Req | Branch | Site | Query (excerpt) | Expected |
@@ -172,10 +172,13 @@
 | UC-164 | B4+B5+CATALOG | catalog_backed | 1 | looking for Chuckit! Birthday Fetch Ball | ≥1 products |
 | UC-165 | B3 | coding_task | 3 | what can you tell me about your services | ≥0 products |
 | UC-166 | B3 | coding_task | 3 | hello, what services do you provide | ≥0 products |
-| UC-167 | B4 | coding_task | 3 | show me some options about cats and dogs | ≥1 products |
-| UC-168 | B4 | coding_task | 3 | best dry food for puppy | ≥1 products |
-| UC-169 | B4 | coding_task | 1 | cat food grain free | ≥1 products |
-| UC-170 | B4 | coding_task | 15 | dog chew toy | ≥1 products |
+| UC-167 | B6 | coding_task | 3 | show me option to find in internet about dogs | DECLINE |
+| UC-168 | B3 | coding_task | 3 | hello?? | ≥0 products |
+| UC-169 | B4 | coding_task | 3 | show me products about dogs | ≥1 products |
+| UC-170 | B4 | coding_task | 3 | show me some options about cats and dogs | ≥1 products |
+| UC-171 | B4 | coding_task | 3 | best dry food for puppy | ≥1 products |
+| UC-172 | B4 | coding_task | 1 | cat food grain free | ≥1 products |
+| UC-173 | B4 | coding_task | 15 | dog chew toy | ≥1 products |
 
 ## Requirement mapping (Coding Task)
 

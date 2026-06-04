@@ -28,9 +28,22 @@ _PET_PRODUCT = re.compile(
 
 _OFF_TOPIC_HARD = re.compile(
     r"\b(weather|traffic|president|news\s+headline|bitcoin|crypto|"
-    r"for\s+humans|human\s+food|search\s+the\s+internet|ignore\s+all\s+previous)\b",
+    r"for\s+humans|human\s+food|search\s+the\s+internet|ignore\s+all\s+previous|"
+    r"find\s+in\s+internet|on\s+the\s+internet|browse\s+the\s+web|web\s+search|"
+    r"on\s+amazon|google\s+search)\b",
     re.I,
 )
+
+
+def looks_like_off_topic(query: str) -> bool:
+    text = query.strip()
+    if not text:
+        return True
+    if _OFF_TOPIC_HARD.search(text):
+        return True
+    if re.search(r"\binternet\b", text, re.I):
+        return True
+    return False
 
 
 def looks_like_help_about_shop(query: str) -> bool:

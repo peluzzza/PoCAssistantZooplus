@@ -25,8 +25,11 @@ python scripts/run_use_case_matrix.py
 set ZOOPLUS_INTENT_MODE=oracle
 set ZOOPLUS_SYNTHESIS_MODE=template
 python -m pytest tests/acceptance/test_use_cases_matrix_catalog.py tests/social -q
+python -m pytest tests/integration/test_agentic_fallback_routing.py -q
 python scripts/run_quality_gates.py
 ```
+
+**Trust note:** CI matrix uses `ZOOPLUS_INTENT_MODE=oracle` (deterministic lanes). Production uses `agentic` (OpenCode); if the intent LLM times out, **topic fallback** routes decline / catalog / social — see `test_agentic_fallback_routing.py`.
 
 ## What is checked
 

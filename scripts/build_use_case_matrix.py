@@ -8,7 +8,18 @@ import random
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CATALOG = ROOT / "docs" / "instructions" / "product_catalog_dataset.json"
+def _catalog_path() -> Path:
+    for path in (
+        ROOT / "docs" / "instructions" / "product_catalog_dataset.json",
+        ROOT / "docs" / "instructions" / "order" / "product_catalog_dataset.json",
+        ROOT / "data" / "raw" / "product_catalog_dataset.json",
+    ):
+        if path.is_file():
+            return path
+    return ROOT / "docs" / "instructions" / "product_catalog_dataset.json"
+
+
+CATALOG = _catalog_path()
 OUT = ROOT / "tests" / "fixtures" / "use_cases_matrix.json"
 ORACLE_OUT = ROOT / "tests" / "fixtures" / "intent_oracle.json"
 
@@ -431,21 +442,25 @@ def build_cases() -> list[dict]:
     coding_task_extras = [
         (3, "what can you tell me about your services", "B3", "conversational", "help", 0),
         (3, "hello, what services do you provide", "B3", "conversational", "help", 0),
+        (3, "show me option to find in internet about dogs", "B6", "decline_off_topic", None, 0),
+        (3, "hello??", "B3", "conversational", "greeting", 0),
+        (3, "show me products about dogs", "B4", "catalog_search", None, 1),
         (3, "show me some options about cats and dogs", "B4", "catalog_search", None, 1),
         (3, "best dry food for puppy", "B4", "catalog_search", None, 1),
         (1, "cat food grain free", "B4", "catalog_search", None, 1),
         (15, "dog chew toy", "B4", "catalog_search", None, 1),
     ]
     for sid, q, req, lane, skind, min_p in coding_task_extras:
+        is_decline = lane == "decline_off_topic"
         add_unique(
             "coding_task",
             req,
             sid,
             q,
-            decline=False,
+            decline=is_decline,
             min_products=min_p,
-            max_products=4 if min_p else 0,
-            grounded=bool(min_p),
+            max_products=0 if is_decline else (4 if min_p else 0),
+            grounded=bool(min_p) and not is_decline,
             intent_lane=lane,
             social_kind=skind,
         )
@@ -503,6 +518,9 @@ def build_intent_oracle(cases: list[dict]) -> dict[str, dict]:
         ("what can you tell me about your services", "conversational", "help"),
         ("show me some options about cats and dogs", "catalog_search", None),
         ("hello, what services do you provide", "conversational", "help"),
+        ("show me option to find in internet about dogs", "decline_off_topic", None),
+        ("hello??", "conversational", "greeting"),
+        ("show me products about dogs", "catalog_search", None),
     ]
     for q, lane, kind in extras:
         oracle[q.strip().lower()] = {

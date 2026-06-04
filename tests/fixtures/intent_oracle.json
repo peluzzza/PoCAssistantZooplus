@@ -977,6 +977,24 @@
     "confidence": 1.0,
     "reason": "pytest_canonical"
   },
+  "show me option to find in internet about dogs": {
+    "lane": "decline_off_topic",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
+  },
+  "hello??": {
+    "lane": "conversational",
+    "social_kind": "greeting",
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
+  },
+  "show me products about dogs": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "pytest_canonical"
+  },
   "show me some options about cats and dogs": {
     "lane": "catalog_search",
     "social_kind": null,

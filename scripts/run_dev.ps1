@@ -10,6 +10,16 @@ if (-not (Test-Path ".env")) {
     Copy-Item ".env.example" ".env"
 }
 
+# Load `.env` into this process (overrides stale shell vars from pytest/CI)
+Get-Content ".env" -Encoding UTF8 | ForEach-Object {
+    $line = $_.Trim()
+    if ($line -and -not $line.StartsWith("#") -and $line -match "^([^=]+)=(.*)$") {
+        $name = $matches[1].Trim()
+        $value = $matches[2].Trim().Trim('"').Trim("'")
+        Set-Item -Path "Env:$name" -Value $value
+    }
+}
+
 if (-not (Test-Path ".opencode\data\auth.json")) {
     Write-Host "==> OpenCode auth (optional): .\scripts\setup_opencode_local.ps1"
 }
@@ -20,7 +30,7 @@ if (-not (Test-Path $manifest)) {
     py -3 -m cli ingest
 }
 
-$intent = if ($env:ZOOPLUS_INTENT_MODE) { $env:ZOOPLUS_INTENT_MODE } else { "(from .env — use agentic for real UI)" }
+$intent = if ($env:ZOOPLUS_INTENT_MODE) { $env:ZOOPLUS_INTENT_MODE } else { "(from .env, use agentic for real UI)" }
 $synth = if ($env:ZOOPLUS_SYNTHESIS_MODE) { $env:ZOOPLUS_SYNTHESIS_MODE } else { "(from .env)" }
 Write-Host ""
 Write-Host "==> Starting API at http://127.0.0.1:8080/ui/"

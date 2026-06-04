@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 
 # Agentic routing oracle (from instructions matrix) — no keyword guard in CI.
-os.environ.setdefault("ZOOPLUS_INTENT_MODE", "oracle")
-os.environ.setdefault("ZOOPLUS_SYNTHESIS_MODE", "template")
+os.environ["ZOOPLUS_INTENT_MODE"] = "oracle"
+os.environ["ZOOPLUS_SYNTHESIS_MODE"] = "template"
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "product_catalog_dataset.json"

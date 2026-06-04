@@ -3865,6 +3865,66 @@
   {
     "id": "UC-167",
     "branch": "coding_task",
+    "requirement": "B6",
+    "site_id": 3,
+    "query": "show me option to find in internet about dogs",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-168",
+    "branch": "coding_task",
+    "requirement": "B3",
+    "site_id": 3,
+    "query": "hello??",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "greeting"
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-169",
+    "branch": "coding_task",
+    "requirement": "B4",
+    "site_id": 3,
+    "query": "show me products about dogs",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-170",
+    "branch": "coding_task",
     "requirement": "B4",
     "site_id": 3,
     "query": "show me some options about cats and dogs",
@@ -3883,7 +3943,7 @@
     "notes": ""
   },
   {
-    "id": "UC-168",
+    "id": "UC-171",
     "branch": "coding_task",
     "requirement": "B4",
     "site_id": 3,
@@ -3903,7 +3963,7 @@
     "notes": ""
   },
   {
-    "id": "UC-169",
+    "id": "UC-172",
     "branch": "coding_task",
     "requirement": "B4",
     "site_id": 1,
@@ -3923,7 +3983,7 @@
     "notes": ""
   },
   {
-    "id": "UC-170",
+    "id": "UC-173",
     "branch": "coding_task",
     "requirement": "B4",
     "site_id": 15,
