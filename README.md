@@ -70,7 +70,13 @@ python -m cli ingest
 uvicorn src.api.app:app --reload --port 8080
 ```
 
-**Chat UI:** open [http://127.0.0.1:8080/ui/](http://127.0.0.1:8080/ui/) after the server starts. Details: [`docs/CHAT_UI.md`](docs/CHAT_UI.md).
+**Chat UI:** after the server is running, open [http://127.0.0.1:8080/ui/](http://127.0.0.1:8080/ui/)
+
+```powershell
+.\scripts\run_dev.ps1
+```
+
+If the page is blank or “can’t connect”, the API is not running — start it first. Details: [`docs/CHAT_UI.md`](docs/CHAT_UI.md).
 
 **Docker (v2):**
 
