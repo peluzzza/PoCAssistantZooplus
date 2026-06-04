@@ -26,6 +26,25 @@ _PET_PRODUCT = re.compile(
     re.I,
 )
 
+_PRODUCT_BROWSE = re.compile(
+    r"\b("
+    r"what\s+products?|products?\s+(do\s+you\s+)?(have|sell|carry|stock)|"
+    r"what\s+do\s+you\s+sell|what'?s?\s+available|show\s+me\s+(something|anything)|"
+    r"browse\s+(the\s+)?(shop|catalog)|anything\s+in\s+stock"
+    r")\b",
+    re.I,
+)
+
+_SHOW_PET_TOPIC = re.compile(
+    r"\bshow\s+me\b.*\b(about\s+)?(dogs?|cats?|pupp(?:y|ies)|kitt(?:en|ens)?)\b",
+    re.I,
+)
+
+_NON_CATALOG_SPECIES = re.compile(
+    r"\b(horse|horses|pony|ponies|bird|birds|fish|reptile|hamster|guinea\s+pig)\b",
+    re.I,
+)
+
 _OFF_TOPIC_HARD = re.compile(
     r"\b(weather|traffic|president|news\s+headline|bitcoin|crypto|"
     r"for\s+humans|human\s+food|search\s+the\s+internet|ignore\s+all\s+previous|"
@@ -50,10 +69,29 @@ def looks_like_help_about_shop(query: str) -> bool:
     return bool(_HELP_ABOUT.search(query.strip()))
 
 
+def looks_like_non_catalog_species(query: str) -> bool:
+    return bool(_NON_CATALOG_SPECIES.search(query.strip()))
+
+
+def looks_like_product_browse(query: str) -> bool:
+    text = query.strip()
+    if not text or _OFF_TOPIC_HARD.search(text) or looks_like_non_catalog_species(text):
+        return False
+    if _PRODUCT_BROWSE.search(text):
+        return True
+    if _SHOW_PET_TOPIC.search(text):
+        return True
+    return False
+
+
 def looks_like_catalog_search(query: str) -> bool:
     text = query.strip()
     if not text or _OFF_TOPIC_HARD.search(text):
         return False
+    if looks_like_non_catalog_species(text):
+        return False
+    if looks_like_product_browse(text):
+        return True
     if _CATALOG_ACTION.search(text) and _PET_PRODUCT.search(text):
         return True
     if re.search(

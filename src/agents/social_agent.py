@@ -17,6 +17,7 @@ from src.agents.prompts import (
 )
 from src.config import Settings, apply_settings
 from src.llm.conversation import conversational_reply as template_conversational_reply
+from src.agents.agent_cascade import run_agent_cascade
 from src.llm.opencode import synthesize_opencode_chat
 
 logger = logging.getLogger(__name__)
@@ -71,9 +72,21 @@ def social_reply(
     handoff_line = f"{handoff_brief}\n\n" if handoff_brief else ""
     ctx = f"{SOCIAL_SYSTEM}\n\n{handoff_line}{_context_for_kind(kind, query, intent)}"
 
-    # Social lane: always template for sub-second UX (catalog synthesis still uses OpenCode).
-    use_opencode_social = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "template").lower() == "opencode"
+    social_env = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "auto").lower()
+    synthesis_is_llm = (cfg.synthesis_mode or "").lower() == "opencode"
+    use_opencode_social = social_env == "opencode" or (social_env == "auto" and synthesis_is_llm)
+    cascade_on = os.environ.get("ZOOPLUS_AGENT_CASCADE", "1").lower() not in ("0", "false", "no")
     if use_opencode_social and (cfg.synthesis_mode or "").lower() == "opencode":
+        if cascade_on:
+
+            def _social_ok(raw: str) -> str | None:
+                t = raw.strip()
+                return t if len(t) > 15 else None
+
+            result = run_agent_cascade("social", f"{ctx}\n\nCustomer: {query}", settings=cfg, parse=_social_ok)
+            if result.value:
+                logger.info("social via opencode agent=%s", result.agent_id)
+                return str(result.value).strip()
         llm = synthesize_opencode_chat(
             query=query,
             site_id=site_id,
@@ -89,5 +102,5 @@ def social_reply(
         query,
         site_id,
         settings=cfg,
-        social_kind=intent.social_kind,
+        social_kind=kind,
     )

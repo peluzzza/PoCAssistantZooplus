@@ -177,9 +177,37 @@ def must_ground_in_retrieval() -> bool:
     return bool(policy.get("must_ground_in_retrieval", True))
 
 
-def polite_decline_for(reason_code: str) -> str:
+def polite_decline_for(reason_code: str, *, query: str = "") -> str:
+    from src.llm.response_variety import pick_variant, style_seed
+
+    pools: dict[str, tuple[str, ...]] = {
+        "out_of_scope_default_deny": (
+            "I can't help with that topic. This shop's catalog is for dog and cat products — "
+            "tell me what you'd like (food, treats, toys…) and I'll suggest a few options.",
+            "That one's outside what I cover here — I focus on dog and cat items in this catalog. "
+            "What food, treats, or accessories are you shopping for?",
+            "I'm only set up for pet products in this shop (dogs and cats). "
+            "Ask in your own words what you need and I'll pull a few matching options.",
+        ),
+        "off_topic_non_pet_species": (
+            "We don't stock horse or other non–dog/cat lines in this catalog — only dogs and cats. "
+            "Happy to suggest food, treats, or toys if you tell me which pet you have.",
+            "This shop's data is limited to dogs and cats, so I can't search for horses or similar. "
+            "Want puppy food, cat treats, or something else for a dog or cat?",
+            "Horses and other species aren't in this dataset — I can help with dog and cat products instead. "
+            "What are you looking for?",
+        ),
+        "off_topic_external_web": (EXTERNAL_WEB_DECLINE,),
+        "off_topic_life": (_DECLINE_BY_REASON["off_topic_life"],),
+        "off_topic_non_pet_consumer": (_DECLINE_BY_REASON["off_topic_non_pet_consumer"],),
+    }
     if reason_code == "off_topic_external_web":
         return EXTERNAL_WEB_DECLINE
+    options = pools.get(reason_code)
+    if options and len(options) > 1:
+        key = style_seed(query or reason_code, reason_code)
+        body = pick_variant(key, options)
+        return _zooplus_decline(body) if not body.startswith("I'm the zooplus") else body
     return _DECLINE_BY_REASON.get(reason_code, DEFAULT_DECLINE)
 
 

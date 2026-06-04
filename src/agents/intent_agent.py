@@ -9,11 +9,18 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
-from src.agents.intent_hints import looks_like_catalog_search, looks_like_help_about_shop
+from src.agents.intent_hints import (
+    looks_like_catalog_search,
+    looks_like_help_about_shop,
+    looks_like_non_catalog_species,
+    looks_like_off_topic,
+    looks_like_product_browse,
+)
 from src.agents.prompts import INTENT_SYSTEM
 from src.config import Settings, apply_settings
 from src.guardian.engine import EXTERNAL_WEB_DECLINE, polite_decline_for
-from src.llm.opencode import _run_opencode_prompt, opencode_auth_present
+from src.agents.agent_cascade import run_agent_cascade
+from src.llm.opencode import opencode_auth_present
 
 logger = logging.getLogger(__name__)
 
@@ -169,14 +176,19 @@ def _build_intent_prompt(query: str, site_id: int) -> str:
 def _fallback_intent_decision(query: str, *, site_id: int, reason: str) -> IntentDecision:
     """Topic-based routing when OpenCode intent agent fails — never repeat generic help."""
     from src.agents.handoff import TOPIC_OFF_TOPIC, TOPIC_PET_CATALOG, TOPIC_SHOP_SOCIAL
-    from src.agents.intent_hints import (
-        looks_like_catalog_search,
-        looks_like_help_about_shop,
-        looks_like_off_topic,
-    )
     from src.llm.conversation import ConvoKind, classify_conversation
 
     text = query.strip()
+    if looks_like_non_catalog_species(text):
+        return IntentDecision(
+            lane="decline_off_topic",
+            topic=TOPIC_OFF_TOPIC,
+            confidence=0.5,
+            reason=f"{reason}_non_catalog_species",
+            source="topic_fallback",
+            decline_message=_decline_copy("off_topic_non_pet_species", query=text),
+        )
+
     if looks_like_off_topic(text):
         return IntentDecision(
             lane="decline_off_topic",
@@ -187,7 +199,7 @@ def _fallback_intent_decision(query: str, *, site_id: int, reason: str) -> Inten
             decline_message=_decline_copy(reason, query=text),
         )
 
-    if looks_like_catalog_search(text):
+    if looks_like_catalog_search(text) or looks_like_product_browse(text):
         return IntentDecision(
             lane="catalog_search",
             topic=TOPIC_PET_CATALOG,
@@ -231,15 +243,18 @@ def _fallback_intent_decision(query: str, *, site_id: int, reason: str) -> Inten
         confidence=0.3,
         reason=f"{reason}_ambiguous",
         source="topic_fallback",
-        decline_message=polite_decline_for("out_of_scope_default_deny"),
+        decline_message=polite_decline_for("out_of_scope_default_deny", query=text),
     )
 
 
-def _decline_copy(_reason: str, *, query: str) -> str:
+def _decline_copy(reason: str, *, query: str) -> str:
     q = query.lower()
     if "internet" in q or "browse the web" in q or "web search" in q:
-        return EXTERNAL_WEB_DECLINE
-    return polite_decline_for("out_of_scope_default_deny")
+        return polite_decline_for("off_topic_external_web", query=query)
+    if looks_like_non_catalog_species(query):
+        return polite_decline_for("off_topic_non_pet_species", query=query)
+    code = reason if reason.startswith("off_topic") else "out_of_scope_default_deny"
+    return polite_decline_for(code, query=query)
 
 
 def classify_intent_agentic(
@@ -248,17 +263,31 @@ def classify_intent_agentic(
     *,
     settings: Settings | None = None,
 ) -> IntentDecision:
-    """Classify via local OpenCode agent (primary production path)."""
+    """Classify via OpenCode subagent cascade (intent → topic-guard → conductor)."""
     cfg = settings or apply_settings()
     prompt = _build_intent_prompt(query, site_id)
-    raw = _run_opencode_prompt(prompt, settings=cfg, timeout_seconds=min(12, cfg.opencode_timeout_seconds))
-    parsed = _parse_intent_json(raw or "")
+
+    def _parse_intent(raw: str) -> dict | None:
+        return _parse_intent_json(raw)
+
+    cascade = run_agent_cascade(
+        "intent",
+        prompt,
+        settings=cfg,
+        parse=_parse_intent,
+        attach_roster=True,
+    )
+    parsed = cascade.value
+    agent_source = f"opencode:{cascade.agent_id}" if cascade.agent_id else "opencode"
     if not parsed:
-        logger.warning("intent agent returned no JSON; using topic fallback")
+        logger.warning(
+            "intent cascade exhausted agents=%s; using topic fallback",
+            ",".join(cascade.attempts),
+        )
         return _fallback_intent_decision(
             query,
             site_id=site_id,
-            reason="agent_parse_failed",
+            reason="agent_cascade_failed",
         )
 
     topic_raw = str(parsed.get("topic") or parsed.get("theme") or "")
@@ -301,7 +330,7 @@ def classify_intent_agentic(
         topic=topic,
         confidence=confidence,
         reason=reason,
-        source="opencode",
+        source=agent_source,
         decline_message=decline_msg,
     )
     if os.environ.get("ZOOPLUS_INTENT_REPAIR", "0").lower() in ("1", "true", "yes"):
@@ -375,7 +404,7 @@ def classify_intent(
             if fast_catalog:
                 return fast_catalog
         decision = classify_intent_agentic(text, site_id, settings=cfg)
-        if decision.source in ("opencode", "repair", "topic_fallback"):
+        if decision.source in ("repair", "topic_fallback") or decision.source.startswith("opencode"):
             return decision
         oracle = load_oracle_decision(text)
         if oracle:

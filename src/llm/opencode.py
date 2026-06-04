@@ -67,7 +67,9 @@ def _build_prompt(
         "Rules:\n"
         "- Ground every product mention in the list above.\n"
         "- If the list is empty, apologise and suggest how to rephrase (dog/cat, food type).\n"
-        "- Mention at most 4 products, woven into prose.\n"
+        "- Do NOT output a numbered or bulleted product list — the UI shows product cards separately.\n"
+        "- Mention at most two product names in prose; prices live in the cards.\n"
+        "- Vary wording each turn; avoid rigid template openings.\n"
         "- Match the customer's language when possible.\n"
         "- End with one short follow-up question when appropriate.\n"
     )
@@ -78,10 +80,15 @@ def _run_opencode_prompt(
     *,
     settings: Settings,
     timeout_seconds: int | None = None,
+    agent_id: str | None = None,
+    model: str | None = None,
 ) -> str | None:
-    model = settings.opencode_model or DEFAULT_MODEL
+    use_model = model or settings.opencode_model or DEFAULT_MODEL
     timeout = timeout_seconds if timeout_seconds is not None else settings.opencode_timeout_seconds
-    cmd = ["opencode", "run", "--format", "json", "--model", model, prompt]
+    cmd = ["opencode", "run", "--format", "json", "--model", use_model]
+    if agent_id:
+        cmd.extend(["--agent", agent_id])
+    cmd.append(prompt)
     try:
         result = subprocess.run(
             cmd,
@@ -106,6 +113,27 @@ def _run_opencode_prompt(
     return text if text else None
 
 
+def run_opencode_agent(
+    prompt: str,
+    *,
+    settings: Settings | None = None,
+    agent_id: str,
+    timeout_seconds: int | None = None,
+    model: str | None = None,
+) -> str | None:
+    """Invoke a named OpenCode subagent from opencode.json."""
+    from src.config import Settings as SettingsCls
+
+    cfg = settings or SettingsCls.from_env()
+    return _run_opencode_prompt(
+        prompt,
+        settings=cfg,
+        timeout_seconds=timeout_seconds,
+        agent_id=agent_id,
+        model=model,
+    )
+
+
 def synthesize_opencode_chat(
     query: str,
     site_id: int,
@@ -126,6 +154,30 @@ def synthesize_opencode_chat(
         extra_context=context,
     )
     return _run_opencode_prompt(prompt, settings=cfg, timeout_seconds=timeout_seconds)
+
+
+def synthesize_opencode_with_agents(
+    query: str,
+    site_id: int,
+    products: list[RetrievedProduct],
+    *,
+    settings: Settings | None = None,
+    extra_context: str = "",
+) -> tuple[str | None, str | None]:
+    """Try synthesis subagents in chain; returns (answer, winning_agent_id)."""
+    from src.agents.agent_cascade import run_agent_cascade
+    from src.config import Settings as SettingsCls
+
+    cfg = settings or SettingsCls.from_env()
+    prompt = _build_prompt(query, site_id, products, extra_context=extra_context)
+
+    def _ok(raw: str) -> str | None:
+        text = raw.strip()
+        return text if len(text) > 20 else None
+
+    result = run_agent_cascade("synthesis", prompt, settings=cfg, parse=_ok)
+    answer = result.value
+    return (str(answer) if answer else None), result.agent_id
 
 
 def synthesize_opencode(

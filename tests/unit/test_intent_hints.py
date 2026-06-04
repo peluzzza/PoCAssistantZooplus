@@ -30,6 +30,19 @@ def test_catalog_browse_classified() -> None:
     assert fast.lane == "catalog_search"
 
 
+def test_product_availability_not_declined(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
+    monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
+    client = TestClient(app)
+    resp = client.post(
+        "/chat",
+        json={"site_id": 3, "query": "what products do you have available"},
+    )
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert "can't help with that topic" not in (payload.get("answer") or "").lower()
+
+
 def test_chat_help_and_catalog_no_decline(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
@@ -44,7 +57,10 @@ def test_chat_help_and_catalog_no_decline(monkeypatch: pytest.MonkeyPatch) -> No
         help_payload = help_resp.json()
         assert help_payload["retrieved_products"] == []
         assert "can't help with that topic" not in help_payload["answer"].lower()
-        assert "zooplus" in help_payload["answer"].lower()
+        assert any(
+            w in help_payload["answer"].lower()
+            for w in ("zooplus", "catalog", "shop", "dog", "cat")
+        )
 
     cat_resp = client.post(
         "/chat",

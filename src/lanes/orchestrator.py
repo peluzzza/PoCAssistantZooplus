@@ -32,9 +32,16 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     )
 
     if intent.lane == "decline_off_topic":
+        answer = await asyncio.to_thread(
+            social_reply,
+            request.query,
+            request.site_id,
+            intent,
+            handoff.brief(),
+        )
         record_chat_outcome(declined=True)
         return ChatResponse(
-            answer=intent.decline_message or "",
+            answer=answer or intent.decline_message or "",
             retrieved_products=[],
         )
 

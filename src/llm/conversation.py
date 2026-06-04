@@ -73,35 +73,63 @@ def is_conversational_only(query: str) -> bool:
     return classify_conversation(query) != ConvoKind.PRODUCT
 
 
-def _template_reply(kind: ConvoKind, site_id: int) -> str:
+def _template_reply(kind: ConvoKind, site_id: int, *, query: str = "") -> str:
+    from src.llm.response_variety import pick_variant, style_seed
+
+    key = style_seed(query or str(site_id), kind.value, str(site_id))
     if kind == ConvoKind.GREETING:
-        return (
-            f"Hi there! I'm the zooplus Assistant for shop {site_id}. "
-            "I help shoppers find pet food, treats, and accessories in this catalog. "
-            "What are you looking for — maybe dry food for a puppy or grain-free cat food?"
+        return pick_variant(
+            key,
+            (
+                f"Hello! I help shoppers on site {site_id} pick dog and cat food, treats, and accessories. "
+                "What should we look for first — puppy kibble, grain-free cat food, something else?",
+                f"Hi — welcome to shop {site_id}. Tell me your pet (dog or cat) and what you need; "
+                "I'll suggest a few items from this catalog.",
+                "Hey there! I'm here to narrow down pet products in plain language. "
+                "Dry food, treats, toys — what are you after?",
+            ),
         )
     if kind == ConvoKind.THANKS:
-        return (
-            "You're welcome! I'm the zooplus Assistant for this shop — happy to suggest more "
-            "options or narrow things by brand, budget, or dog vs cat whenever you like."
+        return pick_variant(
+            key,
+            (
+                "Glad that helped! If you want more ideas, mention brand, budget, or dog vs cat.",
+                "You're welcome — happy to dig deeper anytime. Just say what pet and product type you need.",
+                "Anytime! I can refine suggestions with a bit more detail when you're ready.",
+            ),
         )
     if kind == ConvoKind.BYE:
-        return (
-            f"Take care! I'm the zooplus Assistant for shop {site_id} — come back anytime "
-            "you need help choosing pet products in this catalog."
+        return pick_variant(
+            key,
+            (
+                f"See you later — shop {site_id} is here whenever you need pet product ideas.",
+                "Bye for now! Come back with a dog or cat shopping question anytime.",
+                "Take care — I'll be here for food, treats, and accessories in this catalog.",
+            ),
         )
     if kind == ConvoKind.HELP:
-        return (
-            f"I'm the zooplus Assistant for shop {site_id} — I can recommend up to four products "
-            'in plain language (e.g. "sensitive puppy dry food" or "cat treats in stock"). '
-            "Questions outside pets in this shop I'll answer briefly and point you back to the catalog."
+        return pick_variant(
+            key,
+            (
+                f"On site {site_id} I search this catalog in natural language and show up to four matches — "
+                'try "grain-free adult cat food" or "dog treats on sale". Off-topic stuff gets a polite redirect.',
+                "Ask like you're talking to a shop assistant: describe the pet and product. "
+                "I'll return a few grounded picks from our dog/cat data (no web search or weather).",
+                "I recommend from this shop's catalog only — dogs and cats. "
+                "Describe what you want and I'll surface a short list you can refine.",
+            ),
         )
     if kind == ConvoKind.IDENTITY:
-        return (
-            f"I'm the zooplus Assistant for shop {site_id}. "
-            "I only use this shop's product data — dog and cat food, treats, litter, toys, and similar. "
-            "I'm not a general chatbot: no weather, traffic, or web search. "
-            "Ask me what you'd like to buy for your pet and I'll suggest a few options."
+        return pick_variant(
+            key,
+            (
+                f"I'm the zooplus Assistant for shop {site_id} — catalog-only, dogs and cats. "
+                "No general knowledge or internet; just product help for this store.",
+                f"Shop assistant for site {site_id}: I use local product data for dogs and cats "
+                "(food, treats, litter, toys). Ask what you'd like to buy.",
+                "An AI helper tied to one pet catalog per site — I suggest real SKUs here, "
+                "not traffic, news, or human products.",
+            ),
         )
     return ""
 
@@ -125,12 +153,14 @@ def conversational_reply(
     """Polite short reply for greetings/thanks/help — optional OpenCode polish."""
     cfg = settings or apply_settings()
     kind = _SOCIAL_KIND_TO_CONVO.get(social_kind or "", classify_conversation(query))
-    fallback = _template_reply(kind, site_id)
+    fallback = _template_reply(kind, site_id, query=query)
     if not fallback:
         return ""
 
-    social_mode = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "template").lower()
-    if social_mode != "opencode" or (cfg.synthesis_mode or "").lower() != "opencode":
+    social_env = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "auto").lower()
+    synthesis_is_llm = (cfg.synthesis_mode or "").lower() == "opencode"
+    use_llm = social_env == "opencode" or (social_env == "auto" and synthesis_is_llm)
+    if not use_llm:
         return fallback
 
     llm = synthesize_opencode_chat(

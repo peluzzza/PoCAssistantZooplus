@@ -64,6 +64,8 @@ async def ui_config() -> dict:
     if timeout_ms <= 0:
         # Intent + RAG + synthesis can stack; default above single OpenCode timeout.
         timeout_ms = max(45000, settings.opencode_timeout_seconds * 2000 + 15000)
+    from src.agents.registry import agent_chain_for_role, list_available_agent_ids
+
     return {
         "sites": [1, 3, 15],
         "default_site_id": 3,
@@ -71,6 +73,10 @@ async def ui_config() -> dict:
         "opencode_model": settings.opencode_model,
         "opencode_auth_configured": opencode_auth_present(settings),
         "chat_timeout_ms": timeout_ms,
+        "agent_cascade_enabled": os.environ.get("ZOOPLUS_AGENT_CASCADE", "1").lower()
+        not in ("0", "false", "no"),
+        "available_agents": list_available_agent_ids(),
+        "intent_agent_chain": list(agent_chain_for_role("intent")),
         "chat_endpoint": "/chat",
         "stream_endpoint": "/chat/stream",
     }
