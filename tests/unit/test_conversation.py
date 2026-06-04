@@ -29,7 +29,8 @@ def test_chat_identity_no_products(monkeypatch: pytest.MonkeyPatch) -> None:
     payload = response.json()
     assert payload["retrieved_products"] == []
     assert "zooplus Assistant" in payload["answer"]
-    assert "product data" in payload["answer"].lower()
+    assert "zooplus" in payload["answer"].lower()
+    assert "assistant" in payload["answer"].lower()
 
 
 def test_chat_traffic_decline_no_products(monkeypatch: pytest.MonkeyPatch) -> None:

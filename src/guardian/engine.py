@@ -209,61 +209,10 @@ def is_pet_catalog_in_scope(query: str) -> bool:
     return False
 
 
-def topic_check(query: str) -> TopicDecision:
-    """Default-deny: allow only conversational turns or pet-catalog intents."""
-    text = (query or "").strip()
-    if not text:
-        return TopicDecision(
-            decision="DECLINE",
-            reason_code="out_of_scope_empty",
-            polite_decline=polite_decline_for("out_of_scope_empty"),
-        )
+def topic_check(query: str, site_id: int = 3) -> TopicDecision:
+    """Bridge to agentic intent router (legacy MCP / unit tests)."""
+    from src.lanes.interactive import intent_to_topic_decision
+    from src.agents.intent_agent import classify_intent
 
-    if _FORBIDDEN_CONSUMER.search(text):
-        return TopicDecision(
-            decision="DECLINE",
-            reason_code="off_topic_non_pet_consumer",
-            polite_decline=polite_decline_for("off_topic_non_pet_consumer"),
-        )
-
-    for pattern, reason_code, _ in _POLICY_BLOCKS:
-        if pattern.search(text):
-            return TopicDecision(
-                decision="DECLINE",
-                reason_code=reason_code,
-                polite_decline=polite_decline_for(reason_code),
-            )
-
-    if _OUT_OF_CATALOG_SPECIES.search(text):
-        return TopicDecision(
-            decision="DECLINE",
-            reason_code="off_topic_non_pet_species",
-            polite_decline=polite_decline_for("off_topic_non_pet_species"),
-        )
-
-    if _LIFE_OFF_TOPIC.search(text):
-        return TopicDecision(
-            decision="DECLINE",
-            reason_code="off_topic_life",
-            polite_decline=polite_decline_for("off_topic_life"),
-        )
-
-    if _is_conversational_turn(text):
-        return TopicDecision(
-            decision="ALLOW",
-            reason_code="conversational",
-            polite_decline=None,
-        )
-
-    if is_pet_catalog_in_scope(text):
-        return TopicDecision(
-            decision="ALLOW",
-            reason_code="in_scope_pet_catalog",
-            polite_decline=None,
-        )
-
-    return TopicDecision(
-        decision="DECLINE",
-        reason_code="out_of_scope_default_deny",
-        polite_decline=polite_decline_for("out_of_scope_default_deny"),
-    )
+    intent = classify_intent(query, site_id)
+    return intent_to_topic_decision(intent)

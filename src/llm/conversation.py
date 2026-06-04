@@ -29,18 +29,20 @@ _HELP = re.compile(
     re.I,
 )
 _IDENTITY = re.compile(
-    r"^("
+    r"\b("
     r"who\s+are\s+you|what\s+are\s+you|who\s+is\s+this|what\s+is\s+this(\s+(bot|assistant))?|"
     r"introduce\s+yourself|tell\s+me\s+about\s+yourself|"
     r"cu[eé]ntame\s+qui[eé]n\s+eres|qui[eé]n\s+eres"
-    r")[!?.\s]*$",
+    r")\b",
     re.I,
 )
 
 
 def classify_conversation(query: str) -> ConvoKind:
     text = query.strip()
-    if _GREETING.match(text):
+    if _IDENTITY.search(text):
+        return ConvoKind.IDENTITY
+    if _GREETING.match(text) or re.search(r"^(hi|hello|hey|hola)\b", text, re.I):
         return ConvoKind.GREETING
     if _THANKS.match(text):
         return ConvoKind.THANKS

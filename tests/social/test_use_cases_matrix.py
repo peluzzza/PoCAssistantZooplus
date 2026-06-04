@@ -69,4 +69,15 @@ def test_use_case_matrix(
     for fragment in expect.get("answer_contains") or []:
         assert fragment.lower() in answer.lower(), f"{case['id']}: missing '{fragment}' in answer"
 
+    for forbidden in expect.get("forbid_answer") or []:
+        assert forbidden.lower() not in answer.lower(), (
+            f"{case['id']}: rigid catalog template leaked '{forbidden}'"
+        )
+
+    lane = expect.get("intent_lane")
+    if lane == "conversational":
+        assert products == [], f"{case['id']}: conversational must not return products"
+    if lane == "decline_off_topic":
+        assert products == [], f"{case['id']}: decline must not return products"
+
     # target_article_id is a catalog hint only — semantic search may return siblings

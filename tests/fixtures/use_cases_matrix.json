@@ -14,7 +14,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "off_topic_weather"
   },
@@ -33,7 +36,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "off_topic_weather"
   },
@@ -52,7 +58,10 @@
       "answer_contains": [
         "catalog"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "catalog_only"
   },
@@ -71,7 +80,10 @@
       "answer_contains": [
         "catalog"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "catalog_only"
   },
@@ -90,7 +102,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "off_topic_news"
   },
@@ -109,7 +124,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "general_knowledge"
   },
@@ -128,7 +146,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "off_topic_datetime"
   },
@@ -147,7 +168,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "injection"
   },
@@ -166,7 +190,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "injection"
   },
@@ -185,7 +212,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "non_pet"
   },
@@ -204,7 +234,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "external"
   },
@@ -223,7 +256,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "non_pet"
   },
@@ -242,7 +278,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "non_pet"
   },
@@ -261,7 +300,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "non_pet_consumer"
   },
@@ -278,7 +320,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Exact Coding Task.docx example query"
   },
@@ -295,7 +340,10 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": null
     },
     "notes": "Social / polite exchange"
   },
@@ -312,7 +360,10 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": null
     },
     "notes": "Social / polite exchange"
   },
@@ -329,7 +380,10 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": null
     },
     "notes": "Social / polite exchange"
   },
@@ -346,7 +400,10 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": null
     },
     "notes": "Social / polite exchange"
   },
@@ -363,7 +420,10 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": null
     },
     "notes": "Social / polite exchange"
   },
@@ -380,7 +440,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Spanish in-scope product query"
   },
@@ -397,7 +460,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 1"
   },
@@ -414,7 +480,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 1"
   },
@@ -431,7 +500,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -448,7 +520,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -465,7 +540,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -482,7 +560,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -499,7 +580,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -516,7 +600,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -533,7 +620,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 15"
   },
@@ -550,7 +640,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 15"
   },
@@ -567,7 +660,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 15"
   },
@@ -584,7 +680,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 1"
   },
@@ -601,7 +700,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -618,7 +720,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 3"
   },
@@ -635,7 +740,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Catalog-backed site 1"
   },
@@ -652,7 +760,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "Products must all be site_id=3"
   },
@@ -669,7 +780,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "max_recommendations cap"
   },
@@ -688,7 +802,10 @@
       "answer_contains": [
         "zooplus"
       ],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": "Gibberish SKU — default-deny before RAG"
   },
@@ -705,7 +822,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": "German query against de-DE catalog rows"
   },
@@ -722,7 +842,10 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -739,7 +862,10 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -756,7 +882,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -773,7 +902,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -790,7 +922,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -807,7 +942,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -824,7 +962,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -841,7 +982,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -858,7 +1002,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -875,7 +1022,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -892,7 +1042,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -909,7 +1062,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -926,7 +1082,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -943,7 +1102,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -960,7 +1122,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -977,7 +1142,10 @@
       "min_products": 1,
       "max_products": 4,
       "answer_contains": [],
-      "products_grounded": true
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   },
@@ -994,7 +1162,1313 @@
       "min_products": 0,
       "max_products": 0,
       "answer_contains": [],
-      "products_grounded": false
+      "forbid_answer": [],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-058",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "hello, who are you",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "identity"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-059",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "hi, what are you?",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "identity"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-060",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "hey there — who is this?",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "identity"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-061",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "good morning, introduce yourself",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "greeting"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-062",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "hello!",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "greeting"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-063",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "Hi there!",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "greeting"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-064",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "thanks a lot!",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "thanks"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-065",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "thank you for your help",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "thanks"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-066",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "what can you do for me?",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "help"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-067",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "help me understand what you offer",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "help"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-068",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "goodbye for now",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "bye"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-069",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "see you later",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "bye"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-070",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "hola, ¿quién eres?",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "identity"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-071",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "buenos días",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "greeting"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-072",
+    "branch": "agentic_social",
+    "requirement": "B3+B6+AGENT",
+    "site_id": 3,
+    "query": "danke!",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found"
+      ],
+      "products_grounded": false,
+      "intent_lane": "conversational",
+      "social_kind": "thanks"
+    },
+    "notes": "Agentic social — no catalog retrieval"
+  },
+  {
+    "id": "UC-073",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "how is the traffic today",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-074",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "how it the traffic today",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-075",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "what's the weather like?",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-076",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "Wie ist das Wetter?",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-077",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "latest news please",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-078",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "who won the election",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-079",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "what about for humans",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-080",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "food for people not pets",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-081",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "book me a flight to Paris",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-082",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "translate this paragraph to French",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-083",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "write me a poem about the ocean",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-084",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "stock price of Apple",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-085",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "solve this math homework",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-086",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "dating advice for me",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-087",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "best laptop 2026",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-088",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "football match score",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-089",
+    "branch": "agentic_decline",
+    "requirement": "B6+AGENT",
+    "site_id": 3,
+    "query": "train schedule to Munich",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": true,
+      "min_products": 0,
+      "max_products": 0,
+      "answer_contains": [
+        "zooplus"
+      ],
+      "forbid_answer": [
+        "Here's what I found",
+        "Based on what you asked",
+        "EUR "
+      ],
+      "products_grounded": false,
+      "intent_lane": "decline_off_topic",
+      "social_kind": null
+    },
+    "notes": "Agentic decline — must not RAG"
+  },
+  {
+    "id": "UC-090",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 1,
+    "query": "sensitive skin dog food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-091",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "urinary care cat food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-092",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "grain free kitten food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-093",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 15,
+    "query": "large dog breed food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-094",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 1,
+    "query": "indoor cat food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-095",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "high protein puppy",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-096",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 15,
+    "query": "low fat dog food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-097",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 1,
+    "query": "salmon dog food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-098",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "rabbit cat food grain free",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-099",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 15,
+    "query": "sterilised cat food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-100",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "dental sticks dog",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-101",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 1,
+    "query": "puppy milk replacer",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-102",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "senior dog joint care",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-103",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 15,
+    "query": "cat snack treats",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-104",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 1,
+    "query": "wet food cat pouches",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-105",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "dry food large bag dog",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-106",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 15,
+    "query": "premium cat food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-107",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "budget dog food under 20 euros",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-108",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 1,
+    "query": "organic cat treats",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-109",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "weight loss dog diet",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-110",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 15,
+    "query": "hairball cat food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-111",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "allergy dog food duck",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-112",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 1,
+    "query": "multi pack cat food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-113",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 3,
+    "query": "starter kit puppy food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
+    },
+    "notes": ""
+  },
+  {
+    "id": "UC-114",
+    "branch": "product_search",
+    "requirement": "B4+B5",
+    "site_id": 15,
+    "query": "fish cat food",
+    "target_article_id": null,
+    "expect": {
+      "status": 200,
+      "decline": false,
+      "min_products": 1,
+      "max_products": 4,
+      "answer_contains": [],
+      "forbid_answer": [],
+      "products_grounded": true,
+      "intent_lane": "catalog_search",
+      "social_kind": null
     },
     "notes": ""
   }

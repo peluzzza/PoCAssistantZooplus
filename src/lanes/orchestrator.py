@@ -1,4 +1,4 @@
-"""Dual-lane orchestrator — Interactive (fast) + Process (RAG)."""
+"""Dual-lane orchestrator — agentic intent + social / catalog process."""
 
 from __future__ import annotations
 
@@ -6,25 +6,34 @@ import asyncio
 
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
+from src.agents.intent_agent import classify_intent
+from src.agents.social_agent import social_reply
 from src.guardian.engine import load_constraints
-from src.lanes.interactive import run_topic_guard
 from src.lanes.process import run_process_lane
-from src.llm.conversation import conversational_reply, is_conversational_only
 from src.models.chat import ChatRequest, ChatResponse
 from src.observability.metrics import record_chat_outcome
 
 
 async def handle_chat(request: ChatRequest) -> ChatResponse:
-    topic = await run_topic_guard(request.query)
-    if topic.decision == "DECLINE":
-        record_chat_outcome(declined=True)
-        return ChatResponse(answer=topic.polite_decline or "", retrieved_products=[])
+    intent = await asyncio.to_thread(
+        classify_intent,
+        request.query,
+        request.site_id,
+    )
 
-    if is_conversational_only(request.query):
+    if intent.lane == "decline_off_topic":
+        record_chat_outcome(declined=True)
+        return ChatResponse(
+            answer=intent.decline_message or "",
+            retrieved_products=[],
+        )
+
+    if intent.lane == "conversational":
         answer = await asyncio.to_thread(
-            conversational_reply,
+            social_reply,
             request.query,
             request.site_id,
+            intent,
         )
         record_chat_outcome(declined=False)
         return ChatResponse(answer=answer, retrieved_products=[])
@@ -39,4 +48,7 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     )
     receipt = await process_task
     record_chat_outcome(declined=False)
-    return ChatResponse(answer=receipt.answer, retrieved_products=receipt.retrieved_products)
+    return ChatResponse(
+        answer=receipt.answer,
+        retrieved_products=receipt.retrieved_products,
+    )

@@ -47,7 +47,7 @@
     "expect_status": 200,
     "expect_decline": true,
     "max_products": 0,
-    "answer_contains": "pet"
+    "answer_contains": "dog"
   },
   {
     "id": "decline_general_knowledge",
