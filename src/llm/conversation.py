@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from enum import StrEnum
 
@@ -19,13 +20,23 @@ class ConvoKind(StrEnum):
 
 
 _GREETING = re.compile(
-    r"^(hi|hello|hey|hola|buenas|hi\s+there|good\s+(morning|afternoon|evening))[!?.\s]*$",
+    r"^(hi|hello|hey|hola|buenas|buenos\s+d[ií]as|hi\s+there|good\s+(morning|afternoon|evening))[!?.\s]*$",
     re.I,
 )
-_THANKS = re.compile(r"^(thanks|thank\s+you|gracias|muchas\s+gracias|danke)[!?.\s]*$", re.I)
-_BYE = re.compile(r"^(bye|goodbye|see\s+you|adios|hasta\s+luego)[!?.\s]*$", re.I)
+_THANKS = re.compile(
+    r"^(thanks|thank\s+you|gracias|muchas\s+gracias|danke)[!?.\s]*$",
+    re.I,
+)
+_BYE = re.compile(
+    r"^(bye|goodbye|see\s+you(\s+later)?|adios|hasta\s+luego|goodbye\s+for\s+now)[!?.\s]*$",
+    re.I,
+)
 _HELP = re.compile(
     r"^(help|\?|what\s+can\s+you\s+do|how\s+can\s+you\s+help|what\s+do\s+you\s+do)[!?.\s]*$",
+    re.I,
+)
+_HELP_PHRASE = re.compile(
+    r"\b(help\s+me\s+understand|what\s+you\s+offer|what\s+can\s+you\s+do\s+for\s+me)\b",
     re.I,
 )
 _IDENTITY = re.compile(
@@ -42,13 +53,13 @@ def classify_conversation(query: str) -> ConvoKind:
     text = query.strip()
     if _IDENTITY.search(text):
         return ConvoKind.IDENTITY
-    if _GREETING.match(text) or re.search(r"^(hi|hello|hey|hola)\b", text, re.I):
+    if _GREETING.match(text) or re.search(r"^(hi|hello|hey|hola|buenos)\b", text, re.I):
         return ConvoKind.GREETING
     if _THANKS.match(text):
         return ConvoKind.THANKS
-    if _BYE.match(text):
+    if _BYE.match(text) or re.search(r"\b(goodbye|see\s+you|adios|hasta\s+luego)\b", text, re.I):
         return ConvoKind.BYE
-    if _HELP.match(text):
+    if _HELP.match(text) or _HELP_PHRASE.search(text):
         return ConvoKind.HELP
     if _IDENTITY.match(text):
         return ConvoKind.IDENTITY
@@ -68,14 +79,17 @@ def _template_reply(kind: ConvoKind, site_id: int) -> str:
         )
     if kind == ConvoKind.THANKS:
         return (
-            "You're welcome! Happy to suggest more options or narrow things by "
-            "brand, budget, or dog vs cat whenever you like."
+            "You're welcome! I'm the zooplus Assistant for this shop — happy to suggest more "
+            "options or narrow things by brand, budget, or dog vs cat whenever you like."
         )
     if kind == ConvoKind.BYE:
-        return "Take care! Come back anytime you need help choosing pet products for this shop."
+        return (
+            f"Take care! I'm the zooplus Assistant for shop {site_id} — come back anytime "
+            "you need help choosing pet products in this catalog."
+        )
     if kind == ConvoKind.HELP:
         return (
-            "I'm a shop assistant for this pet catalog — I can recommend up to four products "
+            f"I'm the zooplus Assistant for shop {site_id} — I can recommend up to four products "
             'in plain language (e.g. "sensitive puppy dry food" or "cat treats in stock"). '
             "Questions outside pets in this shop I'll answer briefly and point you back to the catalog."
         )
@@ -89,18 +103,31 @@ def _template_reply(kind: ConvoKind, site_id: int) -> str:
     return ""
 
 
+_SOCIAL_KIND_TO_CONVO: dict[str, ConvoKind] = {
+    "greeting": ConvoKind.GREETING,
+    "identity": ConvoKind.IDENTITY,
+    "thanks": ConvoKind.THANKS,
+    "help": ConvoKind.HELP,
+    "bye": ConvoKind.BYE,
+}
+
+
 def conversational_reply(
     query: str,
     site_id: int,
     *,
     settings: Settings | None = None,
+    social_kind: str | None = None,
 ) -> str:
     """Polite short reply for greetings/thanks/help — optional OpenCode polish."""
     cfg = settings or apply_settings()
-    kind = classify_conversation(query)
+    kind = _SOCIAL_KIND_TO_CONVO.get(social_kind or "", classify_conversation(query))
     fallback = _template_reply(kind, site_id)
+    if not fallback:
+        return ""
 
-    if (cfg.synthesis_mode or "").lower() != "opencode":
+    social_mode = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "template").lower()
+    if social_mode != "opencode" or (cfg.synthesis_mode or "").lower() != "opencode":
         return fallback
 
     llm = synthesize_opencode_chat(

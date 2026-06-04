@@ -83,6 +83,29 @@ def _normalize_social_kind(value: str | None) -> SocialKind:
     return None
 
 
+def try_fast_conversational_intent(query: str) -> IntentDecision | None:
+    """Skip OpenCode for obvious social turns (latency); policy routing stays agentic for catalog/decline."""
+    from src.llm.conversation import ConvoKind, classify_conversation
+
+    kind = classify_conversation(query)
+    if kind == ConvoKind.PRODUCT:
+        return None
+    social_map: dict[ConvoKind, SocialKind] = {
+        ConvoKind.GREETING: "greeting",
+        ConvoKind.IDENTITY: "identity",
+        ConvoKind.THANKS: "thanks",
+        ConvoKind.HELP: "help",
+        ConvoKind.BYE: "bye",
+    }
+    return IntentDecision(
+        lane="conversational",
+        social_kind=social_map.get(kind, "greeting"),
+        confidence=1.0,
+        reason=f"fast_{kind.value}",
+        source="fast_social",
+    )
+
+
 def _build_intent_prompt(query: str, site_id: int) -> str:
     return (
         f"{INTENT_SYSTEM}\n\n"
@@ -201,6 +224,9 @@ def classify_intent(
 
     cfg = settings or apply_settings()
     if mode == "agentic" or (mode == "auto" and opencode_auth_present(cfg)):
+        fast = try_fast_conversational_intent(text)
+        if fast:
+            return fast
         decision = classify_intent_agentic(text, site_id, settings=cfg)
         if decision.source == "opencode":
             return decision

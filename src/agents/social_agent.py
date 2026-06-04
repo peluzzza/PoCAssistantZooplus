@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 
 from src.agents.intent_agent import IntentDecision, SocialKind
 from src.agents.prompts import (
@@ -53,16 +54,23 @@ def social_reply(
     kind = intent.social_kind or "greeting"
     ctx = f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}"
 
-    if (cfg.synthesis_mode or "").lower() == "opencode":
+    # Social lane: always template for sub-second UX (catalog synthesis still uses OpenCode).
+    use_opencode_social = os.environ.get("ZOOPLUS_SOCIAL_SYNTHESIS", "template").lower() == "opencode"
+    if use_opencode_social and (cfg.synthesis_mode or "").lower() == "opencode":
         llm = synthesize_opencode_chat(
             query=query,
             site_id=site_id,
             context=ctx,
             products=[],
             settings=cfg,
-            timeout_seconds=min(14, cfg.opencode_timeout_seconds),
+            timeout_seconds=min(8, cfg.opencode_timeout_seconds),
         )
         if llm:
             return llm.strip()
 
-    return template_conversational_reply(query, site_id, settings=cfg)
+    return template_conversational_reply(
+        query,
+        site_id,
+        settings=cfg,
+        social_kind=intent.social_kind,
+    )

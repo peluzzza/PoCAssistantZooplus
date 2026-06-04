@@ -3,7 +3,7 @@
     "lane": "decline_off_topic",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "UC-001"
+    "reason": "off_topic_weather"
   },
   "wie ist das wetter in berlin?": {
     "lane": "decline_off_topic",
@@ -27,13 +27,13 @@
     "lane": "decline_off_topic",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "UC-005"
+    "reason": "off_topic_news"
   },
   "who is the president of france?": {
     "lane": "decline_off_topic",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "decline_general_knowledge"
+    "reason": "off_topic_general_knowledge"
   },
   "what time is it now?": {
     "lane": "decline_off_topic",
@@ -87,7 +87,7 @@
     "lane": "catalog_search",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "UC-015"
+    "reason": "brief_example_puppy_sensitive"
   },
   "hello": {
     "lane": "conversational",
@@ -189,7 +189,7 @@
     "lane": "catalog_search",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "allow_dog_toy_site15"
+    "reason": "dog_toy_site15"
   },
   "sensitive stomach puppy dry food": {
     "lane": "catalog_search",
@@ -675,7 +675,7 @@
     "lane": "catalog_search",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "pytest_canonical"
+    "reason": "product_lookup_dry_puppy"
   },
   "what is the weather in berlin?": {
     "lane": "decline_off_topic",
@@ -717,7 +717,7 @@
     "lane": "decline_off_topic",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "decline_weather"
+    "reason": "off_topic_weather"
   },
   "please browse the web for cheaper dog food": {
     "lane": "decline_off_topic",
@@ -741,6 +741,42 @@
     "lane": "catalog_search",
     "social_kind": null,
     "confidence": 1.0,
-    "reason": "catalog_grounding_eukanuba"
+    "reason": "brand_lookup_eukanuba"
+  },
+  "cat food grain free": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "cat_grain_free_site1"
+  },
+  "dog food with chicken ingredients": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "ingredients_chicken"
+  },
+  "feeding recommendation for adult dog food": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "feeding_recommendation"
+  },
+  "dog food on discount or sale": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "price_discount"
+  },
+  "in stock cat treats": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "stock_available"
+  },
+  "most popular dog food best sellers": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "popular_top_seller"
   }
 }

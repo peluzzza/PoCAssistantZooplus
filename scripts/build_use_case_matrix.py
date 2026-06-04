@@ -405,9 +405,10 @@ def build_intent_oracle(cases: list[dict]) -> dict[str, dict]:
             "confidence": 1.0,
             "reason": "pytest_canonical",
         }
-    guardrail_path = ROOT / "tests" / "fixtures" / "guardrail_queries.json"
-    if guardrail_path.is_file():
-        for row in json.loads(guardrail_path.read_text(encoding="utf-8")):
+    def _merge_query_fixtures(path: Path, *, default_reason: str) -> None:
+        if not path.is_file():
+            return
+        for row in json.loads(path.read_text(encoding="utf-8")):
             key = row["query"].strip().lower()
             if row.get("expect_decline"):
                 lane = "decline_off_topic"
@@ -419,8 +420,13 @@ def build_intent_oracle(cases: list[dict]) -> dict[str, dict]:
                 "lane": lane,
                 "social_kind": "identity" if "who are you" in key else None,
                 "confidence": 1.0,
-                "reason": row.get("id", "guardrail"),
+                "reason": row.get("id", default_reason),
             }
+
+    fixtures = ROOT / "tests" / "fixtures"
+    _merge_query_fixtures(fixtures / "guardrail_queries.json", default_reason="guardrail")
+    _merge_query_fixtures(fixtures / "golden_queries.json", default_reason="golden")
+    _merge_query_fixtures(fixtures / "acceptance_queries.json", default_reason="acceptance")
     return oracle
 
 

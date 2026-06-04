@@ -85,7 +85,8 @@ form.addEventListener("submit", async (e) => {
   messagesEl.appendChild(typing);
 
   const controller = new AbortController();
-  const clientTimeout = setTimeout(() => controller.abort(), 25000);
+  const timeoutMs = Number(uiConfig.chat_timeout_ms) || 45000;
+  const clientTimeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch("/chat", {
@@ -116,7 +117,7 @@ form.addEventListener("submit", async (e) => {
     typing.remove();
     const msg =
       err.name === "AbortError"
-        ? "Request timed out (25s). Try a shorter question or set ZOOPLUS_SYNTHESIS_MODE=template in .env."
+        ? `Request timed out (${Math.round(timeoutMs / 1000)}s). For faster greetings, social replies use templates; catalog may need a longer ZOOPLUS_CHAT_CLIENT_TIMEOUT_MS.`
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {

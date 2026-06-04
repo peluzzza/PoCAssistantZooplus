@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -59,12 +60,17 @@ async def ui_asset(asset: str) -> FileResponse:
 @router.get("/api/ui/config")
 async def ui_config() -> dict:
     settings = Settings.from_env()
+    timeout_ms = int(os.environ.get("ZOOPLUS_CHAT_CLIENT_TIMEOUT_MS", "0"))
+    if timeout_ms <= 0:
+        # Intent + RAG + synthesis can stack; default above single OpenCode timeout.
+        timeout_ms = max(45000, settings.opencode_timeout_seconds * 2000 + 15000)
     return {
         "sites": [1, 3, 15],
         "default_site_id": 3,
         "synthesis_mode": settings.synthesis_mode,
         "opencode_model": settings.opencode_model,
         "opencode_auth_configured": opencode_auth_present(settings),
+        "chat_timeout_ms": timeout_ms,
         "chat_endpoint": "/chat",
         "stream_endpoint": "/chat/stream",
     }
