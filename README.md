@@ -78,7 +78,7 @@ uvicorn src.api.app:app --reload --port 8080
 ```
 
 Set in `.env`: `ZOOPLUS_INTENT_MODE=agentic` (LLM routing) and `ZOOPLUS_SYNTHESIS_MODE=opencode` (sociable answers).  
-Release notes: [`docs/RELEASE_v2.4.0.md`](docs/RELEASE_v2.4.0.md) · Agentic design: [`docs/instructions/AGENTIC_SOCIAL.md`](docs/instructions/AGENTIC_SOCIAL.md)
+Release notes: [`docs/RELEASE_v2.5.0.md`](docs/RELEASE_v2.5.0.md) · Agentic design: [`docs/instructions/AGENTIC_SOCIAL.md`](docs/instructions/AGENTIC_SOCIAL.md)
 
 If the page is blank or “can’t connect”, the API is not running — **restart** after `git pull`. Details: [`docs/CHAT_UI.md`](docs/CHAT_UI.md).
 
@@ -132,8 +132,8 @@ If OpenCode is missing or fails, the API **falls back** to template synthesis au
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| `main` @ **v2.1.0** | Production profile + Python 3.11 / pinned deps |
-| `dev` | Post-v2 enhancements (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
+| `main` @ **v2.5.0** | Agentic cascade + social agents, matrix 173/173 |
+| `dev` | Aligned with `main` (integration branch) |
 
 ## Interview / submission defense
 

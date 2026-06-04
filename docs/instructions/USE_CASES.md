@@ -1,6 +1,6 @@
 # Use case matrix (Coding Task + instructions catalog)
 
-**Generated:** 2026-06-04 13:49 UTC  
+**Generated:** 2026-06-04 13:56 UTC  
 **Total cases:** 173  
 **Source of truth:** `docs/instructions/Coding Task.docx`, `docs/instructions/product_catalog_dataset.json`
 
