@@ -24,6 +24,12 @@ def test_ui_index_served(client: TestClient) -> None:
     assert "zooplus Assistant" in response.text
 
 
+def test_ui_assets_served(client: TestClient) -> None:
+    assert client.get("/ui/styles.css").status_code == 200
+    assert client.get("/ui/app.js").status_code == 200
+    assert "background" in client.get("/ui/styles.css").text
+
+
 def test_ui_config_endpoint(client: TestClient) -> None:
     response = client.get("/api/ui/config")
     assert response.status_code == 200
