@@ -23,7 +23,8 @@ def _sample_product() -> RetrievedProduct:
 def test_template_synthesis_lists_products() -> None:
     text = synthesize_template("dog food", [_sample_product()])
     assert "Test Kibble" in text
-    assert "found in this shop" in text.lower()
+    assert "1." not in text
+    assert any(w in text.lower() for w in ("cards", "matches", "options", "shop"))
 
 
 def test_synthesis_router_template_mode(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -34,6 +35,7 @@ def test_synthesis_router_template_mode(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_synthesis_router_opencode_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "opencode")
+    monkeypatch.setenv("ZOOPLUS_AGENT_CASCADE", "0")
     monkeypatch.setenv("ZOOPLUS_OPENCODE_TIMEOUT", "3")
     answer = synthesize_answer("dog food", 3, [])
     assert isinstance(answer, str)

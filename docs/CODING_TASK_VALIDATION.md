@@ -16,6 +16,14 @@
 
 Branches: guardrails (B6), conversational (B3), product search (B4+B5), site isolation (B5), catalog-backed sweep (`catalog_ref` per row), Coding Task.docx examples.
 
+## Minimal smoke (before full matrix)
+
+```powershell
+.\scripts\smoke_minimal.ps1
+```
+
+See `docs/MINIMAL_FUNCTIONAL.md`.
+
 ## Run full validation
 
 ```bash
