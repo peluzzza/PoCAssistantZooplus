@@ -81,7 +81,7 @@ form.addEventListener("submit", async (e) => {
 
   const typing = document.createElement("div");
   typing.className = "typing";
-  typing.textContent = "Searching catalog…";
+  typing.textContent = "One moment…";
   messagesEl.appendChild(typing);
 
   const controller = new AbortController();
@@ -105,7 +105,11 @@ form.addEventListener("submit", async (e) => {
 
     const data = await res.json();
     const products = data.retrieved_products || [];
-    const decline = products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(data.answer || "");
+    const decline =
+      products.length === 0 &&
+      /can't help|couldn't find|not able to help|don't have live|zooplus Assistant|only help with|outside what I can/i.test(
+        data.answer || "",
+      );
     appendMessage("bot", data.answer || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
@@ -124,6 +128,7 @@ form.addEventListener("submit", async (e) => {
 loadConfig().then(() => {
   appendMessage(
     "bot",
-    "Hi! Pick a shop (site_id) and ask about pet products. Off-topic questions are declined.",
+    "Hi! I'm the zooplus shop assistant — ask about dog or cat food, treats, toys, and more. " +
+      "You can also say hello or ask who I am. Traffic, weather, and other off-topic questions I'll politely redirect.",
   );
 });

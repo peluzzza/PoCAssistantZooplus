@@ -9,7 +9,14 @@ pytestmark = pytest.mark.unit
 def test_topic_guard_declines_weather_queries() -> None:
     decision = topic_check("what is the weather in berlin?")
     assert decision.decision == "DECLINE"
-    assert decision.reason_code == "out_of_scope_default_deny"
+    assert decision.reason_code == "off_topic_life"
+    assert "weather" in (decision.polite_decline or "").lower()
+
+
+def test_topic_guard_declines_traffic_queries() -> None:
+    decision = topic_check("how it the traffic today")
+    assert decision.decision == "DECLINE"
+    assert decision.reason_code == "off_topic_life"
     assert decision.polite_decline is not None
 
 

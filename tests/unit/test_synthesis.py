@@ -23,7 +23,7 @@ def _sample_product() -> RetrievedProduct:
 def test_template_synthesis_lists_products() -> None:
     text = synthesize_template("dog food", [_sample_product()])
     assert "Test Kibble" in text
-    assert "happy to help" in text.lower()
+    assert "found in this shop" in text.lower()
 
 
 def test_synthesis_router_template_mode(monkeypatch: pytest.MonkeyPatch) -> None:

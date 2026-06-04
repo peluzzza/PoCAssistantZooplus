@@ -10,11 +10,41 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 CONSTRAINTS_PATH = ROOT / "src" / "guardian" / "constraints.yaml"
-DEFAULT_DECLINE = (
-    "I'm the zooplus Assistant and can help with pet products for your shop. "
-    "I can't help with that topic, but I'd be happy to find food, treats, or "
-    "accessories for your dog or cat."
+def _zooplus_decline(body: str) -> str:
+    """Warm decline copy with consistent assistant branding."""
+    return f"I'm the zooplus Assistant — {body}"
+
+
+DEFAULT_DECLINE = _zooplus_decline(
+    "I can't help with that topic. This shop's catalog is for dog and cat products — "
+    "tell me what you'd like (food, treats, toys…) and I'll suggest a few options."
 )
+
+# Traffic, weather, time, news — default-deny with a friendly redirect (not catalog search).
+_LIFE_OFF_TOPIC = re.compile(
+    r"\b("
+    r"weather|wetter|traffic|commute|roadworks?|"
+    r"train\s+delay|bus\s+delay|what\s+time\s+is\s+it|uhrzeit|news\s+headlines?"
+    r")\b",
+    re.IGNORECASE,
+)
+
+_DECLINE_BY_REASON: dict[str, str] = {
+    "out_of_scope_default_deny": DEFAULT_DECLINE,
+    "out_of_scope_empty": DEFAULT_DECLINE,
+    "off_topic_non_pet_consumer": _zooplus_decline(
+        "that's outside what I can do. I only help with dog and cat products in this shop — "
+        "want food, treats, or accessories for your pet?"
+    ),
+    "off_topic_non_pet_species": _zooplus_decline(
+        "this catalog is for dogs and cats only. Tell me what food, treats, or accessories you need."
+    ),
+    "off_topic_life": _zooplus_decline(
+        "I don't have live traffic, weather, or news — only this shop's pet catalog. "
+        "What can I help you find for a dog or cat?"
+    ),
+    "off_topic_prompt_injection": DEFAULT_DECLINE,
+}
 
 # Out-of-catalog consumer / competitor (deny before allow-list — avoids dog+cat token bypass).
 _FORBIDDEN_CONSUMER = re.compile(
@@ -56,10 +86,9 @@ _POLICY_BLOCKS: list[tuple[re.Pattern[str], str, str | None]] = [
     ),
 ]
 
-EXTERNAL_WEB_DECLINE = (
-    "I'm the zooplus Assistant and can only use this shop's product catalog — "
-    "I can't search the internet. Ask me about pet food, treats, or accessories "
-    "available in your shop and I'll recommend options from our data."
+EXTERNAL_WEB_DECLINE = _zooplus_decline(
+    "I can only use this shop's product catalog, not the internet. "
+    "Ask me about pet food, treats, or accessories here and I'll recommend from our data."
 )
 
 # Allowed scope: dogs/cats catalog shopping (see constraints.yaml allowed_intents).
@@ -148,6 +177,12 @@ def must_ground_in_retrieval() -> bool:
     return bool(policy.get("must_ground_in_retrieval", True))
 
 
+def polite_decline_for(reason_code: str) -> str:
+    if reason_code == "off_topic_external_web":
+        return EXTERNAL_WEB_DECLINE
+    return _DECLINE_BY_REASON.get(reason_code, DEFAULT_DECLINE)
+
+
 def _is_conversational_turn(query: str) -> bool:
     from src.llm.conversation import is_conversational_only
 
@@ -181,32 +216,36 @@ def topic_check(query: str) -> TopicDecision:
         return TopicDecision(
             decision="DECLINE",
             reason_code="out_of_scope_empty",
-            polite_decline=DEFAULT_DECLINE,
+            polite_decline=polite_decline_for("out_of_scope_empty"),
         )
 
     if _FORBIDDEN_CONSUMER.search(text):
         return TopicDecision(
             decision="DECLINE",
             reason_code="off_topic_non_pet_consumer",
-            polite_decline=DEFAULT_DECLINE,
+            polite_decline=polite_decline_for("off_topic_non_pet_consumer"),
         )
 
     for pattern, reason_code, _ in _POLICY_BLOCKS:
         if pattern.search(text):
-            decline = DEFAULT_DECLINE
-            if reason_code == "off_topic_external_web":
-                decline = EXTERNAL_WEB_DECLINE
             return TopicDecision(
                 decision="DECLINE",
                 reason_code=reason_code,
-                polite_decline=decline,
+                polite_decline=polite_decline_for(reason_code),
             )
 
     if _OUT_OF_CATALOG_SPECIES.search(text):
         return TopicDecision(
             decision="DECLINE",
             reason_code="off_topic_non_pet_species",
-            polite_decline=DEFAULT_DECLINE,
+            polite_decline=polite_decline_for("off_topic_non_pet_species"),
+        )
+
+    if _LIFE_OFF_TOPIC.search(text):
+        return TopicDecision(
+            decision="DECLINE",
+            reason_code="off_topic_life",
+            polite_decline=polite_decline_for("off_topic_life"),
         )
 
     if _is_conversational_turn(text):
@@ -226,5 +265,5 @@ def topic_check(query: str) -> TopicDecision:
     return TopicDecision(
         decision="DECLINE",
         reason_code="out_of_scope_default_deny",
-        polite_decline=DEFAULT_DECLINE,
+        polite_decline=polite_decline_for("out_of_scope_default_deny"),
     )

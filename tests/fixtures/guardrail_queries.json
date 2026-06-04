@@ -90,6 +90,24 @@
     "min_products": 1
   },
   {
+    "id": "conversational_who_are_you",
+    "site_id": 3,
+    "query": "who are you",
+    "expect_status": 200,
+    "expect_decline": false,
+    "max_products": 0,
+    "answer_contains": "zooplus"
+  },
+  {
+    "id": "decline_traffic",
+    "site_id": 3,
+    "query": "how it the traffic today",
+    "expect_status": 200,
+    "expect_decline": true,
+    "max_products": 0,
+    "answer_contains": "catalog"
+  },
+  {
     "id": "conversational_hello",
     "site_id": 3,
     "query": "hello",

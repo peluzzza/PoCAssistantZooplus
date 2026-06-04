@@ -14,6 +14,7 @@ class ConvoKind(StrEnum):
     THANKS = "thanks"
     BYE = "bye"
     HELP = "help"
+    IDENTITY = "identity"
     PRODUCT = "product"
 
 
@@ -23,7 +24,18 @@ _GREETING = re.compile(
 )
 _THANKS = re.compile(r"^(thanks|thank\s+you|gracias|muchas\s+gracias|danke)[!?.\s]*$", re.I)
 _BYE = re.compile(r"^(bye|goodbye|see\s+you|adios|hasta\s+luego)[!?.\s]*$", re.I)
-_HELP = re.compile(r"^(help|\?|what\s+can\s+you\s+do|how\s+can\s+you\s+help)[!?.\s]*$", re.I)
+_HELP = re.compile(
+    r"^(help|\?|what\s+can\s+you\s+do|how\s+can\s+you\s+help|what\s+do\s+you\s+do)[!?.\s]*$",
+    re.I,
+)
+_IDENTITY = re.compile(
+    r"^("
+    r"who\s+are\s+you|what\s+are\s+you|who\s+is\s+this|what\s+is\s+this(\s+(bot|assistant))?|"
+    r"introduce\s+yourself|tell\s+me\s+about\s+yourself|"
+    r"cu[eé]ntame\s+qui[eé]n\s+eres|qui[eé]n\s+eres"
+    r")[!?.\s]*$",
+    re.I,
+)
 
 
 def classify_conversation(query: str) -> ConvoKind:
@@ -36,6 +48,8 @@ def classify_conversation(query: str) -> ConvoKind:
         return ConvoKind.BYE
     if _HELP.match(text):
         return ConvoKind.HELP
+    if _IDENTITY.match(text):
+        return ConvoKind.IDENTITY
     return ConvoKind.PRODUCT
 
 
@@ -46,23 +60,29 @@ def is_conversational_only(query: str) -> bool:
 def _template_reply(kind: ConvoKind, site_id: int) -> str:
     if kind == ConvoKind.GREETING:
         return (
-            f"Hello! I'm the zooplus Assistant for shop {site_id}. "
-            "I'm here to help you find pet food, treats, and accessories. "
-            "What are you looking for today — e.g. dry food for a puppy or grain-free cat food?"
+            f"Hi there! I'm the zooplus Assistant for shop {site_id}. "
+            "I help shoppers find pet food, treats, and accessories in this catalog. "
+            "What are you looking for — maybe dry food for a puppy or grain-free cat food?"
         )
     if kind == ConvoKind.THANKS:
         return (
-            "You're very welcome! If you'd like, I can suggest more options or narrow "
-            "by brand, budget, or pet type."
+            "You're welcome! Happy to suggest more options or narrow things by "
+            "brand, budget, or dog vs cat whenever you like."
         )
     if kind == ConvoKind.BYE:
-        return "Goodbye! Come back anytime you need help choosing pet products for your shop."
+        return "Take care! Come back anytime you need help choosing pet products for this shop."
     if kind == ConvoKind.HELP:
         return (
-            "I can search this shop's catalog and recommend up to four products. "
-            'Ask in natural language — e.g. "best dry food for a sensitive puppy" or '
-            '"popular cat treats in stock". Off-topic questions (weather, news, etc.) '
-            "I'll politely decline."
+            "I'm a shop assistant for this pet catalog — I can recommend up to four products "
+            'in plain language (e.g. "sensitive puppy dry food" or "cat treats in stock"). '
+            "Questions outside pets in this shop I'll answer briefly and point you back to the catalog."
+        )
+    if kind == ConvoKind.IDENTITY:
+        return (
+            f"I'm the zooplus Assistant for shop {site_id}. "
+            "I only use this shop's product data — dog and cat food, treats, litter, toys, and similar. "
+            "I'm not a general chatbot: no weather, traffic, or web search. "
+            "Ask me what you'd like to buy for your pet and I'll suggest a few options."
         )
     return ""
 

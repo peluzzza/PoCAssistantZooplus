@@ -9,8 +9,10 @@ from src.models.chat import RetrievedProduct
 def synthesize_template(query: str, products: list[RetrievedProduct]) -> str:
     if not products:
         return empty_retrieval_message()
-    lines = ["I'd be happy to help! Based on what you asked, here are some options from this shop:"]
+    lines = ["Here's what I found in this shop that could fit your question:"]
     for i, product in enumerate(products, start=1):
         lines.append(f"{i}. {product.product_name} ({product.brands}) — EUR {product.price:.2f}")
-    lines.append("\nWould you like me to narrow by budget, brand, or dog vs cat?")
+    lines.append(
+        "\nHappy to narrow this down — just mention budget, brand, or whether it's for a dog or cat."
+    )
     return "\n".join(lines)
