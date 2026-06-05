@@ -14,4 +14,4 @@
 | 1 | Promo slots during long searches | **P2** | Stream promos while RAG runs |
 | 6 | Voice for the assistant | **P3** | STT/TTS on same `/chat` contract |
 
-**Interview line (45s):** Slide 9 = P0 trust · Slide 10 = P1 scale + fresh index · Slide 11 = photo/voice/promos + Q&A.
+**Interview line (45s):** Slide 11 = P0 trust · Slide 12 = P1 scale + fresh index · Slide 13 = photo/voice/promos + Q&A.
