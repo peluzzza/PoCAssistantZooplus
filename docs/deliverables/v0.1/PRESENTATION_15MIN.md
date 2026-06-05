@@ -4,7 +4,7 @@
 **FR** = Functional Requirement from `Coding Task.docx` — explain on **slide 2**.  
 **Roadmap:** slides **11–13** (3 slides, ~2 min + Q&A).
 
-Regenerate RAG slides: `py -3 scripts/patch_interview_pptx_rag_slides.py`
+Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py`
 
 ---
 
@@ -14,7 +14,7 @@ Regenerate RAG slides: `py -3 scripts/patch_interview_pptx_rag_slides.py`
 |-------|--------|-----|
 | 1 | Title | 0:30 |
 | 2 | FR1–FR5 overview | 0:45 |
-| 3 | FR1 + Swagger | 1:00 |
+| 3 | FR1 + Swagger + **async evidence (B1)** | 1:15 |
 | 4 | FR2 + FR3 (overview) | 1:15 |
 | 5 | **Why hybrid retrieval** (Chroma + BM25 + rerank) | 1:00 |
 | 6 | **RAG strategy end-to-end** (ingest → ground → synthesize) | 1:00 |
@@ -27,6 +27,12 @@ Regenerate RAG slides: `py -3 scripts/patch_interview_pptx_rag_slides.py`
 | 13 | **Roadmap Phase 3** — photo, voice, promos + **Q&A** | 1:30 |
 
 *Total talk ~15 min; Q&A on slide 13.*
+
+---
+
+## Slide 3 — FR1 async FastAPI + evidence
+
+> “FR1 asks for an async FastAPI backend. Our main handler is `async def chat` in `routes/chat.py`, it awaits the orchestrator, and blocking work — Chroma retrieval, intent classification — runs in `asyncio.to_thread` so we do not block the event loop. We ship with uvicorn ASGI in Docker, and acceptance test B1 asserts `inspect.iscoroutinefunction(chat)`. You can verify live in Swagger `/docs` with the mandatory brief query.”
 
 ---
 
