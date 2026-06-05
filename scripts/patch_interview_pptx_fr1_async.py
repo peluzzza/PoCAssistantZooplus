@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add async FastAPI evidence to FR1 slide (slide 3) in the pro deck."""
+"""Layout + async evidence for FR1 slide (slide 3) in the pro deck."""
 
 from __future__ import annotations
 
@@ -15,37 +15,44 @@ DECK = ROOT / "docs" / "deliverables" / "v0.1" / "zooplus-assistant-interview-15
 
 INK = RGBColor(0x33, 0x41, 0x55)
 TITLE_INK = RGBColor(0x0A, 0x25, 0x40)
+PALE = RGBColor(0xBF, 0xDB, 0xFE)
 CODE_BG = RGBColor(0x1E, 0x29, 0x3B)
 CODE_FG = RGBColor(0xE2, 0xE8, 0xF0)
 ACCENT = RGBColor(0x25, 0x63, 0xEB)
 GREEN = RGBColor(0x16, 0xA3, 0x4A)
+JSON_BG = RGBColor(0xE0, 0xF2, 0xFE)
 
 LEFT_BULLETS = [
-    ("FR1 = Functional Requirement 1 (Coding Task §1)", True),
-    ("Async Python FastAPI · POST /chat { site_id, query }", True),
-    ("", False),
-    ("Async evidence (B1)", True),
-    ("• Endpoint: async def chat() → await handle_chat()", False),
-    ("  src/api/routes/chat.py", False),
-    ("• Pipeline: handle_chat / process lane are async coroutines", False),
-    ("• Blocking I/O (Chroma, intent) → asyncio.to_thread", False),
-    ("• Runtime: uvicorn ASGI (Dockerfile CMD)", False),
-    ("• Test: test_app_is_async_fastapi — inspect.iscoroutinefunction(chat)", False),
-    ("", False),
-    ("Live: Swagger /docs — Try it out + mandatory brief query", True),
+    ("FR1 — Async FastAPI · POST /chat { site_id, query }", True),
+    ("async def chat() → await handle_chat()  (routes/chat.py)", False),
+    ("Orchestrator async; Chroma/intent via asyncio.to_thread", False),
+    ("Deploy: uvicorn ASGI  ·  Test B1: iscoroutinefunction(chat)", False),
 ]
 
-CODE_SNIPPET = """@router.post("/chat", response_model=ChatResponse)
-async def chat(body: ChatRequest) -> ChatResponse:
-    return await handle_chat(body)
+CODE_SNIPPET = (
+    '@router.post("/chat")\n'
+    "async def chat(body: ChatRequest):\n"
+    "    return await handle_chat(body)\n"
+    "\n"
+    "# B1  tests/acceptance/test_coding_task_brief.py\n"
+    "assert inspect.iscoroutinefunction(chat)"
+)
 
-# tests/acceptance/test_coding_task_brief.py
-assert inspect.iscoroutinefunction(chat)  # B1 ✅"""
+JSON_BODY = (
+    '{\n'
+    '  "site_id": 3,\n'
+    '  "query": "What\'s the best dry food for a puppy with a sensitive stomach?"\n'
+    "}"
+)
 
-MARKER = "async def chat()"
+REMOVE_NAMES = {
+    "Panel AsyncEvidence",
+    "TextBox AsyncEvidence",
+    "TextBox B1Badge",
+}
 
 
-def _set_bullets(text_frame, lines: list[tuple[str, bool]], *, size: int = 16) -> None:
+def _set_bullets(text_frame, lines: list[tuple[str, bool]], *, size: int = 15) -> None:
     text_frame.clear()
     for i, (line, bold) in enumerate(lines):
         p = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
@@ -54,7 +61,32 @@ def _set_bullets(text_frame, lines: list[tuple[str, bool]], *, size: int = 16) -
         p.font.size = Pt(size)
         p.font.bold = bold
         p.font.color.rgb = TITLE_INK if bold else INK
-        p.space_after = Pt(4)
+        p.space_after = Pt(6)
+
+
+def _set_mono(text_frame, text: str, *, size: int = 11, color: RGBColor = INK) -> None:
+    text_frame.clear()
+    lines = text.split("\n")
+    for i, line in enumerate(lines):
+        p = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
+        p.text = line
+        p.font.name = "Consolas"
+        p.font.size = Pt(size)
+        p.font.color.rgb = color
+        p.space_after = Pt(1)
+
+
+def _rgb(shape, color: RGBColor) -> None:
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = color
+    shape.line.fill.background()
+
+
+def _remove_shapes(slide, names: set[str]) -> None:
+    to_drop = [sh for sh in slide.shapes if sh.name in names]
+    for sh in to_drop:
+        sp = sh._element
+        sp.getparent().remove(sp)
 
 
 def _find_slide(prs: Presentation, title_prefix: str) -> int:
@@ -65,69 +97,104 @@ def _find_slide(prs: Presentation, title_prefix: str) -> int:
     raise SystemExit(f"Slide not found: {title_prefix!r}")
 
 
-def patch_fr1_slide(prs: Presentation) -> bool:
-    idx = _find_slide(prs, "API endpoint")
-    slide = prs.slides[idx]
+def _get_or_add_code_panel(slide):
+    for sh in slide.shapes:
+        if sh.name == "Panel AsyncEvidenceV2":
+            return sh
+    panel = slide.shapes.add_shape(
+        1, Inches(6.62), Inches(4.72), Inches(5.58), Inches(2.05)
+    )
+    panel.name = "Panel AsyncEvidenceV2"
+    _rgb(panel, CODE_BG)
+    box = slide.shapes.add_textbox(Inches(6.74), Inches(4.82), Inches(5.35), Inches(1.85))
+    box.name = "TextBox AsyncEvidenceV2"
+    tf = box.text_frame
+    tf.word_wrap = True
+    tf.vertical_anchor = MSO_ANCHOR.TOP
+    h = tf.paragraphs[0]
+    h.text = "Async evidence (source) — B1 PASS"
+    h.font.name = "Arial"
+    h.font.size = Pt(11)
+    h.font.bold = True
+    h.font.color.rgb = GREEN
+    body = tf.add_paragraph()
+    body.text = CODE_SNIPPET
+    body.font.name = "Consolas"
+    body.font.size = Pt(10)
+    body.font.color.rgb = CODE_FG
+    return panel
 
+
+def fix_fr1_slide(prs: Presentation) -> None:
+    slide = prs.slides[_find_slide(prs, "API endpoint")]
+    _remove_shapes(slide, REMOVE_NAMES | {"Panel AsyncEvidenceV2", "TextBox AsyncEvidenceV2"})
+
+    # --- Left column zones (no overlap) ---
+    # Panel bg
+    for sh in slide.shapes:
+        if sh.name == "Rectangle 11":
+            sh.left, sh.top = Inches(0.64), Inches(1.38)
+            sh.width, sh.height = Inches(5.35), Inches(5.55)
+            _rgb(sh, RGBColor(0xF8, 0xFA, 0xFC))
+
+    # Bullets — top third
     for sh in slide.shapes:
         if sh.name == "TextBox 12" and sh.has_text_frame:
-            if MARKER in sh.text_frame.text:
-                return False
-            _set_bullets(sh.text_frame, LEFT_BULLETS, size=15)
+            sh.left, sh.top = Inches(0.78), Inches(1.52)
+            sh.width, sh.height = Inches(5.05), Inches(1.95)
+            _set_bullets(sh.text_frame, LEFT_BULLETS, size=14)
         if sh.name == "TextBox 9" and sh.has_text_frame:
             sh.text_frame.paragraphs[0].text = (
-                "FR1 — Async FastAPI (Coding Task §1) · evidence in code + test B1"
+                "FR1 — Functional Requirement 1: async FastAPI + POST /chat"
             )
 
-    # Code evidence panel (right column, below Swagger screenshot area)
-    existing = [s.name for s in slide.shapes]
-    if "TextBox AsyncEvidence" not in existing:
-        panel = slide.shapes.add_shape(
-            1, Inches(6.65), Inches(5.35), Inches(5.55), Inches(1.55)
-        )
-        panel.name = "Panel AsyncEvidence"
-        panel.fill.solid()
-        panel.fill.fore_color.rgb = CODE_BG
-        panel.line.fill.background()
+    # Mandatory JSON — middle band
+    for sh in slide.shapes:
+        if sh.name == "Rectangle 13":
+            sh.left, sh.top = Inches(0.78), Inches(3.62)
+            sh.width, sh.height = Inches(5.05), Inches(1.35)
+            _rgb(sh, JSON_BG)
+        if sh.name == "TextBox 14" and sh.has_text_frame:
+            sh.left, sh.top = Inches(0.92), Inches(3.78)
+            sh.width, sh.height = Inches(4.75), Inches(1.05)
+            _set_mono(sh.text_frame, JSON_BODY, size=12, color=TITLE_INK)
 
-        box = slide.shapes.add_textbox(Inches(6.78), Inches(5.45), Inches(5.3), Inches(1.35))
-        box.name = "TextBox AsyncEvidence"
-        tf = box.text_frame
-        tf.word_wrap = True
-        tf.vertical_anchor = MSO_ANCHOR.TOP
-        p = tf.paragraphs[0]
-        p.text = "Async evidence (source)"
-        p.font.name = "Arial"
-        p.font.size = Pt(11)
-        p.font.bold = True
-        p.font.color.rgb = ACCENT
-        p2 = tf.add_paragraph()
-        p2.text = CODE_SNIPPET
-        p2.font.name = "Consolas"
-        p2.font.size = Pt(10)
-        p2.font.color.rgb = CODE_FG
+    # Swagger CTA — bottom left
+    cta_names = {s.name for s in slide.shapes}
+    if "TextBox SwaggerCTA" not in cta_names:
+        cta = slide.shapes.add_textbox(Inches(0.78), Inches(5.15), Inches(5.05), Inches(0.55))
+        cta.name = "TextBox SwaggerCTA"
+    else:
+        cta = next(s for s in slide.shapes if s.name == "TextBox SwaggerCTA")
+    cta.left, cta.top = Inches(0.78), Inches(5.15)
+    cta.width, cta.height = Inches(5.05), Inches(0.55)
+    p = cta.text_frame.paragraphs[0]
+    p.text = "Live proof: /docs — Try it out with the mandatory brief query above"
+    p.font.name = "Arial"
+    p.font.size = Pt(13)
+    p.font.bold = True
+    p.font.color.rgb = ACCENT
 
-        badge = slide.shapes.add_textbox(Inches(6.78), Inches(5.12), Inches(2.2), Inches(0.28))
-        badge.name = "TextBox B1Badge"
-        bp = badge.text_frame.paragraphs[0]
-        bp.text = "B1 test_app_is_async_fastapi ✅"
-        bp.font.name = "Arial"
-        bp.font.size = Pt(11)
-        bp.font.bold = True
-        bp.font.color.rgb = GREEN
+    # --- Right column: Swagger top, code bottom ---
+    for sh in slide.shapes:
+        if sh.name == "Picture 16":
+            sh.left, sh.top = Inches(6.62), Inches(1.45)
+            sh.width, sh.height = Inches(5.58), Inches(3.15)
+        if sh.name == "Rounded Rectangle 15":
+            sh.left, sh.top = Inches(6.55), Inches(1.38)
+            sh.width, sh.height = Inches(5.72), Inches(5.55)
+            _rgb(sh, RGBColor(0xFF, 0xFF, 0xFF))
 
-    return True
+    _get_or_add_code_panel(slide)
 
 
 def main() -> None:
     if not DECK.is_file():
         raise SystemExit(f"Missing deck: {DECK}")
     prs = Presentation(str(DECK))
-    if patch_fr1_slide(prs):
-        prs.save(str(DECK))
-        print(f"Patched FR1 async evidence in {DECK}")
-    else:
-        print("FR1 slide already contains async evidence — skipped.")
+    fix_fr1_slide(prs)
+    prs.save(str(DECK))
+    print(f"Fixed slide 3 layout in {DECK}")
 
 
 if __name__ == "__main__":
