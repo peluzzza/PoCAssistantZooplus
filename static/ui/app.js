@@ -104,7 +104,7 @@ form.addEventListener("submit", async (e) => {
   messagesEl.appendChild(typing);
 
   const controller = new AbortController();
-  const clientTimeout = setTimeout(() => controller.abort(), 25000);
+  const clientTimeout = setTimeout(() => controller.abort(), 50000);
 
   try {
     const res = await fetch("/chat", {
@@ -131,7 +131,7 @@ form.addEventListener("submit", async (e) => {
     typing.remove();
     const msg =
       err.name === "AbortError"
-        ? "Request timed out (25s). Try a shorter question or check scripts/run_dev.ps1 and OpenCode auth."
+        ? "Request timed out (50s). Try a shorter question or check scripts/run_dev.ps1 and OpenCode auth."
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {

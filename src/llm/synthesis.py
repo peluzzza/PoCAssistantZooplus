@@ -22,6 +22,11 @@ def synthesize_answer(
     handoff_context: str | None = None,
 ) -> str:
     cfg = settings or apply_settings()
+    if (cfg.synthesis_mode or "").lower() == "template":
+        from src.llm.template import synthesize_template
+
+        return synthesize_template(query, products)
+
     from src.llm.opencode import _build_prompt, synthesize_opencode, synthesize_opencode_with_agents
 
     extra = "\n".join(

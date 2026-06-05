@@ -33,5 +33,5 @@ interactive_lane:
   topic_guard_max_ms_p95: 300
 
 process_lane:
-  dispatch_timeout_seconds: 20
-  synthesis_timeout_seconds: 12
+  dispatch_timeout_seconds: 40
+  synthesis_timeout_seconds: 18

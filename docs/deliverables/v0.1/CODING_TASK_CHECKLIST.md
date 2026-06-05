@@ -1,49 +1,92 @@
-# Coding Task — requirement checklist (v0.1 deliverable)
+# Coding Task — checklist (1:1 con el .docx)
 
-**Sources:** `docs/instructions/ACCEPTANCE.md`, `product_catalog_dataset.json`, `Coding Task.docx` (add to `docs/instructions/`).
+**Brief:** [`../../instructions/Coding Task.docx`](../../instructions/Coding%20Task.docx)  
+**Guion:** [`PRESENTATION_15MIN.md`](PRESENTATION_15MIN.md)  
+**PPT (pro):** [`zooplus-assistant-interview-15min-pro.pptx`](zooplus-assistant-interview-15min-pro.pptx)
 
-## Catalog facts (demo)
+Marca `[x]` al ensayar cada fila.
 
-| Fact | Value |
-|------|--------|
-| Shops | `site_id` **1**, **3**, **15** |
-| Rows | **300** variants (100 per shop) |
-| Pets | **DOGS**, **CATS** only |
+---
 
-## B1–B9 — functional (tick when demonstrated)
+## Functional requirements (documento §1–5)
 
-| ID | Requirement | Demo / evidence |
-|----|-------------|-----------------|
-| **B1** | Async FastAPI | Show `async` routes; `/docs` OpenAPI |
-| **B2** | `POST /chat` `{ site_id, query }` | UI or curl with site 3 |
-| **B3** | Response `{ answer, retrieved_products }` | JSON in UI network tab |
-| **B4** | RAG only from dataset | Explain Chroma index; no web in path |
-| **B5** | `site_id` scoping | Same query on site 1 vs 3 → different products |
-| **B6** | Pet-only; off-topic declined | “weather” / “humans” → decline, no cards |
-| **B7** | Production layout | `cli/`, `src/`, tests, `.opencode/` |
-| **B8** | README + runnable | `run_dev.ps1`, ingest, `/ui/` |
-| **B9** | Evaluation & trade-offs | Slide: hybrid RAG, agentic intent, limits |
+| ID | Requisito (texto del brief) | Demo / prueba | Listo |
+|----|----------------------------|---------------|-------|
+| **FR1** | Async FastAPI + `POST /chat` `{ site_id, query }` | `/docs`, curl, UI | [ ] |
+| **FR2** | Respuesta `{ answer, retrieved_products }` | Network tab; schema tests | [ ] |
+| **FR3** | RAG solo del dataset JSON | ingest + grounding test; explicar Chroma | [ ] |
+| **FR4** | Guardrails mascotas; off-topic decline | weather / humans | [ ] |
+| **FR5** | Diseño orientado a producción | tree `cli/`, `src/`, Docker, tests | [ ] |
 
-## Policies (P1–P3)
+### Query obligatoria del brief (FR1+FR2+FR3)
 
-| ID | Policy | Demo |
-|----|--------|------|
-| **P1** | Max 4 products | Catalog query → ≤4 cards |
-| **P2** | Decline → answer, empty products | Off-topic turn |
-| **P3** | 300 variants ingested | `python -m cli ingest` / `/ready` |
+```json
+{
+  "site_id": 3,
+  "query": "What's the best dry food for a puppy with a sensitive stomach?"
+}
+```
 
-## Suggested live demo script (5–7 min)
+Demo en vivo en UI o curl — [ ] ensayada
 
-1. **Hello** (site 3) — social, no product cards.
-2. **“options for cats”** — prose answer + ≤4 cat products.
-3. **Switch site 15** — repeat; different SKUs.
-4. **“products for humans”** — polite decline.
-5. **Brief example** — `best dry food for puppy` (site 3).
+---
 
-## Automated proof
+## Submission — README (documento)
+
+| ID | Sección README pedida | Dónde | Listo |
+|----|----------------------|-------|-------|
+| **R1** | High-Level Design + diagrama | README (mermaid) | [ ] |
+| **R2** | Setup and Execution | README + RUNBOOK + `run_dev.ps1` | [ ] |
+| **R3** | Decisions and Trade-offs | README + `02-rag-architecture.md` | [ ] |
+| **R4** | Future Roadmap (3–5 pasos) | README § Roadmap + PPT slides 9–11 | [ ] |
+
+---
+
+## Evaluation criteria (documento)
+
+| ID | Criterio | Cómo lo muestras | Listo |
+|----|----------|------------------|-------|
+| **E1** | Engineering rigor | `run_release_verify.ps1`, acceptance tests | [ ] |
+| **E2** | Agentic flows + RAG | PPT slides 5–6, orchestrator | [ ] |
+| **E3** | Data awareness | 300 rows, 3 sites, DOGS/CATS, site isolation demo | [ ] |
+| **E4** | Trade-off transparency | README trade-offs + PPT | [ ] |
+
+---
+
+## Demo script (5–7 min) — orden FR4 → FR3 → FR1
+
+| Paso | Acción | Cubre |
+|------|--------|-------|
+| 1 | `hello` site 3 | FR2 social |
+| 2 | `options for cats` site 3 | FR3 + FR2 |
+| 3 | Misma query site **15** | FR1 site_id |
+| 4 | `products for humans` | FR4 |
+| 5 | Query **puppy sensitive stomach** site 3 | Texto exacto del .docx |
+
+---
+
+## Políticas PoC (acceptance / constraints)
+
+| ID | Regla | Listo |
+|----|-------|-------|
+| **P1** | Máx. 4 productos | [ ] |
+| **P2** | Decline → answer, lista vacía | [ ] |
+| **P3** | 300 variantes ingestadas | [ ] |
+
+---
+
+## Automatizado (antes de la entrevista)
 
 ```powershell
+.\scripts\run_release_verify.ps1
 py -3 -m pytest tests/acceptance -m acceptance -q
-py -3 -m pytest tests/integration -m agentic -q
-py -3 -m pytest tests/social -m social -q
 ```
+
+- [ ] Verde en las últimas 24 h
+
+---
+
+## Material de entrevista
+
+- [ ] PPTX pro abierto y ensayado ([`PRESENTATION_15MIN.md`](PRESENTATION_15MIN.md))
+- [ ] Servidor local `:8090` probado

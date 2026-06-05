@@ -1,7 +1,6 @@
-# Release v0.1.0 — `releases` branch (above `main`)
+# Release v0.1.0 — `releases` branch
 
-**Line:** `releases` is the top branch; **`v0.1.0` is cut from `main`** + PoC agentic merge.  
-**Tag:** `v0.1.0` on branch `releases` (not on `main`).
+**Tag:** `v0.1.0` on branch `releases` (slim interview / take-home line).
 
 ## Verify
 
@@ -19,6 +18,10 @@ git checkout releases
 
 ## Deliverable (Coding Task)
 
-- [`docs/deliverables/v0.1/`](deliverables/v0.1/) — checklist + **PPT base**
-- `docs/instructions/` — catalog, `ACCEPTANCE.md`, `AGENT_BUNDLE.md`
-- Add `Coding Task.docx` under `docs/instructions/` for full acceptance B7
+| Item | Path |
+|------|------|
+| Brief + catalog | [`docs/instructions/`](instructions/) |
+| Acceptance criteria | [`docs/instructions/ACCEPTANCE.md`](instructions/ACCEPTANCE.md) |
+| Checklist | [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](deliverables/v0.1/CODING_TASK_CHECKLIST.md) |
+| **Presentation (pro)** | [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx) |
+| Speaker script | [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](deliverables/v0.1/PRESENTATION_15MIN.md) |

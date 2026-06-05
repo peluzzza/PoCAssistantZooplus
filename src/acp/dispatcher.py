@@ -22,7 +22,10 @@ async def dispatch_process(
             dispatch_id=envelope.dispatch_id,
             dispatch_ok=False,
             status="timeout",
-            answer="I'm still checking products for your request. Please try again.",
+            answer=(
+                "That search took longer than expected. Please try again with a shorter "
+                "question, or narrow to dog or cat and one product type (e.g. dry food under 20 EUR)."
+            ),
             retrieved_products=[],
             blocked_reason="process_timeout",
         )

@@ -79,15 +79,14 @@ docker compose up --build -d
 python scripts/deploy_smoke.py http://127.0.0.1:8080
 ```
 
-Runbook: [`docs/RUNBOOK.md`](docs/RUNBOOK.md)  
-**Demo completa:** [`docs/DEMO.md`](docs/DEMO.md) — `python scripts/demo_all.py`
+Runbook: [`docs/RUNBOOK.md`](docs/RUNBOOK.md)
 
 Useful checks:
 
 ```bash
 python scripts/run_quality_gates.py
 python -m cli evaluate
-py -3 scripts/topic_guard_load_test.py   # G1 p95 budget check
+.\scripts\run_release_verify.ps1
 ```
 
 ## OpenCode LLM (optional, user-configured)
@@ -112,28 +111,30 @@ If OpenCode is missing or fails, the API **falls back** to template synthesis au
 
 ## Roadmap
 
-1. Add richer reranking (brand/stock/price-aware) with calibrated relevance scores.
-2. Add streaming endpoint (`/chat/stream`) with early interactive acknowledgements.
-3. Add observability (latency buckets per lane, decline reasons, retrieval hit rates).
-4. Add hybrid search (vector + lexical fallback) for SKU/name exact-match robustness.
-5. Add production deployment profile (containerization + managed vector store).
+1. Harden constraints + prompt-injection defense (versioned policy packs).
+2. Structured intent filters (`pet_type`, price band, category) for better retrieval.
+3. LLM provider abstraction (OpenCode local · HTTP API in cloud).
+4. MCP server for external agents; extend internal ACP envelopes.
+5. Optional promo slots during long `/chat/stream` turns (commerce UX).
+6. Managed vector DB + observability (latency, decline reasons, hit rates).
+
+Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md).
 
 ## Release status
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| `main` @ **v2.5.0** | Agentic cascade + social agents, matrix 173/173 |
-| `dev` | Aligned with `main` (integration branch) |
+| **`releases` @ v0.1.0** | Slim take-home line — app + essential docs + pro PPTX |
+| **`main`** | Full dev history, matrix tooling, PPT generators |
 
-## Interview / submission defense
+## Interview / submission
 
-- **English defense pack:** [`docs/INTERVIEW_DEFENSE.md`](docs/INTERVIEW_DEFENSE.md) (diagrams, screenshot checklist, Q&A)
-- Refresh evidence: `python scripts/export_interview_evidence.py`
+- Checklist: [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md)
+- **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
+- Speaker script: [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](docs/deliverables/v0.1/PRESENTATION_15MIN.md)
+- Verify: `.\scripts\run_release_verify.ps1`
 
-## Docs and trace
+## Docs
 
-- Release plan: [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)
-- Main docs index: [`docs/README.md`](docs/README.md)
-- Proposal: [`docs/plans/PROPOSAL.md`](docs/plans/PROPOSAL.md)
-- Progress dashboard: [`docs/trace/PROGRESS.md`](docs/trace/PROGRESS.md)
-- Step logs T0-T6: [`docs/trace/README.md`](docs/trace/README.md)
+- Index: [`docs/README.md`](docs/README.md)
+- Release notes: [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md)
