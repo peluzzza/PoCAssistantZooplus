@@ -23,4 +23,4 @@ py -3 -m pytest `
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host ""
-Write-Host "OK - minimal functional. Start UI: .\scripts\run_dev.ps1  (http://127.0.0.1:8080/ui/)"
+Write-Host "OK - minimal functional. Start UI: .\scripts\run_dev.ps1  (http://127.0.0.1:8090/ui/)"
