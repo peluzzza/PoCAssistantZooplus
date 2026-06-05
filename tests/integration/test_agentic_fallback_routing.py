@@ -35,7 +35,7 @@ def test_fallback_routes_greeting(monkeypatch: pytest.MonkeyPatch) -> None:
     d = classify_intent("hello??", 3)
     assert d.lane == "conversational"
     assert d.social_kind == "greeting"
-    assert d.source == "topic_fallback"
+    assert d.source == "fast_social"
 
 
 def test_fallback_routes_catalog_products(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -46,7 +46,7 @@ def test_fallback_routes_catalog_products(monkeypatch: pytest.MonkeyPatch) -> No
     )
     d = classify_intent("show me products about dogs", 3)
     assert d.lane == "catalog_search"
-    assert d.source == "topic_fallback"
+    assert d.source == "fast_catalog"
 
 
 def test_chat_no_repeated_help_template(

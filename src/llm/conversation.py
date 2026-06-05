@@ -24,6 +24,11 @@ _GREETING = re.compile(
 _THANKS = re.compile(r"^(thanks|thank\s+you|gracias|muchas\s+gracias|danke)[!?.\s]*$", re.I)
 _BYE = re.compile(r"^(bye|goodbye|see\s+you|adios|hasta\s+luego)[!?.\s]*$", re.I)
 _HELP = re.compile(r"^(help|\?|what\s+can\s+you\s+do|how\s+can\s+you\s+help)[!?.\s]*$", re.I)
+_HELP_PHRASES = re.compile(
+    r"(what\s+can\s+you\s+tell\s+me\s+about\s+(your\s+)?services|"
+    r"what\s+services\s+do\s+you\s+provide|hello,?\s+what\s+services)",
+    re.I,
+)
 
 
 def classify_conversation(query: str) -> ConvoKind:
@@ -34,7 +39,7 @@ def classify_conversation(query: str) -> ConvoKind:
         return ConvoKind.THANKS
     if _BYE.match(text):
         return ConvoKind.BYE
-    if _HELP.match(text):
+    if _HELP.match(text) or _HELP_PHRASES.search(text):
         return ConvoKind.HELP
     return ConvoKind.PRODUCT
 
@@ -93,3 +98,21 @@ def conversational_reply(
         timeout_seconds=min(10, cfg.opencode_timeout_seconds),
     )
     return llm or fallback
+
+
+def social_kind_hint(query: str, *, intent_social_kind: str | None = None) -> str:
+    """Resolve social intent — intent agent wins over regex (unit-test contract)."""
+    if intent_social_kind:
+        return intent_social_kind
+    kind = classify_conversation(query)
+    if kind == ConvoKind.PRODUCT:
+        return "product"
+    return kind.value
+
+
+def emergency_social_fallback(site_id: int) -> str:
+    """Short grounded message when agentic social path fails."""
+    return (
+        f"I'm the zooplus Assistant for shop {site_id}. "
+        "I can help you find pet food, treats, and accessories in this catalog."
+    )

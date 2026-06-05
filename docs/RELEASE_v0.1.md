@@ -12,9 +12,12 @@
 
 ```powershell
 git checkout releases
+.\scripts\setup_wizard.ps1    # first time — installs deps + optional OpenCode login
 .\scripts\run_dev.ps1
 # http://127.0.0.1:8090/ui/
 ```
+
+Full guide: [`QUICKSTART.md`](QUICKSTART.md)
 
 ## Deliverable (Coding Task)
 

@@ -11,13 +11,21 @@
 | Checklist | [`CODING_TASK_CHECKLIST.md`](CODING_TASK_CHECKLIST.md) |
 | Future roadmap (summary) | [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md) |
 
-## Verify before presenting
+## Run locally (reviewer)
 
 ```powershell
 git checkout releases
-.\scripts\run_release_verify.ps1
+.\scripts\setup_wizard.ps1    # installs everything + optional OpenCode login
 .\scripts\run_dev.ps1
 # http://127.0.0.1:8090/ui/
+```
+
+Guide: [`../../QUICKSTART.md`](../../QUICKSTART.md)
+
+## Verify before presenting
+
+```powershell
+.\scripts\run_release_verify.ps1
 ```
 
 Extended methodology, PPT build scripts, diagram packs, and agent snapshots live on **`main`**, not on this branch.

@@ -6,7 +6,9 @@ Set-Location $Root
 Write-Host "==> PoC root: $Root"
 
 if (-not (Test-Path ".env")) {
-    Write-Host "==> Copying .env.example -> .env (edit ZOOPLUS_* as needed)"
+    Write-Host "==> No .env found — run setup wizard first:"
+    Write-Host "    .\scripts\setup_wizard.ps1"
+    Write-Host "==> Falling back: copying .env.example -> .env"
     Copy-Item ".env.example" ".env"
 }
 
