@@ -53,8 +53,17 @@ def _build_prompt(
     *,
     extra_context: str = "",
 ) -> str:
-    payload = [p.model_dump() for p in products]
-    catalog = json.dumps(payload, ensure_ascii=False, indent=2)
+    payload = [
+        {
+            "article_id": p.article_id,
+            "name": p.product_name,
+            "brand": p.brands,
+            "pet": p.pet_type,
+            "price_eur": p.price,
+        }
+        for p in products
+    ]
+    catalog = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     ctx = f"{extra_context}\n" if extra_context else ""
     return (
         "You are the zooplus Assistant — a friendly, professional pet-shop advisor.\n"
@@ -70,7 +79,7 @@ def _build_prompt(
         "- Do NOT output a numbered or bulleted product list — the UI shows product cards separately.\n"
         "- Mention at most two product names in prose; prices live in the cards.\n"
         "- Vary wording each turn; avoid rigid template openings.\n"
-        "- Match the customer's language when possible.\n"
+        "- Match the customer's language when clear; default to English if unsure.\n"
         "- End with one short follow-up question when appropriate.\n"
         "- Reply in plain text only — never wrap the answer in JSON or markdown code fences.\n"
     )

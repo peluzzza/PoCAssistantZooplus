@@ -191,6 +191,21 @@ button:disabled {
 
 .typing {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-style: italic;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--accent);
+  background: rgba(61, 154, 111, 0.08);
+  border-radius: 0 8px 8px 0;
+  animation: typingPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes typingPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
 }

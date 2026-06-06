@@ -3,25 +3,76 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
 from src.agents.handoff import build_handoff
-from src.agents.intent_agent import classify_intent
+from src.agents.intent_agent import classify_intent, classify_intent_conductor_fallback
 from src.agents.social_agent import social_reply
-from src.guardian.engine import load_constraints
+from src.cache.ttl_cache import cache_enabled, chat_cache
+from src.guardian.engine import load_constraints, max_recommendations
 from src.lanes.process import run_process_lane
 from src.llm.answer_sanitize import normalize_shopper_answer
 from src.models.chat import ChatRequest, ChatResponse
 from src.observability.metrics import record_chat_outcome
+from src.rag.price_filter import parse_eur_price_range
+from src.rag.retrieve import search_catalog
+
+logger = logging.getLogger(__name__)
+
+
+def _chat_cache_key(site_id: int, query: str) -> str:
+    return f"{site_id}:{query.strip().lower()}"
+
+
+async def _classify_intent_bounded(query: str, site_id: int):
+    constraints = load_constraints()
+    intent_timeout = float(
+        constraints.get("interactive_lane", {}).get("intent_timeout_seconds", 22)
+    )
+    try:
+        return await asyncio.wait_for(
+            asyncio.to_thread(classify_intent, query, site_id),
+            timeout=intent_timeout,
+        )
+    except TimeoutError:
+        logger.warning("intent lane exceeded %.0fs; one-shot conductor fallback", intent_timeout)
+        return await asyncio.to_thread(
+            classify_intent_conductor_fallback,
+            query,
+            site_id,
+        )
 
 
 async def handle_chat(request: ChatRequest) -> ChatResponse:
-    intent = await asyncio.to_thread(
-        classify_intent,
-        request.query,
-        request.site_id,
+    cache_key = _chat_cache_key(request.site_id, request.query)
+    if cache_enabled():
+        cached = chat_cache.get(cache_key)
+        if cached is not None:
+            logger.info("chat cache hit site=%s", request.site_id)
+            return ChatResponse.model_validate(cached)
+
+    cap = max_recommendations()
+    pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
+
+    intent_task = asyncio.create_task(_classify_intent_bounded(request.query, request.site_id))
+    retrieve_task = asyncio.create_task(
+        asyncio.to_thread(
+            search_catalog,
+            request.query,
+            request.site_id,
+            n_results=pool_n,
+        )
     )
+
+    intent = await intent_task
+    prefetched_hits: tuple[dict, ...] | None = None
+    if intent.lane == "catalog_search":
+        prefetched_hits = tuple(await retrieve_task)
+    else:
+        await retrieve_task
+
     handoff = build_handoff(
         query=request.query,
         site_id=request.site_id,
@@ -41,10 +92,13 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
             handoff.brief(),
         )
         record_chat_outcome(declined=True)
-        return ChatResponse(
+        response = ChatResponse(
             answer=normalize_shopper_answer(answer),
             retrieved_products=[],
         )
+        if cache_enabled():
+            chat_cache.set(cache_key, response.model_dump())
+        return response
 
     if intent.lane == "conversational":
         answer = await asyncio.to_thread(
@@ -55,10 +109,13 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
             handoff.brief(),
         )
         record_chat_outcome(declined=False)
-        return ChatResponse(
+        response = ChatResponse(
             answer=normalize_shopper_answer(answer),
             retrieved_products=[],
         )
+        if cache_enabled():
+            chat_cache.set(cache_key, response.model_dump())
+        return response
 
     constraints = load_constraints()
     process_cfg = constraints.get("process_lane", {})
@@ -68,13 +125,17 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
         site_id=request.site_id,
         query=request.query,
         intent_handoff=handoff.brief(),
+        prefetched_hits=prefetched_hits,
     )
     process_task = asyncio.create_task(
         dispatch_process(envelope, run_process_lane, timeout_seconds=timeout_seconds)
     )
     receipt = await process_task
     record_chat_outcome(declined=False)
-    return ChatResponse(
+    response = ChatResponse(
         answer=normalize_shopper_answer(receipt.answer),
         retrieved_products=receipt.retrieved_products,
     )
+    if cache_enabled():
+        chat_cache.set(cache_key, response.model_dump())
+    return response

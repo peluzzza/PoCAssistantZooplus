@@ -35,7 +35,7 @@ def test_fallback_routes_greeting(monkeypatch: pytest.MonkeyPatch) -> None:
     d = classify_intent("hello??", 3)
     assert d.lane == "conversational"
     assert d.social_kind == "greeting"
-    assert d.source == "fast_social"
+    assert d.source == "topic_fallback"
 
 
 def test_fallback_routes_catalog_products(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -46,7 +46,7 @@ def test_fallback_routes_catalog_products(monkeypatch: pytest.MonkeyPatch) -> No
     )
     d = classify_intent("show me products about dogs", 3)
     assert d.lane == "catalog_search"
-    assert d.source == "fast_catalog"
+    assert d.source == "topic_fallback"
 
 
 def test_chat_no_repeated_help_template(
@@ -57,9 +57,16 @@ def test_chat_no_repeated_help_template(
     """Reproduces UI bug: same help blurb for every message when intent LLM fails."""
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "agentic")
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
+    monkeypatch.setenv("ZOOPLUS_FAST_INTENT", "1")
     monkeypatch.setattr(
         "src.agents.agent_cascade.run_opencode_agent",
         lambda *a, **k: None,
+    )
+    monkeypatch.setattr(
+        "src.agents.social_agent.social_reply",
+        lambda q, sid, intent, handoff_brief=None, *, settings=None: (
+            f"zooplus Assistant reply ({intent.lane})"
+        ),
     )
     help_blurb = "I can recommend up to four products in plain language"
 

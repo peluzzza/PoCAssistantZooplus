@@ -15,6 +15,20 @@ _EUR_RANGE_ALT = re.compile(
     r"(\d+(?:[.,]\d+)?)\s*(?:€|eur(?:os?)?)\s*(?:and|to|-|–)\s*(\d+(?:[.,]\d+)?)\s*(?:€|eur(?:os?)?)?",
     re.IGNORECASE,
 )
+_EUR_AMOUNT = re.compile(
+    r"€\s*(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)\s*(?:€|eur(?:os?)?)",
+    re.IGNORECASE,
+)
+
+
+def _amounts_from_query(text: str) -> list[float]:
+    """Language-agnostic: collect numeric EUR amounts from any phrasing."""
+    amounts: list[float] = []
+    for match in _EUR_AMOUNT.finditer(text):
+        raw = match.group(1) or match.group(2)
+        if raw:
+            amounts.append(float(raw.replace(",", ".")))
+    return amounts
 
 
 def parse_eur_price_range(query: str) -> tuple[float, float] | None:
@@ -23,11 +37,18 @@ def parse_eur_price_range(query: str) -> tuple[float, float] | None:
     if not text:
         return None
     m = _EUR_RANGE.search(text) or _EUR_RANGE_ALT.search(text)
-    if not m:
-        return None
-    a = float(m.group(1).replace(",", "."))
-    b = float(m.group(2).replace(",", "."))
-    return (min(a, b), max(a, b))
+    if m:
+        a = float(m.group(1).replace(",", "."))
+        b = float(m.group(2).replace(",", "."))
+        return (min(a, b), max(a, b))
+    amounts = _amounts_from_query(text)
+    if len(amounts) >= 2:
+        return (min(amounts), max(amounts))
+    if re.search(r"€|eur(?:os?)?", text, re.I):
+        bare = [float(n.replace(",", ".")) for n in re.findall(r"\d+(?:[.,]\d+)?", text)]
+        if len(bare) >= 2:
+            return (min(bare), max(bare))
+    return None
 
 
 def apply_price_range_filter(query: str, hits: list[dict]) -> list[dict]:

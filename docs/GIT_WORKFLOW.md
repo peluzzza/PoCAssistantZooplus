@@ -1,28 +1,44 @@
-# Git workflow — feature → release
+# Git workflow — feature → dev → main → releases
 
 **Branches**
 
 | Branch | Purpose |
 |--------|---------|
 | `feature/*` | Your change (docs, fix, demo) |
+| `dev` | Integration branch — features merge here first |
+| `main` | Stabilised line after quality gates |
 | `releases` | **Interview / take-home line** — slim, verified |
-| `main` | Full dev history, matrix tooling, generators |
 
 For local setup and demo, use **`releases`** (`git checkout releases`).
 
 ---
 
-## Day-to-day (contributor)
+## Mandatory promotion chain
+
+**Never merge `feature/*` directly into `main` or `releases`.**
 
 ```text
-releases ──► feature/my-change ──► (filters) ──► releases ──► tag v0.1.x
+releases ◄── main ◄── dev ◄── feature/my-change
 ```
 
-### 1. Start from `releases`
+| Step | Action | Required filters |
+|------|--------|------------------|
+| 1 | Branch from `dev` (or `releases` if hotfix on interview line) | — |
+| 2 | Develop + commit on `feature/*` | — |
+| 3 | Merge `feature/*` → `dev` | **F1** `smoke_minimal.ps1` |
+| 4 | Merge `dev` → `main` | **F2** `run_quality_gates.py` |
+| 5 | Merge `main` → `releases` | **F3** `run_release_verify.ps1` |
+| 6 | Push `dev`, `main`, `releases` | All filters green |
+
+---
+
+## Day-to-day (contributor)
+
+### 1. Start from `dev`
 
 ```powershell
-git checkout releases
-git pull origin releases
+git checkout dev
+git pull origin dev
 git checkout -b feature/my-change
 ```
 
@@ -35,31 +51,40 @@ git checkout -b feature/my-change
 
 ### 3. Filters (in order — do not skip)
 
-| Step | Script | When |
-|------|--------|------|
-| **F1** Fast smoke | `.\scripts\smoke_minimal.ps1` | After every meaningful change |
-| **F2** Quality gates | `py -3.11 scripts/run_quality_gates.py` | Before merge |
-| **F3** Release verify | `.\scripts\run_release_verify.ps1` | Before merging to `releases` |
+| Step | Script | Before merge to |
+|------|--------|-----------------|
+| **F1** Fast smoke | `.\scripts\smoke_minimal.ps1` | `dev` |
+| **F2** Quality gates | `py -3 scripts/run_quality_gates.py` | `main` |
+| **F3** Release verify | `.\scripts\run_release_verify.ps1` | `releases` |
 
 ```powershell
 .\scripts\smoke_minimal.ps1
-py -3.11 scripts/run_quality_gates.py
+py -3 scripts/run_quality_gates.py
 .\scripts\run_release_verify.ps1
 ```
 
-### 4. Merge to `releases`
+### 4. Promote (example)
 
 ```powershell
+# feature → dev (after F1)
+git checkout dev
+git merge --no-ff feature/my-change -m "merge feature/my-change into dev"
+git push origin dev
+
+# dev → main (after F2)
+git checkout main
+git pull origin main
+git merge --no-ff dev -m "merge dev into main"
+git push origin main
+
+# main → releases (after F3)
 git checkout releases
-git merge --no-ff feature/my-change -m "merge feature/my-change into releases"
+git pull origin releases
+git merge --no-ff main -m "merge main into releases"
 git push origin releases
 ```
 
 Optional tag after interview milestones: `git tag -a v0.1.x -m "..."` · `git push origin v0.1.x`
-
-### 5. Sync to `main` (optional)
-
-Heavy dev artifacts live on `main` only. Merge `releases` → `main` when you want the slim app line on main, or cherry-pick specific fixes.
 
 ---
 

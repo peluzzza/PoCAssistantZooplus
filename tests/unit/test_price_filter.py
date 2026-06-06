@@ -13,6 +13,13 @@ def test_parse_eur_suffix() -> None:
     assert parse_eur_price_range("from 10 to 20 euros") == (10.0, 20.0)
 
 
+def test_parse_spanish_eur_amounts_without_keywords() -> None:
+    assert parse_eur_price_range("dame lo que tengas entre 30 y 50€ para perros") == (
+        30.0,
+        50.0,
+    )
+
+
 def test_filter_hits_in_band() -> None:
     hits = [
         {"metadata": {"price": 9.5}},

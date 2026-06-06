@@ -37,7 +37,6 @@ OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
             re.IGNORECASE,
         ),
         "off_topic_external_web",
-        None,  # filled below
     ),
     (
         re.compile(
@@ -48,7 +47,6 @@ OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
             re.IGNORECASE,
         ),
         "off_topic_prompt_injection",
-        None,
     ),
 ]
 
@@ -278,13 +276,39 @@ def is_pet_catalog_in_scope(query: str) -> bool:
 def topic_check(query: str, site_id: int = 3) -> TopicDecision:
     """Fast regex guard for unit tests and MCP tools (no OpenCode)."""
     _ = site_id
+    text = query or ""
     for pattern, reason_code in OFF_TOPIC_PATTERNS:
-        if pattern.search(query):
+        if pattern.search(text):
             return TopicDecision(
                 decision="DECLINE",
                 reason_code=reason_code,
-                polite_decline=polite_decline_for(reason_code, query=query),
+                polite_decline=polite_decline_for(reason_code, query=text),
             )
+    for pattern, reason_code, _ in _POLICY_BLOCKS:
+        if pattern.search(text):
+            return TopicDecision(
+                decision="DECLINE",
+                reason_code=reason_code,
+                polite_decline=polite_decline_for(reason_code, query=text),
+            )
+    if _LIFE_OFF_TOPIC.search(text):
+        return TopicDecision(
+            decision="DECLINE",
+            reason_code="off_topic_life",
+            polite_decline=polite_decline_for("off_topic_life", query=text),
+        )
+    if _FORBIDDEN_CONSUMER.search(text):
+        return TopicDecision(
+            decision="DECLINE",
+            reason_code="off_topic_non_pet_consumer",
+            polite_decline=polite_decline_for("off_topic_non_pet_consumer", query=text),
+        )
+    if re.search(r"\b(president|prime minister|who is the)\b", text, re.IGNORECASE):
+        return TopicDecision(
+            decision="DECLINE",
+            reason_code="off_topic_general_knowledge",
+            polite_decline=polite_decline_for("off_topic_general_knowledge", query=text),
+        )
     return TopicDecision(
         decision="ALLOW",
         reason_code="in_scope_pet_catalog",

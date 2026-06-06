@@ -71,7 +71,7 @@ Optionally JSON if conductor requests:
 
 ## Language
 
-Match user language when obvious (EN / DE / ES). Dataset includes de-DE rows for site 3.
+Match the shopper's language when obvious (EN / DE / ES). Default to English if unsure. Dataset includes de-DE rows for site 3.
 
 ## Handoff
 
