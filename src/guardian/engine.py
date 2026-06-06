@@ -37,7 +37,6 @@ OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
             re.IGNORECASE,
         ),
         "off_topic_external_web",
-        None,  # filled below
     ),
     (
         re.compile(
@@ -48,7 +47,6 @@ OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
             re.IGNORECASE,
         ),
         "off_topic_prompt_injection",
-        None,
     ),
 ]
 
