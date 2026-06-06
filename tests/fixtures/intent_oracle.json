@@ -755,6 +755,12 @@
     "confidence": 1.0,
     "reason": "UC-129"
   },
+  "dog chew toy": {
+    "lane": "catalog_search",
+    "social_kind": null,
+    "confidence": 1.0,
+    "reason": "UC-173"
+  },
   "cat food from hardys love affair": {
     "lane": "catalog_search",
     "social_kind": null,

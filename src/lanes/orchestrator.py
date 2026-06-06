@@ -29,7 +29,7 @@ def _chat_cache_key(site_id: int, query: str) -> str:
 async def _classify_intent_bounded(query: str, site_id: int):
     constraints = load_constraints()
     lane_cfg = constraints.get("interactive_lane", {})
-    intent_timeout = float(lane_cfg.get("intent_timeout_seconds", 18))
+    intent_timeout = float(lane_cfg.get("intent_timeout_seconds", 22))
     try:
         return await asyncio.wait_for(
             asyncio.to_thread(classify_intent, query, site_id),

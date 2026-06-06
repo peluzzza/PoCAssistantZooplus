@@ -9,6 +9,7 @@ import re
 from dataclasses import asdict, dataclass
 from typing import Literal
 
+from src.agents.agent_body import wrap_prompt_with_agent
 from src.agents.agent_cascade import run_agent_cascade
 from src.agents.intent_hints import (
     looks_like_catalog_search,
@@ -18,9 +19,10 @@ from src.agents.intent_hints import (
     looks_like_product_browse,
 )
 from src.agents.prompts import INTENT_SYSTEM
+from src.agents.registry import agent_chain_for_role
 from src.config import Settings, apply_settings
 from src.guardian.engine import polite_decline_for
-from src.llm.opencode import opencode_auth_present
+from src.llm.opencode import opencode_auth_present, run_opencode_agent
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +289,36 @@ def classify_intent_conductor_first(
     return _intent_decision_from_parsed(query, parsed, source=agent_source)
 
 
+def classify_intent_single_agent(
+    query: str,
+    site_id: int,
+    *,
+    settings: Settings | None = None,
+) -> IntentDecision | None:
+    """One intent subagent attempt — avoids full multi-agent cascade latency."""
+    cfg = settings or apply_settings()
+    prompt = _build_intent_prompt(query, site_id)
+
+    def _parse_intent(raw: str) -> dict | None:
+        return _parse_intent_json(raw)
+
+    chain = agent_chain_for_role("intent")
+    if not chain:
+        return None
+    agent_id = chain[0]
+    timeout = min(12, max(8, cfg.opencode_timeout_seconds // 2))
+    raw = run_opencode_agent(
+        wrap_prompt_with_agent(agent_id, prompt),
+        settings=cfg,
+        agent_id=agent_id,
+        timeout_seconds=timeout,
+    )
+    parsed = _parse_intent(raw or "")
+    if not parsed:
+        return None
+    return _intent_decision_from_parsed(query, parsed, source=f"opencode:{agent_id}")
+
+
 def classify_intent_agentic(
     query: str,
     site_id: int,
@@ -493,6 +525,13 @@ def classify_intent(
             if led is not None:
                 _store_intent_cache(site_id, text, led)
                 return led
+            single = classify_intent_single_agent(text, site_id, settings=cfg)
+            if single is not None:
+                _store_intent_cache(site_id, text, single)
+                return single
+            decision = _fallback_intent_decision(text, site_id=site_id, reason="conductor_led_fallback")
+            _store_intent_cache(site_id, text, decision)
+            return decision
         decision = classify_intent_agentic(text, site_id, settings=cfg)
         _store_intent_cache(site_id, text, decision)
         return decision
