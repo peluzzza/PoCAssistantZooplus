@@ -34,7 +34,8 @@ def synthesize_answer(
         for p in (
             instructions_skill_context(site_id=site_id),
             handoff_context or "",
-            "Write as zooplus Assistant. Match the customer's language when clear. No numbered product list (UI shows cards).",
+            "Write as zooplus Assistant. Match the customer's language when clear. "
+            "No numbered product list (UI shows cards).",
         )
         if p
     )

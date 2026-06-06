@@ -24,7 +24,8 @@ async def dispatch_process(
             status="timeout",
             answer=(
                 "That search took longer than expected. Please try again with a shorter "
-                "question, or narrow to dog or cat and one product type (e.g. dry food under 20 EUR)."
+                "question, or narrow to dog or cat and one product type "
+                "(e.g. dry food under 20 EUR)."
             ),
             retrieved_products=[],
             blocked_reason="process_timeout",
