@@ -17,7 +17,6 @@ from src.agents.prompts import (
     SOCIAL_THANKS_CONTEXT,
 )
 from src.config import Settings, apply_settings
-from src.llm.opencode import synthesize_opencode_chat
 
 logger = logging.getLogger(__name__)
 
@@ -63,17 +62,6 @@ def social_reply(
     result = run_agent_cascade("social", prompt, settings=cfg, parse=_ok)
     if result.value:
         return str(result.value).strip()
-
-    llm = synthesize_opencode_chat(
-        query=query,
-        site_id=site_id,
-        context=ctx,
-        products=[],
-        settings=cfg,
-        timeout_seconds=min(14, cfg.opencode_timeout_seconds),
-    )
-    if llm:
-        return llm.strip()
 
     fb = run_agent_cascade("conductor", prompt, settings=cfg, parse=_ok)
     if fb.value:

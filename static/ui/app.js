@@ -9,7 +9,37 @@ let uiConfig = {
   sites: [1, 3, 15],
   default_site_id: 3,
   synthesis_mode: "template",
+  wait_phases: {
+    social: ["One moment…", "Reading message…", "Almost there…"],
+    catalog: ["One moment…", "Searching catalog…", "Picking matches…"],
+    decline: ["One moment…", "Checking scope…", "Almost there…"],
+    default: ["One moment…", "Working on it…", "Almost there…"],
+  },
+  wait_phase_interval_ms: 2600,
+  wait_phase_max: 3,
 };
+
+function guessWaitLane(query) {
+  const q = query.trim().toLowerCase();
+  if (/^(hi|hello|hola|hey|good\s*(morning|afternoon|evening)|thanks|thank you|bye|goodbye|who are you|what can you)/.test(q)) {
+    return "social";
+  }
+  if (/\b(weather|traffic|news|politic|stock market|bitcoin|recipe for humans)\b/.test(q)) {
+    return "decline";
+  }
+  if (/\b(dog|cat|puppy|kitten|food|treat|snack|litter|collar|leash|grain|hypoallergenic|eur|€|price|under)\b/.test(q)) {
+    return "catalog";
+  }
+  return "default";
+}
+
+function waitPhasesForQuery(query) {
+  const lane = guessWaitLane(query);
+  const map = uiConfig.wait_phases || {};
+  const phases = map[lane] || map.default || ["One moment…", "Almost there…"];
+  const max = Math.min(uiConfig.wait_phase_max || 3, phases.length);
+  return phases.slice(0, max);
+}
 
 function appendMessage(role, text, products = [], options = {}) {
   const wrap = document.createElement("div");
@@ -102,20 +132,16 @@ form.addEventListener("submit", async (e) => {
   typing.className = "typing";
   typing.setAttribute("role", "status");
   typing.setAttribute("aria-live", "polite");
-  const waitPhases = [
-    "One moment — reading your message…",
-    "Checking the shop catalog…",
-    "Finding products that fit your request…",
-    "Preparing a personalised answer…",
-    "Almost there — thanks for waiting…",
-  ];
+  const waitPhases = waitPhasesForQuery(query);
   let phaseIdx = 0;
   typing.textContent = waitPhases[0];
   messagesEl.appendChild(typing);
+  const phaseInterval = uiConfig.wait_phase_interval_ms || 2600;
   const phaseTimer = setInterval(() => {
-    phaseIdx = (phaseIdx + 1) % waitPhases.length;
+    if (phaseIdx >= waitPhases.length - 1) return;
+    phaseIdx += 1;
     typing.textContent = waitPhases[phaseIdx];
-  }, 2800);
+  }, phaseInterval);
 
   const controller = new AbortController();
   const clientTimeout = setTimeout(() => controller.abort(), 50000);

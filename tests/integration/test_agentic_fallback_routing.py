@@ -17,8 +17,13 @@ def client() -> TestClient:
 
 def test_fallback_routes_internet_to_decline(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "agentic")
+    monkeypatch.setenv("ZOOPLUS_CONDUCTOR_INTENT", "0")
     monkeypatch.setattr(
         "src.agents.agent_cascade.run_opencode_agent",
+        lambda *a, **k: None,
+    )
+    monkeypatch.setattr(
+        "src.agents.intent_agent.run_opencode_agent",
         lambda *a, **k: None,
     )
     d = classify_intent("show me option to find in internet about dogs", 3)
@@ -28,8 +33,13 @@ def test_fallback_routes_internet_to_decline(monkeypatch: pytest.MonkeyPatch) ->
 
 def test_fallback_routes_greeting(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "agentic")
+    monkeypatch.setenv("ZOOPLUS_CONDUCTOR_INTENT", "0")
     monkeypatch.setattr(
         "src.agents.agent_cascade.run_opencode_agent",
+        lambda *a, **k: None,
+    )
+    monkeypatch.setattr(
+        "src.agents.intent_agent.run_opencode_agent",
         lambda *a, **k: None,
     )
     d = classify_intent("hello??", 3)
@@ -40,8 +50,13 @@ def test_fallback_routes_greeting(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_fallback_routes_catalog_products(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "agentic")
+    monkeypatch.setenv("ZOOPLUS_CONDUCTOR_INTENT", "0")
     monkeypatch.setattr(
         "src.agents.agent_cascade.run_opencode_agent",
+        lambda *a, **k: None,
+    )
+    monkeypatch.setattr(
+        "src.agents.intent_agent.run_opencode_agent",
         lambda *a, **k: None,
     )
     d = classify_intent("show me products about dogs", 3)
@@ -58,8 +73,13 @@ def test_chat_no_repeated_help_template(
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "agentic")
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
     monkeypatch.setenv("ZOOPLUS_FAST_INTENT", "1")
+    monkeypatch.setenv("ZOOPLUS_CONDUCTOR_INTENT", "0")
     monkeypatch.setattr(
         "src.agents.agent_cascade.run_opencode_agent",
+        lambda *a, **k: None,
+    )
+    monkeypatch.setattr(
+        "src.agents.intent_agent.run_opencode_agent",
         lambda *a, **k: None,
     )
     monkeypatch.setattr(

@@ -8,7 +8,10 @@ import logging
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
 from src.agents.handoff import build_handoff
-from src.agents.intent_agent import classify_intent, classify_intent_conductor_fallback
+from src.agents.intent_agent import (
+    _fallback_intent_decision,
+    classify_intent,
+)
 from src.agents.social_agent import social_reply
 from src.cache.ttl_cache import cache_enabled, chat_cache
 from src.guardian.engine import load_constraints, max_recommendations
@@ -28,20 +31,23 @@ def _chat_cache_key(site_id: int, query: str) -> str:
 
 async def _classify_intent_bounded(query: str, site_id: int):
     constraints = load_constraints()
-    intent_timeout = float(
-        constraints.get("interactive_lane", {}).get("intent_timeout_seconds", 22)
-    )
+    lane_cfg = constraints.get("interactive_lane", {})
+    intent_timeout = float(lane_cfg.get("intent_timeout_seconds", 22))
     try:
         return await asyncio.wait_for(
             asyncio.to_thread(classify_intent, query, site_id),
             timeout=intent_timeout,
         )
     except TimeoutError:
-        logger.warning("intent lane exceeded %.0fs; one-shot conductor fallback", intent_timeout)
+        logger.warning(
+            "intent lane exceeded %.0fs; topic fallback (no extra OpenCode)",
+            intent_timeout,
+        )
         return await asyncio.to_thread(
-            classify_intent_conductor_fallback,
+            _fallback_intent_decision,
             query,
-            site_id,
+            site_id=site_id,
+            reason="intent_lane_timeout",
         )
 
 
@@ -53,25 +59,20 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
             logger.info("chat cache hit site=%s", request.site_id)
             return ChatResponse.model_validate(cached)
 
-    cap = max_recommendations()
-    pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
+    intent = await _classify_intent_bounded(request.query, request.site_id)
 
-    intent_task = asyncio.create_task(_classify_intent_bounded(request.query, request.site_id))
-    retrieve_task = asyncio.create_task(
-        asyncio.to_thread(
-            search_catalog,
-            request.query,
-            request.site_id,
-            n_results=pool_n,
-        )
-    )
-
-    intent = await intent_task
     prefetched_hits: tuple[dict, ...] | None = None
     if intent.lane == "catalog_search":
-        prefetched_hits = tuple(await retrieve_task)
-    else:
-        await retrieve_task
+        cap = max_recommendations()
+        pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
+        prefetched_hits = tuple(
+            await asyncio.to_thread(
+                search_catalog,
+                request.query,
+                request.site_id,
+                n_results=pool_n,
+            )
+        )
 
     handoff = build_handoff(
         query=request.query,
