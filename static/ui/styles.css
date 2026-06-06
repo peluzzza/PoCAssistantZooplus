@@ -213,17 +213,16 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.msg.bot.wait-phase {
-  font-size: 0.82rem;
+.msg.bot.status-reply {
+  font-size: 0.88rem;
   color: var(--muted);
-  font-style: italic;
-  padding: 0.45rem 0.85rem;
+  padding: 0.5rem 0.9rem;
   border-left: 3px solid var(--accent);
-  background: rgba(61, 154, 111, 0.1);
-  animation: waitFadeIn 0.35s ease-out;
+  background: rgba(61, 154, 111, 0.12);
+  animation: statusFadeIn 0.35s ease-out;
 }
 
-@keyframes waitFadeIn {
+@keyframes statusFadeIn {
   from {
     opacity: 0;
     transform: translateY(4px);
