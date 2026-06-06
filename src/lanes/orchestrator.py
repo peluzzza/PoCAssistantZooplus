@@ -1,6 +1,25 @@
 """Dual-lane orchestrator — agentic intent + social / catalog process."""
 
-from __future__ import annotationsimport asyncioimport loggingfrom src.acp.dispatcher import dispatch_processfrom src.acp.envelopes import ChatProcessEnvelopefrom src.agents.handoff import build_handofffrom src.agents.intent_agent import classify_intent, classify_intent_conductor_fallbackfrom src.agents.social_agent import social_replyfrom src.cache.ttl_cache import cache_enabled, chat_cachefrom src.guardian.engine import load_constraints, max_recommendationsfrom src.lanes.process import run_process_lanefrom src.llm.answer_sanitize import normalize_shopper_answerfrom src.models.chat import ChatRequest, ChatResponsefrom src.observability.metrics import record_chat_outcomefrom src.rag.price_filter import parse_eur_price_rangefrom src.rag.retrieve import search_cataloglogger = logging.getLogger(__name__)
+from __future__ import annotations
+
+import asyncio
+import logging
+
+from src.acp.dispatcher import dispatch_process
+from src.acp.envelopes import ChatProcessEnvelope
+from src.agents.handoff import build_handoff
+from src.agents.intent_agent import classify_intent, classify_intent_conductor_fallback
+from src.agents.social_agent import social_reply
+from src.cache.ttl_cache import cache_enabled, chat_cache
+from src.guardian.engine import load_constraints, max_recommendations
+from src.lanes.process import run_process_lane
+from src.llm.answer_sanitize import normalize_shopper_answer
+from src.models.chat import ChatRequest, ChatResponse
+from src.observability.metrics import record_chat_outcome
+from src.rag.price_filter import parse_eur_price_range
+from src.rag.retrieve import search_catalog
+
+logger = logging.getLogger(__name__)
 
 
 def _chat_cache_key(site_id: int, query: str) -> str:
@@ -18,9 +37,7 @@ async def _classify_intent_bounded(query: str, site_id: int):
             timeout=intent_timeout,
         )
     except TimeoutError:
-        logger.warning(
-            "intent lane exceeded %.0fs; one-shot conductor fallback", intent_timeout
-        )
+        logger.warning("intent lane exceeded %.0fs; one-shot conductor fallback", intent_timeout)
         return await asyncio.to_thread(
             classify_intent_conductor_fallback,
             query,
@@ -39,9 +56,7 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     cap = max_recommendations()
     pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
 
-    intent_task = asyncio.create_task(
-        _classify_intent_bounded(request.query, request.site_id)
-    )
+    intent_task = asyncio.create_task(_classify_intent_bounded(request.query, request.site_id))
     retrieve_task = asyncio.create_task(
         asyncio.to_thread(
             search_catalog,
@@ -124,4 +139,3 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     if cache_enabled():
         chat_cache.set(cache_key, response.model_dump())
     return response
-
