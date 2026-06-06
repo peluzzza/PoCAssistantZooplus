@@ -20,10 +20,7 @@ DEFAULT_CHAINS: dict[AgentRole, tuple[str, ...]] = {
         "zooplus-topic-guard",
         "zooplus-conductor",
     ),
-    "social": (
-        "zooplus-social-agent",
-        "zooplus-conductor",
-    ),
+    "social": ("zooplus-social-agent",),
     "synthesis": (
         "zooplus-synthesis",
         "zooplus-logic-worker",
@@ -37,6 +34,13 @@ _ROLE_ENV: dict[AgentRole, str] = {
     "social": "ZOOPLUS_SOCIAL_AGENT_CHAIN",
     "synthesis": "ZOOPLUS_SYNTHESIS_AGENT_CHAIN",
     "conductor": "ZOOPLUS_CONDUCTOR_AGENT_CHAIN",
+}
+
+_ROLE_MODEL_ENV: dict[AgentRole, str] = {
+    "intent": "ZOOPLUS_INTENT_MODEL",
+    "social": "ZOOPLUS_SOCIAL_MODEL",
+    "synthesis": "ZOOPLUS_SYNTHESIS_MODEL",
+    "conductor": "ZOOPLUS_CONDUCTOR_MODEL",
 }
 
 
@@ -79,6 +83,20 @@ def list_available_agent_ids() -> list[str]:
     return sorted(load_agent_catalog().keys())
 
 
+def model_for_role(role: AgentRole, *, default: str | None = None) -> str | None:
+    """Per-role OpenCode model override (flash models for social/intent)."""
+    from src.agents.request_context import request_llm_model
+
+    picked = request_llm_model.get()
+    if picked:
+        return picked
+    env_key = _ROLE_MODEL_ENV.get(role, "")
+    raw = os.environ.get(env_key, "").strip() if env_key else ""
+    if raw:
+        return raw
+    return default
+
+
 def agent_chain_for_role(role: AgentRole) -> tuple[str, ...]:
     """Resolve retry order: env override → defaults, filtered to configured agents only."""
     env_key = _ROLE_ENV.get(role, "")
@@ -89,6 +107,14 @@ def agent_chain_for_role(role: AgentRole) -> tuple[str, ...]:
         requested = DEFAULT_CHAINS[role]
     catalog = load_agent_catalog()
     chain = tuple(a for a in requested if a in catalog)
+    if role == "social" and chain:
+        allow_fb = os.environ.get("ZOOPLUS_SOCIAL_ALLOW_FALLBACK", "0").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        if not allow_fb:
+            chain = chain[:1]
     if chain:
         return chain
     if "zooplus-conductor" in catalog:

@@ -33,7 +33,7 @@ class Settings:
     chroma_path: str | None = None
     metrics_enabled: bool = True
     synthesis_mode: str = "opencode"
-    opencode_model: str = "opencode/deepseek-v4-flash-free"
+    opencode_model: str = "opencode/mimo-v2.5-free"
     opencode_timeout_seconds: int = 25
     opencode_data_dir: str | None = None
     opencode_config_dir: str | None = None

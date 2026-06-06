@@ -6,8 +6,10 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
+from src.agents.registry import model_for_role
 from src.config import apply_settings
 from src.llm.opencode import opencode_auth_present
+from src.llm.opencode_models import models_for_ui
 
 router = APIRouter()
 
@@ -70,6 +72,13 @@ async def ui_config() -> dict:
         "default_site_id": 3,
         "synthesis_mode": settings.synthesis_mode,
         "opencode_model": settings.opencode_model,
+        "opencode_models_by_role": {
+            "default": settings.opencode_model,
+            "social": model_for_role("social", default=settings.opencode_model),
+            "intent": model_for_role("intent", default=settings.opencode_model),
+            "conductor": model_for_role("conductor", default=settings.opencode_model),
+            "synthesis": model_for_role("synthesis", default=settings.opencode_model),
+        },
         "opencode_auth_configured": opencode_auth_present(settings),
         "chat_endpoint": "/chat",
         "stream_endpoint": "/chat/stream",
@@ -79,6 +88,17 @@ async def ui_config() -> dict:
             "decline": ["One moment…", "Checking scope…", "Almost there…"],
             "default": ["One moment…", "Working on it…", "Almost there…"],
         },
-        "wait_phase_interval_ms": 2600,
+        "wait_phase_delays_ms": [0, 1000, 2200],
         "wait_phase_max": 3,
+        "models": models_for_ui(settings=settings),
     }
+
+
+@router.get("/api/ui/models")
+async def ui_models(refresh: bool = False) -> dict:
+    from src.llm.opencode_models import list_opencode_models
+
+    settings = apply_settings()
+    if refresh:
+        list_opencode_models(settings=settings, force_refresh=True)
+    return models_for_ui(settings=settings)

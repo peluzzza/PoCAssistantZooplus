@@ -21,6 +21,19 @@ _GREETING = re.compile(
     r"^(hi|hello|hey|hola|buenas|good\s+(morning|afternoon|evening))[!?.\s]*$",
     re.I,
 )
+_GREETING_CASUAL = re.compile(
+    r"^(hola\s+que\s+tal|qué\s+tal|que\s+tal|how\s+are\s+you|how'?s\s+it\s+going|"
+    r"hi\s+there|hey\s+there|buenos\s+días|buenas\s+tardes|buenas\s+noches)[!?.\s]*$",
+    re.I,
+)
+_SHORT_SOCIAL_OPENER = re.compile(
+    r"^(hola|hi|hey|hello|buenas|good\s+(morning|afternoon|evening))\b",
+    re.I,
+)
+_PET_SHOP_WORD = re.compile(
+    r"\b(dog|cat|food|product|toy|puppy|kitten|treat|litter|collar|eur|€|price)\b",
+    re.I,
+)
 _THANKS = re.compile(r"^(thanks|thank\s+you|gracias|muchas\s+gracias|danke)[!?.\s]*$", re.I)
 _BYE = re.compile(r"^(bye|goodbye|see\s+you|adios|hasta\s+luego)[!?.\s]*$", re.I)
 _HELP = re.compile(r"^(help|\?|what\s+can\s+you\s+do|how\s+can\s+you\s+help)[!?.\s]*$", re.I)
@@ -33,7 +46,13 @@ _HELP_PHRASES = re.compile(
 
 def classify_conversation(query: str) -> ConvoKind:
     text = query.strip()
-    if _GREETING.match(text):
+    if _GREETING.match(text) or _GREETING_CASUAL.match(text):
+        return ConvoKind.GREETING
+    if (
+        len(text.split()) <= 5
+        and _SHORT_SOCIAL_OPENER.search(text)
+        and not _PET_SHOP_WORD.search(text)
+    ):
         return ConvoKind.GREETING
     if _THANKS.match(text):
         return ConvoKind.THANKS

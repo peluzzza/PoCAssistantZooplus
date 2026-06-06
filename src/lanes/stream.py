@@ -79,15 +79,14 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
     yield _line(_topic_event(intent))
 
     if intent.lane in ("decline_off_topic", "conversational"):
-        answer = normalize_shopper_answer(
-            await asyncio.to_thread(
-                social_reply,
-                request.query,
-                request.site_id,
-                intent,
-                handoff.brief(),
-            )
+        answer, _run_meta = await asyncio.to_thread(
+            social_reply,
+            request.query,
+            request.site_id,
+            intent,
+            handoff.brief(),
         )
+        answer = normalize_shopper_answer(answer)
         for chunk in _answer_chunks(answer):
             yield _line({"type": "answer_chunk", "text": chunk})
         yield _line({"type": "done", "answer": answer, "retrieved_products": []})

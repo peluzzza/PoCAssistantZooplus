@@ -10,6 +10,7 @@ pytestmark = pytest.mark.unit
 
 def test_conversational_only_detects_hello() -> None:
     assert is_conversational_only("Hello!")
+    assert is_conversational_only("hola que tal")
     assert not is_conversational_only("best dry food for puppy")
 
 

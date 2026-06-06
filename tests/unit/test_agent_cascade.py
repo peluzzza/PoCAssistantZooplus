@@ -24,6 +24,11 @@ def test_intent_chain_order() -> None:
     assert "zooplus-conductor" in chain
 
 
+def test_social_chain_single_agent() -> None:
+    chain = agent_chain_for_role("social")
+    assert chain == ("zooplus-social-agent",)
+
+
 def test_cascade_tries_second_agent(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 
