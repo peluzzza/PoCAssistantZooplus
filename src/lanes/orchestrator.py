@@ -4,7 +4,7 @@ from __future__ import annotationsimport asyncioimport loggingfrom src.acp.
 
 
 def _chat_cache_key(site_id: int, query: str) -> str:
-    return f"en:{site_id}:{query.strip().lower()}"
+    return f"{site_id}:{query.strip().lower()}"
 
 
 async def _classify_intent_bounded(query: str, site_id: int):
