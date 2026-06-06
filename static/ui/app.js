@@ -100,8 +100,22 @@ form.addEventListener("submit", async (e) => {
 
   const typing = document.createElement("div");
   typing.className = "typing";
-  typing.textContent = "Searching catalog…";
+  typing.setAttribute("role", "status");
+  typing.setAttribute("aria-live", "polite");
+  const waitPhases = [
+    "Un momento, estoy leyendo tu mensaje…",
+    "Consultando el catálogo de la tienda…",
+    "Buscando productos que encajen contigo…",
+    "Preparando una respuesta personalizada…",
+    "Casi listo, gracias por tu paciencia…",
+  ];
+  let phaseIdx = 0;
+  typing.textContent = waitPhases[0];
   messagesEl.appendChild(typing);
+  const phaseTimer = setInterval(() => {
+    phaseIdx = (phaseIdx + 1) % waitPhases.length;
+    typing.textContent = waitPhases[phaseIdx];
+  }, 2800);
 
   const controller = new AbortController();
   const clientTimeout = setTimeout(() => controller.abort(), 50000);
@@ -114,6 +128,7 @@ form.addEventListener("submit", async (e) => {
       signal: controller.signal,
     });
     clearTimeout(clientTimeout);
+    clearInterval(phaseTimer);
     typing.remove();
 
     if (!res.ok) {
@@ -128,10 +143,11 @@ form.addEventListener("submit", async (e) => {
     appendMessage("bot", normalizeAnswer(data.answer) || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
+    clearInterval(phaseTimer);
     typing.remove();
     const msg =
       err.name === "AbortError"
-        ? "Request timed out (50s). Try a shorter question or check scripts/run_dev.ps1 and OpenCode auth."
+        ? "Tardó demasiado (50s). Prueba una pregunta más corta o revisa OpenCode en scripts/run_dev.ps1."
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {
