@@ -53,7 +53,7 @@ def social_reply(
     ctx = f"{skill}\n\n{SOCIAL_SYSTEM}\n\n{handoff}{_context_for_kind(kind, query, intent)}"
     prompt = (
         f"{ctx}\n\nsite_id={site_id}\nCustomer: {query}\n"
-        "Reply as zooplus Assistant (2-5 sentences)."
+        "Reply as zooplus Assistant in English (2-5 sentences)."
     )
 
     def _ok(raw: str) -> str | None:

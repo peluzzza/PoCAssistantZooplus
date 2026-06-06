@@ -79,7 +79,7 @@ def _build_prompt(
         "- Do NOT output a numbered or bulleted product list — the UI shows product cards separately.\n"
         "- Mention at most two product names in prose; prices live in the cards.\n"
         "- Vary wording each turn; avoid rigid template openings.\n"
-        "- Match the customer's language when possible.\n"
+        "- Reply in English by default (shop policy).\n"
         "- End with one short follow-up question when appropriate.\n"
         "- Reply in plain text only — never wrap the answer in JSON or markdown code fences.\n"
     )

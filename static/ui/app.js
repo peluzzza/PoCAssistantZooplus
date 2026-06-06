@@ -103,11 +103,11 @@ form.addEventListener("submit", async (e) => {
   typing.setAttribute("role", "status");
   typing.setAttribute("aria-live", "polite");
   const waitPhases = [
-    "Un momento, estoy leyendo tu mensaje…",
-    "Consultando el catálogo de la tienda…",
-    "Buscando productos que encajen contigo…",
-    "Preparando una respuesta personalizada…",
-    "Casi listo, gracias por tu paciencia…",
+    "One moment — reading your message…",
+    "Checking the shop catalog…",
+    "Finding products that fit your request…",
+    "Preparing a personalised answer…",
+    "Almost there — thanks for waiting…",
   ];
   let phaseIdx = 0;
   typing.textContent = waitPhases[0];
@@ -147,7 +147,7 @@ form.addEventListener("submit", async (e) => {
     typing.remove();
     const msg =
       err.name === "AbortError"
-        ? "Tardó demasiado (50s). Prueba una pregunta más corta o revisa OpenCode en scripts/run_dev.ps1."
+        ? "Request timed out (50s). Try a shorter question or check OpenCode auth in scripts/run_dev.ps1."
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {
