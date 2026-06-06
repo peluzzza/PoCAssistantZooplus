@@ -5,6 +5,7 @@ const siteSelect = document.getElementById("siteId");
 const modelSelect = document.getElementById("modelSelect");
 const sendBtn = document.getElementById("sendBtn");
 const modeBadge = document.getElementById("modeBadge");
+const agentModelsList = document.getElementById("agentModelsList");
 
 let uiConfig = {
   sites: [1, 3, 15],
@@ -144,27 +145,57 @@ function setModeBadge(meta) {
   }
 }
 
+function shortModelId(id) {
+  if (!id) return "";
+  return id.includes("/") ? id.split("/").slice(-2).join("/") : id;
+}
+
+function populateAgentModels() {
+  if (!agentModelsList) return;
+  const map = uiConfig.agent_models || {};
+  agentModelsList.innerHTML = "";
+  const order = [
+    "zooplus-conductor",
+    "zooplus-intent-agent",
+    "zooplus-social-agent",
+    "zooplus-topic-guard",
+    "zooplus-rag-worker",
+    "zooplus-logic-worker",
+    "zooplus-synthesis",
+  ];
+  for (const agentId of order) {
+    const model = map[agentId];
+    if (!model) continue;
+    const li = document.createElement("li");
+    li.textContent = `${agentId.replace("zooplus-", "")}: ${shortModelId(model)}`;
+    agentModelsList.appendChild(li);
+  }
+}
+
 function populateModelSelect() {
   if (!modelSelect) return;
   const block = uiConfig.models || {};
   const ids = (block.recommended && block.recommended.length)
     ? block.recommended
     : (block.all || []).slice(0, 12);
-  const fallback = uiConfig.opencode_model || "opencode/deepseek-v4-flash-free";
-  const list = ids.length ? ids : [fallback];
 
+  const keep = modelSelect.querySelector('option[value=""]');
   modelSelect.innerHTML = "";
-  for (const id of list) {
+  if (keep) modelSelect.appendChild(keep);
+  else {
+    const def = document.createElement("option");
+    def.value = "";
+    def.textContent = "Per-agent (default)";
+    modelSelect.appendChild(def);
+  }
+  for (const id of ids) {
     const opt = document.createElement("option");
     opt.value = id;
-    opt.textContent = id.replace(/^[^/]+\//, "");
+    opt.textContent = shortModelId(id);
     modelSelect.appendChild(opt);
   }
-  const preferred = block.default || fallback;
-  if ([...modelSelect.options].some((o) => o.value === preferred)) {
-    modelSelect.value = preferred;
-  }
-  modelSelect.addEventListener("change", () => setModeBadge());
+  modelSelect.value = "";
+  modelSelect.onchange = () => setModeBadge();
 }
 
 async function loadConfig() {
@@ -183,6 +214,7 @@ async function loadConfig() {
     siteSelect.appendChild(opt);
   }
   siteSelect.value = String(uiConfig.default_site_id || 3);
+  populateAgentModels();
   populateModelSelect();
   setModeBadge();
 }
@@ -205,7 +237,7 @@ form.addEventListener("submit", async (e) => {
 
   try {
     const body = { site_id: siteId, query };
-    if (preferredModel) body.preferred_model = preferredModel;
+    if (preferredModel && preferredModel.trim()) body.preferred_model = preferredModel.trim();
 
     const res = await fetch("/chat", {
       method: "POST",

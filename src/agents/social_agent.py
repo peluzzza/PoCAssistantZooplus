@@ -17,7 +17,7 @@ from src.agents.prompts import (
     SOCIAL_SYSTEM,
     SOCIAL_THANKS_CONTEXT,
 )
-from src.agents.registry import agent_chain_for_role, model_for_role
+from src.agents.registry import agent_chain_for_role, cli_model_arg, resolved_agent_model
 from src.agents.run_meta import AgentRunMeta
 from src.config import Settings, apply_settings
 from src.llm.opencode import run_opencode_agent
@@ -57,7 +57,8 @@ def social_reply(
     if intent.source == "conversation_classifier":
         chain = agent_chain_for_role("social")
         agent_id = chain[0] if chain else "zooplus-social-agent"
-        role_model = model_for_role("social", default=cfg.opencode_model)
+        agent_model = cli_model_arg(agent_id, default=cfg.opencode_model)
+        display_model = resolved_agent_model(agent_id, default=cfg.opencode_model)
         fast_prompt = (
             f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}\n\n"
             f"site_id={site_id}\nCustomer: {query}\n"
@@ -68,14 +69,14 @@ def social_reply(
             settings=cfg,
             agent_id=agent_id,
             timeout_seconds=_SOCIAL_FAST_TIMEOUT,
-            model=role_model,
+            model=agent_model,
         )
         if raw and len(raw.strip()) > 12:
             return raw.strip(), AgentRunMeta(
                 lane=intent.lane,
                 intent_source=intent.source,
                 llm_agent=agent_id,
-                llm_model=role_model,
+                llm_model=display_model,
             )
 
     skill = instructions_skill_context(site_id=site_id)

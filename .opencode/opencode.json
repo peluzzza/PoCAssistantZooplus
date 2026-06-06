@@ -15,6 +15,7 @@
     "zooplus-conductor": {
       "mode": "primary",
       "description": "Agentic-first shop orchestrator (intent → social | catalog pipeline)",
+      "model": "opencode/mimo-v2.5-free",
       "tools": {
         "zooplus_topic_check": true,
         "zooplus_constraints_get": true
@@ -34,6 +35,7 @@
     "zooplus-intent-agent": {
       "mode": "subagent",
       "description": "Default-deny intent router (conversational | catalog | decline)",
+      "model": "opencode-go/deepseek-v4-flash",
       "tools": {
         "zooplus_topic_check": true,
         "zooplus_constraints_get": true
@@ -42,6 +44,7 @@
     "zooplus-social-agent": {
       "mode": "subagent",
       "description": "Sociable replies without catalog retrieval",
+      "model": "opencode/mimo-v2.5-free",
       "tools": {
         "zooplus_constraints_get": true
       }
@@ -49,6 +52,7 @@
     "zooplus-topic-guard": {
       "mode": "subagent",
       "description": "MCP topic_check compat (prefer intent-agent)",
+      "model": "opencode-go/minimax-m2.5",
       "tools": {
         "zooplus_topic_check": true
       }
@@ -56,6 +60,7 @@
     "zooplus-rag-worker": {
       "mode": "subagent",
       "description": "RAG retrieval worker scoped by site_id",
+      "model": "opencode-go/deepseek-v4-flash",
       "tools": {
         "zooplus_catalog_search": true
       }
@@ -63,6 +68,7 @@
     "zooplus-logic-worker": {
       "mode": "subagent",
       "description": "Recommendation shaping and ranking constraints",
+      "model": "opencode-go/qwen3.6-plus",
       "tools": {
         "zooplus_catalog_search": true
       }
@@ -77,6 +83,7 @@
     "zooplus-synthesis": {
       "mode": "subagent",
       "description": "Grounded sociable answer from retrieved products",
+      "model": "opencode/deepseek-v4-flash-free",
       "tools": {
         "zooplus_constraints_get": true
       }

@@ -1,8 +1,9 @@
 ---
 description: Catalog retrieval worker — site-scoped hybrid search (B4, B5). No user-facing prose.
 mode: subagent
+model: opencode-go/deepseek-v4-flash
 temperature: 0.1
-steps: 8
+steps: 6
 permission:
   edit: deny
 ---

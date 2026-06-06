@@ -1,6 +1,7 @@
 ---
 description: Agentic intent router (default-deny). Classifies every user message before RAG. Aligns with src/agents/intent_agent.py.
 mode: subagent
+model: opencode-go/deepseek-v4-flash
 hidden: true
 temperature: 0.15
 steps: 4

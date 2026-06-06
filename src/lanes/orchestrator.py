@@ -12,7 +12,7 @@ from src.agents.intent_agent import (
     _fallback_intent_decision,
     classify_intent,
 )
-from src.agents.registry import model_for_role
+from src.agents.registry import resolved_agent_model
 from src.agents.social_agent import social_reply
 from src.cache.ttl_cache import cache_enabled, chat_cache
 from src.config import apply_settings
@@ -165,7 +165,7 @@ async def _handle_chat_inner(request: ChatRequest) -> ChatResponse:
             lane="catalog_search",
             intent_source=intent.source,
             llm_agent="zooplus-synthesis",
-            llm_model=model_for_role("synthesis", default=cfg.opencode_model),
+            llm_model=resolved_agent_model("zooplus-synthesis", default=cfg.opencode_model),
         ),
     )
     if cache_enabled():
