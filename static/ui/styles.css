@@ -189,23 +189,23 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.typing {
+.msg.bot.wait-phase {
+  font-size: 0.82rem;
   color: var(--muted);
-  font-size: 0.88rem;
   font-style: italic;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.85rem;
   border-left: 3px solid var(--accent);
-  background: rgba(61, 154, 111, 0.08);
-  border-radius: 0 8px 8px 0;
-  animation: typingPulse 2.8s ease-in-out infinite;
+  background: rgba(61, 154, 111, 0.1);
+  animation: waitFadeIn 0.35s ease-out;
 }
 
-@keyframes typingPulse {
-  0%,
-  100% {
-    opacity: 0.75;
+@keyframes waitFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
-  50% {
+  to {
     opacity: 1;
+    transform: translateY(0);
   }
 }

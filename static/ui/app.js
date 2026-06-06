@@ -2,6 +2,7 @@ const messagesEl = document.getElementById("messages");
 const form = document.getElementById("chatForm");
 const queryInput = document.getElementById("queryInput");
 const siteSelect = document.getElementById("siteId");
+const modelSelect = document.getElementById("modelSelect");
 const sendBtn = document.getElementById("sendBtn");
 const modeBadge = document.getElementById("modeBadge");
 
@@ -15,13 +16,14 @@ let uiConfig = {
     decline: ["One moment…", "Checking scope…", "Almost there…"],
     default: ["One moment…", "Working on it…", "Almost there…"],
   },
-  wait_phase_interval_ms: 2600,
+  wait_phase_delays_ms: [0, 1000, 2200],
   wait_phase_max: 3,
+  models: { recommended: [], all: [], default: "" },
 };
 
 function guessWaitLane(query) {
   const q = query.trim().toLowerCase();
-  if (/^(hi|hello|hola|hey|good\s*(morning|afternoon|evening)|thanks|thank you|bye|goodbye|who are you|what can you)/.test(q)) {
+  if (/^(hi|hello|hola|hey|buenas|good\s*(morning|afternoon|evening)|thanks|thank you|bye|goodbye|who are you|what can you|hola\s+que\s+tal|qué\s+tal|que\s+tal)/.test(q)) {
     return "social";
   }
   if (/\b(weather|traffic|news|politic|stock market|bitcoin|recipe for humans)\b/.test(q)) {
@@ -39,6 +41,34 @@ function waitPhasesForQuery(query) {
   const phases = map[lane] || map.default || ["One moment…", "Almost there…"];
   const max = Math.min(uiConfig.wait_phase_max || 3, phases.length);
   return phases.slice(0, max);
+}
+
+/** Show 1–3 short status bubbles that appear over time (lane-aware). */
+function startWaitMessages(query) {
+  const phases = waitPhasesForQuery(query);
+  const delays = uiConfig.wait_phase_delays_ms || [0, 1000, 2200];
+  const nodes = [];
+  const timers = [];
+
+  phases.forEach((text, idx) => {
+    const delay = delays[idx] ?? delays[delays.length - 1] ?? 0;
+    const timer = setTimeout(() => {
+      const el = document.createElement("div");
+      el.className = "msg bot wait-phase";
+      el.setAttribute("role", "status");
+      el.setAttribute("aria-live", "polite");
+      el.textContent = text;
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      nodes.push(el);
+    }, delay);
+    timers.push(timer);
+  });
+
+  return () => {
+    timers.forEach((t) => clearTimeout(t));
+    nodes.forEach((n) => n.remove());
+  };
 }
 
 function appendMessage(role, text, products = [], options = {}) {
@@ -69,7 +99,6 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
-/** LLM sometimes returns `{"answer":"..."}` — show prose only. */
 function normalizeAnswer(text) {
   if (!text) return "";
   let raw = String(text).trim();
@@ -87,16 +116,55 @@ function normalizeAnswer(text) {
   return raw;
 }
 
-function setModeBadge() {
+function formatModelLabel(model, agent) {
+  const m = model || selectedModel() || uiConfig.opencode_model || "opencode";
+  const short = m.includes("/") ? m.split("/").slice(-2).join("/") : m;
+  return agent ? `${short} · ${agent}` : short;
+}
+
+function selectedModel() {
+  return modelSelect && modelSelect.value ? modelSelect.value : null;
+}
+
+function setModeBadge(meta) {
   const mode = uiConfig.synthesis_mode || "template";
+  if (meta && meta.llm_model) {
+    const auth = uiConfig.opencode_auth_configured ? "" : " · auth missing";
+    modeBadge.textContent = `LLM: ${formatModelLabel(meta.llm_model, meta.llm_agent)}${auth}`;
+    modeBadge.classList.add("llm");
+    return;
+  }
   if (mode === "opencode") {
     const auth = uiConfig.opencode_auth_configured ? "auth OK" : "auth missing";
-    modeBadge.textContent = `LLM: ${uiConfig.opencode_model || "opencode"} (${auth})`;
+    modeBadge.textContent = `LLM: ${formatModelLabel(selectedModel())} (${auth})`;
     modeBadge.classList.add("llm");
   } else {
     modeBadge.textContent = "Synthesis: template";
     modeBadge.classList.remove("llm");
   }
+}
+
+function populateModelSelect() {
+  if (!modelSelect) return;
+  const block = uiConfig.models || {};
+  const ids = (block.recommended && block.recommended.length)
+    ? block.recommended
+    : (block.all || []).slice(0, 12);
+  const fallback = uiConfig.opencode_model || "opencode/deepseek-v4-flash-free";
+  const list = ids.length ? ids : [fallback];
+
+  modelSelect.innerHTML = "";
+  for (const id of list) {
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = id.replace(/^[^/]+\//, "");
+    modelSelect.appendChild(opt);
+  }
+  const preferred = block.default || fallback;
+  if ([...modelSelect.options].some((o) => o.value === preferred)) {
+    modelSelect.value = preferred;
+  }
+  modelSelect.addEventListener("change", () => setModeBadge());
 }
 
 async function loadConfig() {
@@ -115,6 +183,7 @@ async function loadConfig() {
     siteSelect.appendChild(opt);
   }
   siteSelect.value = String(uiConfig.default_site_id || 3);
+  populateModelSelect();
   setModeBadge();
 }
 
@@ -124,38 +193,28 @@ form.addEventListener("submit", async (e) => {
   if (!query) return;
 
   const siteId = Number(siteSelect.value);
+  const preferredModel = selectedModel();
   appendMessage("user", query);
   queryInput.value = "";
   sendBtn.disabled = true;
 
-  const typing = document.createElement("div");
-  typing.className = "typing";
-  typing.setAttribute("role", "status");
-  typing.setAttribute("aria-live", "polite");
-  const waitPhases = waitPhasesForQuery(query);
-  let phaseIdx = 0;
-  typing.textContent = waitPhases[0];
-  messagesEl.appendChild(typing);
-  const phaseInterval = uiConfig.wait_phase_interval_ms || 2600;
-  const phaseTimer = setInterval(() => {
-    if (phaseIdx >= waitPhases.length - 1) return;
-    phaseIdx += 1;
-    typing.textContent = waitPhases[phaseIdx];
-  }, phaseInterval);
+  const clearWait = startWaitMessages(query);
 
   const controller = new AbortController();
   const clientTimeout = setTimeout(() => controller.abort(), 50000);
 
   try {
+    const body = { site_id: siteId, query };
+    if (preferredModel) body.preferred_model = preferredModel;
+
     const res = await fetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ site_id: siteId, query }),
+      body: JSON.stringify(body),
       signal: controller.signal,
     });
     clearTimeout(clientTimeout);
-    clearInterval(phaseTimer);
-    typing.remove();
+    clearWait();
 
     if (!res.ok) {
       const err = await res.text();
@@ -165,15 +224,15 @@ form.addEventListener("submit", async (e) => {
 
     const data = await res.json();
     const products = data.retrieved_products || [];
+    if (data.meta) setModeBadge(data.meta);
     const decline = products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(data.answer || "");
     appendMessage("bot", normalizeAnswer(data.answer) || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
-    clearInterval(phaseTimer);
-    typing.remove();
+    clearWait();
     const msg =
       err.name === "AbortError"
-        ? "Request timed out (50s). Try a shorter question or check OpenCode auth in scripts/run_dev.ps1."
+        ? "Request timed out (50s). Try a shorter question or pick a faster model."
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {
@@ -194,6 +253,6 @@ queryInput.addEventListener("keydown", (e) => {
 loadConfig().then(() => {
   appendMessage(
     "bot",
-    "Hi! Pick a shop (site_id) and ask about pet products. Off-topic questions are declined.",
+    "Hi! Pick a shop and model, then ask about pet products. Off-topic questions are declined.",
   );
 });

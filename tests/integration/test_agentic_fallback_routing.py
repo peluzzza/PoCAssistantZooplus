@@ -45,7 +45,7 @@ def test_fallback_routes_greeting(monkeypatch: pytest.MonkeyPatch) -> None:
     d = classify_intent("hello??", 3)
     assert d.lane == "conversational"
     assert d.social_kind == "greeting"
-    assert d.source == "topic_fallback"
+    assert d.source == "conversation_classifier"
 
 
 def test_fallback_routes_catalog_products(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -82,10 +82,13 @@ def test_chat_no_repeated_help_template(
         "src.agents.intent_agent.run_opencode_agent",
         lambda *a, **k: None,
     )
+    from src.agents.run_meta import AgentRunMeta
+
     monkeypatch.setattr(
         "src.agents.social_agent.social_reply",
         lambda q, sid, intent, handoff_brief=None, *, settings=None: (
-            f"zooplus Assistant reply ({intent.lane})"
+            f"zooplus Assistant reply ({intent.lane})",
+            AgentRunMeta(lane=intent.lane),
         ),
     )
     help_blurb = "I can recommend up to four products in plain language"

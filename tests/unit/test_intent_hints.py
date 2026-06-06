@@ -53,10 +53,13 @@ def test_chat_help_and_catalog_no_decline(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
     monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
     monkeypatch.setenv("ZOOPLUS_SOCIAL_SYNTHESIS", "agentic")
+    from src.agents.run_meta import AgentRunMeta
+
     monkeypatch.setattr(
         "src.agents.social_agent.social_reply",
         lambda q, sid, intent, handoff_brief=None, *, settings=None: (
-            f"I'm the zooplus Assistant for shop {sid} — describe dog or cat products you need."
+            f"I'm the zooplus Assistant for shop {sid} — describe dog or cat products you need.",
+            AgentRunMeta(lane=intent.lane),
         ),
     )
     client = TestClient(app)

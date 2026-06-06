@@ -19,7 +19,7 @@ from src.agents.intent_hints import (
     looks_like_product_browse,
 )
 from src.agents.prompts import INTENT_SYSTEM
-from src.agents.registry import agent_chain_for_role
+from src.agents.registry import agent_chain_for_role, model_for_role
 from src.config import Settings, apply_settings
 from src.guardian.engine import polite_decline_for
 from src.llm.opencode import opencode_auth_present, run_opencode_agent
@@ -136,6 +136,40 @@ def _repair_agentic_misroute(query: str, decision: IntentDecision) -> IntentDeci
             source="repair",
         )
     return decision
+
+
+def try_obvious_social_intent(query: str) -> IntentDecision | None:
+    """Clear social turns — skip OpenCode intent; one LLM call for the reply only."""
+    from src.agents.handoff import TOPIC_SHOP_SOCIAL
+    from src.llm.conversation import ConvoKind, classify_conversation
+
+    if looks_like_help_about_shop(query):
+        return IntentDecision(
+            lane="conversational",
+            social_kind="help",
+            topic=TOPIC_SHOP_SOCIAL,
+            confidence=0.95,
+            reason="obvious_help",
+            source="conversation_classifier",
+        )
+
+    kind = classify_conversation(query)
+    if kind == ConvoKind.PRODUCT:
+        return None
+    social_map: dict[ConvoKind, SocialKind] = {
+        ConvoKind.GREETING: "greeting",
+        ConvoKind.THANKS: "thanks",
+        ConvoKind.HELP: "help",
+        ConvoKind.BYE: "bye",
+    }
+    return IntentDecision(
+        lane="conversational",
+        social_kind=social_map.get(kind, "greeting"),
+        topic=TOPIC_SHOP_SOCIAL,
+        confidence=0.95,
+        reason=f"obvious_{kind.value}",
+        source="conversation_classifier",
+    )
 
 
 def try_fast_conversational_intent(query: str) -> IntentDecision | None:
@@ -307,11 +341,13 @@ def classify_intent_single_agent(
         return None
     agent_id = chain[0]
     timeout = min(8, max(6, cfg.opencode_timeout_seconds // 4))
+    role_model = model_for_role("intent", default=cfg.opencode_model)
     raw = run_opencode_agent(
         wrap_prompt_with_agent(agent_id, prompt),
         settings=cfg,
         agent_id=agent_id,
         timeout_seconds=timeout,
+        model=role_model,
     )
     parsed = _parse_intent(raw or "")
     if not parsed:
@@ -511,6 +547,10 @@ def classify_intent(
 
     cfg = settings or apply_settings()
     if mode == "agentic" or (mode == "auto" and opencode_auth_present(cfg)):
+        obvious = try_obvious_social_intent(text)
+        if obvious is not None:
+            _store_intent_cache(site_id, text, obvious)
+            return obvious
         if fast_intent_enabled():
             fast_catalog = try_fast_catalog_intent(text)
             if fast_catalog:

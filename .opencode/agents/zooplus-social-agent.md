@@ -2,7 +2,7 @@
 description: Sociable conversational replies (greeting, identity, help, decline). No catalog retrieval.
 mode: subagent
 temperature: 0.35
-steps: 5
+steps: 3
 permission:
   edit: deny
   bash: deny

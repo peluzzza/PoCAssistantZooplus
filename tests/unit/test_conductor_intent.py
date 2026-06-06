@@ -7,6 +7,7 @@ from src.agents.intent_agent import (
     IntentDecision,
     classify_intent_conductor_first,
     conductor_intent_enabled,
+    try_obvious_social_intent,
 )
 from src.lanes.orchestrator import handle_chat
 from src.models.chat import ChatRequest
@@ -17,6 +18,14 @@ pytestmark = pytest.mark.unit
 def test_conductor_intent_enabled_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ZOOPLUS_CONDUCTOR_INTENT", raising=False)
     assert conductor_intent_enabled()
+
+
+def test_obvious_social_intent_hola_que_tal() -> None:
+    decision = try_obvious_social_intent("hola que tal")
+    assert decision is not None
+    assert decision.lane == "conversational"
+    assert decision.social_kind == "greeting"
+    assert decision.source == "conversation_classifier"
 
 
 def test_conductor_intent_can_be_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -63,7 +72,13 @@ async def test_orchestrator_skips_catalog_on_social(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr("src.lanes.orchestrator._classify_intent_bounded", fake_classify)
     monkeypatch.setattr(
         "src.lanes.orchestrator.social_reply",
-        lambda q, sid, intent, handoff_brief=None: "Hi there!",
+        lambda q, sid, intent, handoff_brief=None: (
+            "Hi there!",
+            __import__(
+                "src.agents.run_meta",
+                fromlist=["AgentRunMeta"],
+            ).AgentRunMeta(lane="conversational", intent_source="test"),
+        ),
     )
     monkeypatch.setattr("src.cache.ttl_cache.cache_enabled", lambda: False)
 

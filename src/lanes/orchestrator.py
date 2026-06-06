@@ -12,12 +12,14 @@ from src.agents.intent_agent import (
     _fallback_intent_decision,
     classify_intent,
 )
+from src.agents.registry import model_for_role
 from src.agents.social_agent import social_reply
 from src.cache.ttl_cache import cache_enabled, chat_cache
+from src.config import apply_settings
 from src.guardian.engine import load_constraints, max_recommendations
 from src.lanes.process import run_process_lane
 from src.llm.answer_sanitize import normalize_shopper_answer
-from src.models.chat import ChatRequest, ChatResponse
+from src.models.chat import ChatRequest, ChatResponse, ChatRuntimeMeta
 from src.observability.metrics import record_chat_outcome
 from src.rag.price_filter import parse_eur_price_range
 from src.rag.retrieve import search_catalog
@@ -52,6 +54,16 @@ async def _classify_intent_bounded(query: str, site_id: int):
 
 
 async def handle_chat(request: ChatRequest) -> ChatResponse:
+    from src.agents.request_context import request_llm_model
+
+    model_token = request_llm_model.set(request.preferred_model)
+    try:
+        return await _handle_chat_inner(request)
+    finally:
+        request_llm_model.reset(model_token)
+
+
+async def _handle_chat_inner(request: ChatRequest) -> ChatResponse:
     cache_key = _chat_cache_key(request.site_id, request.query)
     if cache_enabled():
         cached = chat_cache.get(cache_key)
@@ -85,7 +97,7 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     )
 
     if intent.lane == "decline_off_topic":
-        answer = await asyncio.to_thread(
+        answer, run_meta = await asyncio.to_thread(
             social_reply,
             request.query,
             request.site_id,
@@ -96,13 +108,19 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
         response = ChatResponse(
             answer=normalize_shopper_answer(answer),
             retrieved_products=[],
+            meta=ChatRuntimeMeta(
+                lane=run_meta.lane,
+                intent_source=run_meta.intent_source,
+                llm_agent=run_meta.llm_agent,
+                llm_model=run_meta.llm_model,
+            ),
         )
         if cache_enabled():
             chat_cache.set(cache_key, response.model_dump())
         return response
 
     if intent.lane == "conversational":
-        answer = await asyncio.to_thread(
+        answer, run_meta = await asyncio.to_thread(
             social_reply,
             request.query,
             request.site_id,
@@ -113,6 +131,12 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
         response = ChatResponse(
             answer=normalize_shopper_answer(answer),
             retrieved_products=[],
+            meta=ChatRuntimeMeta(
+                lane=run_meta.lane,
+                intent_source=run_meta.intent_source,
+                llm_agent=run_meta.llm_agent,
+                llm_model=run_meta.llm_model,
+            ),
         )
         if cache_enabled():
             chat_cache.set(cache_key, response.model_dump())
@@ -133,9 +157,16 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     )
     receipt = await process_task
     record_chat_outcome(declined=False)
+    cfg = apply_settings()
     response = ChatResponse(
         answer=normalize_shopper_answer(receipt.answer),
         retrieved_products=receipt.retrieved_products,
+        meta=ChatRuntimeMeta(
+            lane="catalog_search",
+            intent_source=intent.source,
+            llm_agent="zooplus-synthesis",
+            llm_model=model_for_role("synthesis", default=cfg.opencode_model),
+        ),
     )
     if cache_enabled():
         chat_cache.set(cache_key, response.model_dump())
