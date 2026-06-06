@@ -17,15 +17,36 @@ let uiConfig = {
 
 /** Abort in-flight stream when the shopper sends a new message. */
 let activeChatAbort = null;
+/** Single transient status bubble — updated in place, removed when the answer arrives. */
+let activeStatusEl = null;
+
+function showTransientStatus(text) {
+  if (!text) return;
+  if (!activeStatusEl) {
+    activeStatusEl = document.createElement("div");
+    activeStatusEl.className = "msg bot status-reply status-transient";
+    activeStatusEl.setAttribute("role", "status");
+    activeStatusEl.setAttribute("aria-live", "polite");
+    messagesEl.appendChild(activeStatusEl);
+  } else {
+    activeStatusEl.classList.remove("status-updated");
+    void activeStatusEl.offsetWidth;
+  }
+  activeStatusEl.textContent = text;
+  activeStatusEl.classList.add("status-updated");
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function clearTransientStatus() {
+  if (activeStatusEl) {
+    activeStatusEl.remove();
+    activeStatusEl = null;
+  }
+}
 
 function appendMessage(role, text, products = [], options = {}) {
   const wrap = document.createElement("div");
-  const extra = options.status ? " status-reply" : "";
-  wrap.className = `msg ${role}${extra}${options.decline ? " decline" : ""}${options.error ? " error" : ""}`;
-  if (options.status) {
-    wrap.setAttribute("role", "status");
-    wrap.setAttribute("aria-live", "polite");
-  }
+  wrap.className = `msg ${role}${options.decline ? " decline" : ""}${options.error ? " error" : ""}`;
   wrap.textContent = text;
 
   if (products.length > 0) {
@@ -201,7 +222,7 @@ async function consumeChatStream(response, signal) {
       }
 
       if (evt.type === "status" && evt.text) {
-        appendMessage("bot", evt.text, [], { status: true });
+        showTransientStatus(evt.text);
       } else if (evt.type === "done") {
         finalAnswer = normalizeAnswer(evt.answer) || "";
         finalProducts = evt.retrieved_products || [];
@@ -222,6 +243,7 @@ form.addEventListener("submit", async (e) => {
     activeChatAbort.abort();
     activeChatAbort = null;
   }
+  clearTransientStatus();
 
   const siteId = Number(siteSelect.value);
   const preferredModel = selectedModel();
@@ -253,6 +275,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     const result = await consumeChatStream(res, controller.signal);
+    clearTransientStatus();
     if (!result || controller.signal.aborted) return;
 
     const { answer, products, meta } = result;
@@ -262,6 +285,7 @@ form.addEventListener("submit", async (e) => {
     appendMessage("bot", answer || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
+    clearTransientStatus();
     if (err.name === "AbortError") {
       if (activeChatAbort === controller) return;
     }
