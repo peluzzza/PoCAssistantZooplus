@@ -50,6 +50,11 @@ def fast_intent_enabled() -> bool:
     return os.environ.get("ZOOPLUS_FAST_INTENT", "0").lower() in ("1", "true", "yes")
 
 
+def conductor_intent_enabled() -> bool:
+    """Conductor classifies lane first; catalog search only after green light."""
+    return os.environ.get("ZOOPLUS_CONDUCTOR_INTENT", "1").lower() in ("1", "true", "yes")
+
+
 def _parse_intent_json(raw: str) -> dict | None:
     if not raw:
         return None
@@ -259,6 +264,29 @@ def _decline_copy(reason: str, *, query: str) -> str:
     return polite_decline_for(code, query=query)
 
 
+def classify_intent_conductor_first(
+    query: str,
+    site_id: int,
+    *,
+    settings: Settings | None = None,
+) -> IntentDecision | None:
+    """One-shot conductor routing — skips catalog/RAG unless lane is catalog_search."""
+    cfg = settings or apply_settings()
+    prompt = _build_intent_prompt(query, site_id)
+    cascade = run_agent_cascade(
+        "conductor",
+        prompt,
+        settings=cfg,
+        parse=_parse_intent_json,
+        attach_roster=False,
+    )
+    parsed = cascade.value
+    if not parsed:
+        return None
+    agent_source = f"conductor:{cascade.agent_id or 'conductor'}"
+    return _intent_decision_from_parsed(query, parsed, source=agent_source)
+
+
 def classify_intent_agentic(
     query: str,
     site_id: int,
@@ -460,6 +488,11 @@ def classify_intent(
             if fast:
                 _store_intent_cache(site_id, text, fast)
                 return fast
+        if conductor_intent_enabled():
+            led = classify_intent_conductor_first(text, site_id, settings=cfg)
+            if led is not None:
+                _store_intent_cache(site_id, text, led)
+                return led
         decision = classify_intent_agentic(text, site_id, settings=cfg)
         _store_intent_cache(site_id, text, decision)
         return decision

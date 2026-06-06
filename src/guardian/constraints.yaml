@@ -31,7 +31,8 @@ response_policy:
 
 interactive_lane:
   topic_guard_max_ms_p95: 300
-  intent_timeout_seconds: 22
+  intent_timeout_seconds: 18
+  conductor_intent_timeout_seconds: 14
 
 process_lane:
   dispatch_timeout_seconds: 40

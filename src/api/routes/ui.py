@@ -73,4 +73,12 @@ async def ui_config() -> dict:
         "opencode_auth_configured": opencode_auth_present(settings),
         "chat_endpoint": "/chat",
         "stream_endpoint": "/chat/stream",
+        "wait_phases": {
+            "social": ["One moment…", "Reading message…", "Almost there…"],
+            "catalog": ["One moment…", "Searching catalog…", "Picking matches…"],
+            "decline": ["One moment…", "Checking scope…", "Almost there…"],
+            "default": ["One moment…", "Working on it…", "Almost there…"],
+        },
+        "wait_phase_interval_ms": 2600,
+        "wait_phase_max": 3,
     }
