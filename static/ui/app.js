@@ -140,6 +140,15 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
+queryInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    if (!sendBtn.disabled && queryInput.value.trim()) {
+      form.requestSubmit();
+    }
+  }
+});
+
 loadConfig().then(() => {
   appendMessage(
     "bot",
