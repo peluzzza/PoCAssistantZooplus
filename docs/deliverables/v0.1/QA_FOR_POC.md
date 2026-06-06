@@ -250,6 +250,16 @@
 
 ---
 
+### Q24 — Can the shopper search all shops at once?
+
+**Recommended answer:**
+
+> “Not in the PoC — every request is scoped to one `site_id` (requirement B5). That matches real commerce: a session is tied to one shop. Multi-shop or multi-select is on the roadmap as P2: optional `site_ids[]`, Chroma filter `$in`, merge and dedup across locales, and shop labels on product cards. We kept single-shop for the interview demo to stay aligned with the brief.”
+
+**Doc:** [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md) item #10
+
+---
+
 ## Trap questions — honest answers
 
 | Trap | Avoid saying | Say instead |
@@ -257,6 +267,7 @@
 | “Is it production-ready?” | “Yes, fully” | “Production-**oriented**: structure, tests, Docker, guardrails. Production still needs P0 security, managed vector DB, and re-ingest.” |
 | “Does hybrid always win?” | “Always” | “Depends on the query — that is why `ZOOPLUS_RETRIEVAL_MODE=vector` exists for A/B.” |
 | “Are agents the same as MCP?” | Conflate them | “MCP exposes external tools; ACP dispatches the internal process lane. Same host, different roles.” |
+| “Why not search all shops?” | “Easy to add” | “Medium change — API, Chroma, cache, B5 tests. Deferred as P2; single-shop is correct for the Coding Task.” |
 
 ---
 

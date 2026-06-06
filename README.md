@@ -191,6 +191,7 @@ If OpenCode fails or times out, the API **falls back to template synthesis** or 
 4. MCP server for external agents; extend internal ACP envelopes.
 5. Optional promo slots during long `/chat/stream` turns (commerce UX).
 6. Managed vector DB + observability (latency, decline reasons, hit rates).
+7. **Multi-shop retrieval** — optional all-shops or `site_ids[]` in UI/API; Chroma `$in` filter, merge/dedup, locale labels on cards (see [`FUTURE_IMPROVEMENTS.md`](docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md) § item #10).
 
 Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md).
 
