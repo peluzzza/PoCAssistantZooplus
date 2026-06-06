@@ -20,12 +20,15 @@ LEFT_PRIMARY_LEFT = 585_216
 LEFT_DUPLICATE_LEFT = 658_368
 
 
-def _find_slide(prs: Presentation, title_prefix: str) -> int:
+def _find_slide(prs: Presentation, *title_prefixes: str) -> int:
     for i, slide in enumerate(prs.slides):
         for sh in slide.shapes:
-            if sh.has_text_frame and sh.text.strip().startswith(title_prefix):
+            if not sh.has_text_frame:
+                continue
+            text = sh.text.strip()
+            if any(text.startswith(prefix) for prefix in title_prefixes):
                 return i
-    raise SystemExit(f"Slide not found: {title_prefix!r}")
+    raise SystemExit(f"Slide not found: {title_prefixes!r}")
 
 
 def _delete_shape(shape) -> None:
@@ -34,11 +37,17 @@ def _delete_shape(shape) -> None:
 
 
 def _remove_inner_left_column(slide) -> None:
-    """Remove the overlapping inner text box (left=658368) — keeps diagram on the right."""
+    """Remove the overlapping inner bullet box (left=658368, mid-column only).
+
+    Title, subtitle, and footer on the same left edge must stay.
+    """
     to_remove = [
         sh
         for sh in slide.shapes
-        if sh.has_text_frame and sh.left == LEFT_DUPLICATE_LEFT
+        if sh.has_text_frame
+        and sh.left == LEFT_DUPLICATE_LEFT
+        and sh.top
+        and 1_000_000 < sh.top < 5_000_000
     ]
     for sh in to_remove:
         _delete_shape(sh)
@@ -47,7 +56,7 @@ def _remove_inner_left_column(slide) -> None:
 def _primary_left_box(slide) -> object | None:
     for sh in slide.shapes:
         if sh.has_text_frame and sh.left == LEFT_PRIMARY_LEFT:
-            if sh.top and 1_000_000 < sh.top < 6_500_000:
+            if sh.top and 1_000_000 < sh.top < 5_000_000:
                 return sh
     return None
 
@@ -148,7 +157,7 @@ def main() -> None:
     if right6 is not None:
         _fill(right6, SLIDE6_RIGHT, size=14)
 
-    i7 = _find_slide(prs, "Agentic architecture")
+    i7 = _find_slide(prs, "Agentic architecture", "Agentic routing")
     _fix_left_column(prs.slides[i7], SLIDE7_LEFT, size=14)
     for sh in prs.slides[i7].shapes:
         if sh.has_text_frame and "How each request" in (sh.text or ""):
@@ -159,7 +168,7 @@ def main() -> None:
     i8 = _find_slide(prs, "Agents")
     _fix_left_column(prs.slides[i8], SLIDE8_LEFT, size=13)
 
-    i9 = _find_slide(prs, "Guardrails")
+    i9 = _find_slide(prs, "Guardrails", "FR4 guardrails")
     _fix_left_column(prs.slides[i9], SLIDE9_LEFT, size=14)
 
     tmp = DECK.with_name(f"{DECK.stem}_patched{DECK.suffix}")
