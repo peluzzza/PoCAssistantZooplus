@@ -93,9 +93,16 @@ def _run_opencode_prompt(
     agent_id: str | None = None,
     model: str | None = None,
 ) -> str | None:
-    use_model = model or settings.opencode_model or DEFAULT_MODEL
+    from src.agents.registry import cli_model_arg
+
+    if model is None:
+        use_model = cli_model_arg(agent_id, default=settings.opencode_model or DEFAULT_MODEL)
+    else:
+        use_model = model
     timeout = timeout_seconds if timeout_seconds is not None else settings.opencode_timeout_seconds
-    cmd = ["opencode", "run", "--format", "json", "--model", use_model]
+    cmd = ["opencode", "run", "--format", "json"]
+    if use_model:
+        cmd.extend(["--model", use_model])
     if agent_id:
         cmd.extend(["--agent", agent_id])
     cmd.append(prompt)

@@ -19,7 +19,7 @@ from src.agents.intent_hints import (
     looks_like_product_browse,
 )
 from src.agents.prompts import INTENT_SYSTEM
-from src.agents.registry import agent_chain_for_role, model_for_role
+from src.agents.registry import agent_chain_for_role, cli_model_arg
 from src.config import Settings, apply_settings
 from src.guardian.engine import polite_decline_for
 from src.llm.opencode import opencode_auth_present, run_opencode_agent
@@ -341,13 +341,12 @@ def classify_intent_single_agent(
         return None
     agent_id = chain[0]
     timeout = min(8, max(6, cfg.opencode_timeout_seconds // 4))
-    role_model = model_for_role("intent", default=cfg.opencode_model)
     raw = run_opencode_agent(
         wrap_prompt_with_agent(agent_id, prompt),
         settings=cfg,
         agent_id=agent_id,
         timeout_seconds=timeout,
-        model=role_model,
+        model=cli_model_arg(agent_id, default=cfg.opencode_model),
     )
     parsed = _parse_intent(raw or "")
     if not parsed:

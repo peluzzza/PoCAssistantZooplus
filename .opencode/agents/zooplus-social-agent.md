@@ -1,6 +1,7 @@
 ---
 description: Sociable conversational replies (greeting, identity, help, decline). No catalog retrieval.
 mode: subagent
+model: opencode/mimo-v2.5-free
 temperature: 0.35
 steps: 3
 permission:

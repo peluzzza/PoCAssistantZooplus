@@ -19,13 +19,19 @@
             Shop
             <select id="siteId" aria-label="Site ID"></select>
           </label>
-          <label>
-            Model
-            <select id="modelSelect" aria-label="OpenCode model"></select>
+          <label title="PoC debug — overrides all agents for one request">
+            Override
+            <select id="modelSelect" aria-label="OpenCode model override">
+              <option value="">Per-agent (default)</option>
+            </select>
           </label>
           <span id="modeBadge" class="badge">…</span>
         </div>
       </header>
+      <details id="agentModelsPanel" class="agent-models">
+        <summary>Agent LLMs (OpenCode per-agent config)</summary>
+        <ul id="agentModelsList"></ul>
+      </details>
 
       <main id="messages" class="messages" aria-live="polite"></main>
 

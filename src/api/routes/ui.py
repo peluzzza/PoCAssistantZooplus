@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, RedirectResponse
-from src.agents.registry import model_for_role
+from src.agents.registry import agent_models_map, model_for_role
 from src.config import apply_settings
 from src.llm.opencode import opencode_auth_present
 from src.llm.opencode_models import models_for_ui
@@ -91,6 +91,7 @@ async def ui_config() -> dict:
         "wait_phase_delays_ms": [0, 1000, 2200],
         "wait_phase_max": 3,
         "models": models_for_ui(settings=settings),
+        "agent_models": agent_models_map(),
     }
 
 

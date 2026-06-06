@@ -1,6 +1,7 @@
 ---
 description: Grounded sociable synthesis — natural prose from ≤4 products (B3, B4, CUX).
 mode: subagent
+model: opencode/deepseek-v4-flash-free
 temperature: 0.3
 steps: 6
 permission:

@@ -7,7 +7,8 @@
   "agent": {
     "zooplus-conductor": {
       "mode": "primary",
-      "description": "Shop orchestrator (intent → social | catalog)",
+      "description": "Fast shop orchestrator (intent → social | catalog)",
+      "model": "opencode/mimo-v2.5-free",
       "permission": {
         "task": {
           "*": "deny",
@@ -20,11 +21,35 @@
         }
       }
     },
-    "zooplus-intent-agent": { "mode": "subagent", "description": "Intent router" },
-    "zooplus-social-agent": { "mode": "subagent", "description": "Social replies" },
-    "zooplus-topic-guard": { "mode": "subagent", "description": "Topic guard" },
-    "zooplus-rag-worker": { "mode": "subagent", "description": "RAG worker" },
-    "zooplus-logic-worker": { "mode": "subagent", "description": "Logic worker" },
-    "zooplus-synthesis": { "mode": "subagent", "description": "Catalog synthesis" }
+    "zooplus-intent-agent": {
+      "mode": "subagent",
+      "description": "Intent router — default deny",
+      "model": "opencode-go/deepseek-v4-flash"
+    },
+    "zooplus-social-agent": {
+      "mode": "subagent",
+      "description": "Social replies — no catalog",
+      "model": "opencode/mimo-v2.5-free"
+    },
+    "zooplus-topic-guard": {
+      "mode": "subagent",
+      "description": "Topic / quality guard",
+      "model": "opencode-go/minimax-m2.5"
+    },
+    "zooplus-rag-worker": {
+      "mode": "subagent",
+      "description": "Site-scoped retrieval worker",
+      "model": "opencode-go/deepseek-v4-flash"
+    },
+    "zooplus-logic-worker": {
+      "mode": "subagent",
+      "description": "Rank and cap recommendations",
+      "model": "opencode-go/qwen3.6-plus"
+    },
+    "zooplus-synthesis": {
+      "mode": "subagent",
+      "description": "Grounded catalog answer",
+      "model": "opencode/deepseek-v4-flash-free"
+    }
   }
 }

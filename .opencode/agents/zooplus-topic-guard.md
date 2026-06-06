@@ -1,6 +1,7 @@
 ---
 description: Legacy alias — use @zooplus-intent-agent (agentic default-deny). Fast classifier before catalog work.
 mode: subagent
+model: opencode-go/minimax-m2.5
 hidden: true
 temperature: 0.15
 steps: 4

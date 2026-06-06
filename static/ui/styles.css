@@ -75,6 +75,30 @@ select {
   padding: 0.35rem 0.5rem;
 }
 
+.agent-models {
+  margin: 0 0 0.75rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.agent-models summary {
+  cursor: pointer;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+.agent-models ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  columns: 2;
+  gap: 0.5rem;
+}
+
+.agent-models li {
+  break-inside: avoid;
+  margin-bottom: 0.2rem;
+}
+
 .badge {
   font-size: 0.7rem;
   padding: 0.2rem 0.5rem;

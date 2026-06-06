@@ -8,7 +8,13 @@ from dataclasses import dataclass
 from typing import TypeVar
 
 from src.agents.agent_body import wrap_prompt_with_agent
-from src.agents.registry import AgentRole, agent_chain_for_role, format_agent_roster, model_for_role
+from src.agents.registry import (
+    AgentRole,
+    agent_chain_for_role,
+    cli_model_arg,
+    format_agent_roster,
+    resolved_agent_model,
+)
 from src.config import Settings
 from src.llm.opencode import run_opencode_agent
 
@@ -61,7 +67,6 @@ def run_agent_cascade(
         logger.warning("no opencode agents configured for role=%s", role)
         return CascadeResult(None, None, None, (), None)
 
-    role_model = model_for_role(role, default=settings.opencode_model)
     full_prompt = prompt
     if attach_roster and role in ("intent", "conductor"):
         full_prompt = f"{prompt}\n\n{format_agent_roster()}\n"
@@ -72,12 +77,13 @@ def run_agent_cascade(
     for agent_id in chain:
         tried.append(agent_id)
         logger.info("opencode cascade role=%s trying agent=%s", role, agent_id)
+        agent_model = cli_model_arg(agent_id, default=settings.opencode_model)
         raw = run_opencode_agent(
             wrap_prompt_with_agent(agent_id, full_prompt),
             settings=settings,
             agent_id=agent_id,
             timeout_seconds=timeout,
-            model=role_model,
+            model=agent_model,
         )
         if not raw:
             logger.warning("agent %s returned empty (role=%s)", agent_id, role)
@@ -85,7 +91,8 @@ def run_agent_cascade(
         parsed = parse(raw)
         if parsed is not None:
             logger.info("opencode cascade success role=%s agent=%s", role, agent_id)
-            return CascadeResult(parsed, raw, agent_id, tuple(tried), role_model)
+            display_model = resolved_agent_model(agent_id, default=settings.opencode_model)
+            return CascadeResult(parsed, raw, agent_id, tuple(tried), display_model)
         logger.warning("agent %s output not parseable (role=%s)", agent_id, role)
 
     logger.warning(
@@ -93,4 +100,5 @@ def run_agent_cascade(
         role,
         ",".join(tried),
     )
-    return CascadeResult(None, None, None, tuple(tried), role_model)
+    last_model = resolved_agent_model(tried[-1], default=settings.opencode_model) if tried else None
+    return CascadeResult(None, None, None, tuple(tried), last_model)
