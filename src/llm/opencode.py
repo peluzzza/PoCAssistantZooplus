@@ -53,8 +53,17 @@ def _build_prompt(
     *,
     extra_context: str = "",
 ) -> str:
-    payload = [p.model_dump() for p in products]
-    catalog = json.dumps(payload, ensure_ascii=False, indent=2)
+    payload = [
+        {
+            "article_id": p.article_id,
+            "name": p.product_name,
+            "brand": p.brands,
+            "pet": p.pet_type,
+            "price_eur": p.price,
+        }
+        for p in products
+    ]
+    catalog = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     ctx = f"{extra_context}\n" if extra_context else ""
     return (
         "You are the zooplus Assistant — a friendly, professional pet-shop advisor.\n"
