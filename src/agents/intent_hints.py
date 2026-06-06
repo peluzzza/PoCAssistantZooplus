@@ -102,4 +102,10 @@ def looks_like_catalog_search(query: str) -> bool:
         return True
     if re.search(r"\b(cat|dog)\s+food\b", text, re.I):
         return True
+    if re.search(
+        r"\b(dog|cat|puppy|kitten)s?\s+(product|toy|chew|food|treats?|snack|litter)\b",
+        text,
+        re.I,
+    ):
+        return True
     return False

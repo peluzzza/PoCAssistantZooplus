@@ -8,7 +8,10 @@ import logging
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
 from src.agents.handoff import build_handoff
-from src.agents.intent_agent import classify_intent, classify_intent_conductor_fallback
+from src.agents.intent_agent import (
+    _fallback_intent_decision,
+    classify_intent,
+)
 from src.agents.social_agent import social_reply
 from src.cache.ttl_cache import cache_enabled, chat_cache
 from src.guardian.engine import load_constraints, max_recommendations
@@ -36,11 +39,15 @@ async def _classify_intent_bounded(query: str, site_id: int):
             timeout=intent_timeout,
         )
     except TimeoutError:
-        logger.warning("intent lane exceeded %.0fs; one-shot conductor fallback", intent_timeout)
+        logger.warning(
+            "intent lane exceeded %.0fs; topic fallback (no extra OpenCode)",
+            intent_timeout,
+        )
         return await asyncio.to_thread(
-            classify_intent_conductor_fallback,
+            _fallback_intent_decision,
             query,
-            site_id,
+            site_id=site_id,
+            reason="intent_lane_timeout",
         )
 
 

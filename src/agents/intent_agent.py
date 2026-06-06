@@ -306,7 +306,7 @@ def classify_intent_single_agent(
     if not chain:
         return None
     agent_id = chain[0]
-    timeout = min(12, max(8, cfg.opencode_timeout_seconds // 2))
+    timeout = min(8, max(6, cfg.opencode_timeout_seconds // 4))
     raw = run_opencode_agent(
         wrap_prompt_with_agent(agent_id, prompt),
         settings=cfg,
