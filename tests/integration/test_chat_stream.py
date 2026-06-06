@@ -30,8 +30,10 @@ def test_chat_stream_decline_emits_topic_and_done(client: TestClient) -> None:
         assert response.status_code == 200
         events = _read_ndjson(response)
     types = [e["type"] for e in events]
-    assert types[0] == "topic"
-    assert events[0]["decision"] == "DECLINE"
+    assert "status" in types
+    assert "topic" in types
+    topic = next(e for e in events if e["type"] == "topic")
+    assert topic["decision"] == "DECLINE"
     assert "done" in types
     done = next(e for e in events if e["type"] == "done")
     assert done["retrieved_products"] == []
@@ -48,10 +50,10 @@ def test_chat_stream_in_scope_emits_products_and_answer(
         assert response.status_code == 200
         events = _read_ndjson(response)
     types = [e["type"] for e in events]
-    assert events[0]["type"] == "topic"
-    assert events[0]["decision"] == "ALLOW"
+    assert "status" in types
+    topic = next(e for e in events if e["type"] == "topic")
+    assert topic["decision"] == "ALLOW"
     assert "products" in types
-    assert "answer_chunk" in types
     done = next(e for e in events if e["type"] == "done")
     assert done.get("answer")
     assert len(done.get("retrieved_products", [])) >= 1

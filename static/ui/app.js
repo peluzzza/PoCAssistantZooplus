@@ -11,70 +11,21 @@ let uiConfig = {
   sites: [1, 3, 15],
   default_site_id: 3,
   synthesis_mode: "template",
-  wait_phases: {
-    social: ["One moment…", "Reading message…", "Almost there…"],
-    catalog: ["One moment…", "Searching catalog…", "Picking matches…"],
-    decline: ["One moment…", "Checking scope…", "Almost there…"],
-    default: ["One moment…", "Working on it…", "Almost there…"],
-  },
-  wait_phase_delays_ms: [0, 1000, 2200],
-  wait_phase_max: 3,
+  chat_endpoint: "/chat/stream",
   models: { recommended: [], all: [], default: "" },
 };
 
-function guessWaitLane(query) {
-  const q = query.trim().toLowerCase();
-  if (/^(hi|hello|hola|hey|buenas|good\s*(morning|afternoon|evening)|thanks|thank you|bye|goodbye|who are you|what can you|hola\s+que\s+tal|qué\s+tal|que\s+tal)/.test(q)) {
-    return "social";
-  }
-  if (/\b(weather|traffic|news|politic|stock market|bitcoin|recipe for humans)\b/.test(q)) {
-    return "decline";
-  }
-  if (/\b(dog|cat|puppy|kitten|food|treat|snack|litter|collar|leash|grain|hypoallergenic|eur|€|price|under)\b/.test(q)) {
-    return "catalog";
-  }
-  return "default";
-}
-
-function waitPhasesForQuery(query) {
-  const lane = guessWaitLane(query);
-  const map = uiConfig.wait_phases || {};
-  const phases = map[lane] || map.default || ["One moment…", "Almost there…"];
-  const max = Math.min(uiConfig.wait_phase_max || 3, phases.length);
-  return phases.slice(0, max);
-}
-
-/** Show 1–3 short status bubbles that appear over time (lane-aware). */
-function startWaitMessages(query) {
-  const phases = waitPhasesForQuery(query);
-  const delays = uiConfig.wait_phase_delays_ms || [0, 1000, 2200];
-  const nodes = [];
-  const timers = [];
-
-  phases.forEach((text, idx) => {
-    const delay = delays[idx] ?? delays[delays.length - 1] ?? 0;
-    const timer = setTimeout(() => {
-      const el = document.createElement("div");
-      el.className = "msg bot wait-phase";
-      el.setAttribute("role", "status");
-      el.setAttribute("aria-live", "polite");
-      el.textContent = text;
-      messagesEl.appendChild(el);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      nodes.push(el);
-    }, delay);
-    timers.push(timer);
-  });
-
-  return () => {
-    timers.forEach((t) => clearTimeout(t));
-    nodes.forEach((n) => n.remove());
-  };
-}
+/** Abort in-flight stream when the shopper sends a new message. */
+let activeChatAbort = null;
 
 function appendMessage(role, text, products = [], options = {}) {
   const wrap = document.createElement("div");
-  wrap.className = `msg ${role}${options.decline ? " decline" : ""}${options.error ? " error" : ""}`;
+  const extra = options.status ? " status-reply" : "";
+  wrap.className = `msg ${role}${extra}${options.decline ? " decline" : ""}${options.error ? " error" : ""}`;
+  if (options.status) {
+    wrap.setAttribute("role", "status");
+    wrap.setAttribute("aria-live", "polite");
+  }
   wrap.textContent = text;
 
   if (products.length > 0) {
@@ -219,10 +170,58 @@ async function loadConfig() {
   setModeBadge();
 }
 
+async function consumeChatStream(response, signal) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let finalAnswer = "";
+  let finalProducts = [];
+  let finalMeta = null;
+
+  while (true) {
+    if (signal.aborted) return null;
+
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      if (signal.aborted) return null;
+
+      let evt;
+      try {
+        evt = JSON.parse(line);
+      } catch (_) {
+        continue;
+      }
+
+      if (evt.type === "status" && evt.text) {
+        appendMessage("bot", evt.text, [], { status: true });
+      } else if (evt.type === "done") {
+        finalAnswer = normalizeAnswer(evt.answer) || "";
+        finalProducts = evt.retrieved_products || [];
+        finalMeta = evt.meta || null;
+      }
+    }
+  }
+
+  return { answer: finalAnswer, products: finalProducts, meta: finalMeta };
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const query = queryInput.value.trim();
   if (!query) return;
+
+  if (activeChatAbort) {
+    activeChatAbort.abort();
+    activeChatAbort = null;
+  }
 
   const siteId = Number(siteSelect.value);
   const preferredModel = selectedModel();
@@ -230,23 +229,22 @@ form.addEventListener("submit", async (e) => {
   queryInput.value = "";
   sendBtn.disabled = true;
 
-  const clearWait = startWaitMessages(query);
-
   const controller = new AbortController();
+  activeChatAbort = controller;
   const clientTimeout = setTimeout(() => controller.abort(), 50000);
 
   try {
     const body = { site_id: siteId, query };
     if (preferredModel && preferredModel.trim()) body.preferred_model = preferredModel.trim();
 
-    const res = await fetch("/chat", {
+    const endpoint = uiConfig.chat_endpoint || uiConfig.stream_endpoint || "/chat/stream";
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
     clearTimeout(clientTimeout);
-    clearWait();
 
     if (!res.ok) {
       const err = await res.text();
@@ -254,20 +252,26 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    const data = await res.json();
-    const products = data.retrieved_products || [];
-    if (data.meta) setModeBadge(data.meta);
-    const decline = products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(data.answer || "");
-    appendMessage("bot", normalizeAnswer(data.answer) || "(empty)", products, { decline });
+    const result = await consumeChatStream(res, controller.signal);
+    if (!result || controller.signal.aborted) return;
+
+    const { answer, products, meta } = result;
+    if (meta) setModeBadge(meta);
+    const decline =
+      products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(answer || "");
+    appendMessage("bot", answer || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
-    clearWait();
+    if (err.name === "AbortError") {
+      if (activeChatAbort === controller) return;
+    }
     const msg =
       err.name === "AbortError"
         ? "Request timed out (50s). Try a shorter question or pick a faster model."
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {
+    if (activeChatAbort === controller) activeChatAbort = null;
     sendBtn.disabled = false;
     queryInput.focus();
   }

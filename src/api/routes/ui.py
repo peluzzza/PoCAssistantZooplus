@@ -80,16 +80,9 @@ async def ui_config() -> dict:
             "synthesis": model_for_role("synthesis", default=settings.opencode_model),
         },
         "opencode_auth_configured": opencode_auth_present(settings),
-        "chat_endpoint": "/chat",
+        "chat_endpoint": "/chat/stream",
         "stream_endpoint": "/chat/stream",
-        "wait_phases": {
-            "social": ["One moment…", "Reading message…", "Almost there…"],
-            "catalog": ["One moment…", "Searching catalog…", "Picking matches…"],
-            "decline": ["One moment…", "Checking scope…", "Almost there…"],
-            "default": ["One moment…", "Working on it…", "Almost there…"],
-        },
-        "wait_phase_delays_ms": [0, 1000, 2200],
-        "wait_phase_max": 3,
+        "status_messages_from_server": True,
         "models": models_for_ui(settings=settings),
         "agent_models": agent_models_map(),
     }
