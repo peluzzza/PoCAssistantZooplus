@@ -155,6 +155,7 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 ## Interview / submission
 
 - Checklist: [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md)
+- **Q&A prep:** [`docs/deliverables/v0.1/QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md) — likely questions, answers, scale-out strategy
 - **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
 - Speaker script: [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](docs/deliverables/v0.1/PRESENTATION_15MIN.md)
 
@@ -166,3 +167,4 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) | feature → filters → release |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Operations |
 | [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md) | Tag verify |
+| [`docs/deliverables/v0.1/QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md) | Interview Q&A and scale-out talking points |
