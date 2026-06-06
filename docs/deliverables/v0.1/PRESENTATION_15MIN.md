@@ -4,7 +4,9 @@
 **FR** = Functional Requirement from `Coding Task.docx` — explain on **slide 2**.  
 **Roadmap:** slides **11–13** (3 slides, ~2 min + Q&A).
 
-Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py`
+Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **Agentic UX (v0.1.3):** `py -3 scripts/patch_interview_pptx_agentic_ux.py`
+
+**Changelog since last PPT (v0.1.2):** [`CHANGELOG_v0.1.2_to_v0.1.3.md`](CHANGELOG_v0.1.2_to_v0.1.3.md)
 
 ---
 
@@ -44,7 +46,25 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 6 — RAG strategy end-to-end
 
-> “FR3 is catalog-only RAG. Offline: the instructions JSON is normalized — HTML stripped — one embedding per variant, with `site_id` and commerce metadata in Chroma. Online: after the topic guard allows the query, we search with hybrid retrieval, optional EUR price-band filter, cap at four products, and return grounded `retrieved_products`. The answer is synthesized from those hits only — OpenCode or template — while the UI shows product cards. Off-topic queries never hit the index. Production would swap Chroma for a managed vector DB but keep the same fusion and grounding rules.”
+> “FR3 is catalog-only RAG. Offline: the instructions JSON is normalized — HTML stripped — one embedding per variant, with `site_id` and commerce metadata in Chroma; ingest also builds `routing_lexicon.json` for agentic prompts. Online: after the conductor allows catalog lane, we search with hybrid retrieval, optional EUR price-band filter, cap at four products, and return grounded `retrieved_products`. The UI uses `/chat/stream`: real status phases, then products and answer. Off-topic never hits the index. Optional Redis mirrors lexicon and caches for scale-out.”
+
+---
+
+## Slide 7 — Agentic architecture (v0.1.3)
+
+> “Not a separate FR — this is how we made the PoC fast and shopper-friendly. Conductor-first routing classifies topic before any Chroma call, so greetings do not trigger RAG. The orchestrator prefetches catalog hits only on catalog lane. Vocabulary in prompts comes from the indexed catalog, not hardcoded dog/cat lists. TTL caches and optional Redis cut repeat latency. The shopper still sees one assistant and one `/chat` contract.”
+
+---
+
+## Slide 8 — Agents + per-agent LLMs
+
+> “OpenCode subprocesses per role. Conductor returns lane plus a short `shopper_status` for the UI bubble. Social agent answers in the shopper’s language while static UI copy stays English. Each agent has its own model in `opencode.json` — fast models for routing and social, stronger models for synthesis. The UI badge shows the real model from response metadata, not a hardcoded label.”
+
+---
+
+## Slide 9 — Guardrails + demo
+
+> “FR4: pet catalog only, default-deny. Live demo on port 8090: ‘hola que tal’ — social in seconds; Spanish cat food with a EUR band — stream status, then product cards; weather — polite decline. Enter sends, one transient status line, abort if the user types again. Pick shop 1, 3, or 15 before chatting.”
 
 ---
 
@@ -70,4 +90,4 @@ Full doc: [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md)
 
 ## One-minute pitch
 
-> Five FRs delivered with hybrid RAG inside and one assistant outside. Vectors plus BM25 for recall and precision; full ingest-to-grounding pipeline on the catalog JSON only. Next: P0 security and filters, P1 fresh vectors and scale, then multimodal photo search, promos, and voice — without breaking the API contract.
+> Five FRs delivered with hybrid RAG and conductor-led agentic UX: classify before search, stream real status to the UI, multilingual replies, per-agent LLMs, and catalog-derived lexicon — fast enough for live demo. Next: P0 security and filters, P1 fresh vectors and Redis at scale, then photo search, promos, and voice on the same `/chat` contract.

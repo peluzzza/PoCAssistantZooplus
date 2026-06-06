@@ -7,7 +7,7 @@
 | 2 | Constraints v2 + prompt-injection | **P0** | Versioned policy + layered scanner + security CI |
 | 3 | Agent / intent structure for filtering | **P0** | Intent facets (pet_type, price) → deterministic RAG |
 | 8 | RAG re-ingest & vector DB refresh | **P1** | Scheduled catalog sync; blue/green index; no stale SKUs |
-| 9 | Scale & concurrency | **P1** | Stateless API, queues, rate limits, managed vector DB |
+| 9 | Scale & concurrency | **P1** | Stateless API, queues, rate limits, managed vector DB — **PoC:** optional Redis cache + lexicon mirror (`ZOOPLUS_CACHE_BACKEND=redis`) |
 | 4 | LLM CLI provider evaluation | **P1** | `LLMProvider` port — OpenCode local, HTTP API in cloud |
 | 5 | MCP server + ACP agent bus | **P1–P2** | MCP external; ACP internal orchestration |
 | 7 | Image input (photo → search) | **P2** | Vision embedding + catalog-only multimodal RAG |
