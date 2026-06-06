@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from src.agents.intent_agent import (
-    classify_intent,
+    fast_intent_enabled,
     try_fast_catalog_intent,
     try_fast_conversational_intent,
 )
@@ -11,6 +11,11 @@ from src.api.app import app
 from src.llm.conversation import classify_conversation
 
 pytestmark = pytest.mark.unit
+
+
+def test_fast_intent_disabled_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("ZOOPLUS_FAST_INTENT", raising=False)
+    assert not fast_intent_enabled()
 
 
 def test_help_services_classified() -> None:

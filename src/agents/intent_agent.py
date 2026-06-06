@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Literal
 
 from src.agents.agent_cascade import run_agent_cascade
@@ -215,7 +215,6 @@ def _fallback_intent_decision(query: str, *, site_id: int, reason: str) -> Inten
     if conv != ConvoKind.PRODUCT:
         social_map = {
             ConvoKind.GREETING: "greeting",
-            ConvoKind.IDENTITY: "identity",
             ConvoKind.THANKS: "thanks",
             ConvoKind.HELP: "help",
             ConvoKind.BYE: "bye",
@@ -278,7 +277,7 @@ def classify_intent_agentic(
         prompt,
         settings=cfg,
         parse=_parse_intent,
-        attach_roster=True,
+        attach_roster=False,
     )
     parsed = cascade.value
     agent_source = f"opencode:{cascade.agent_id}" if cascade.agent_id else "opencode"
@@ -293,49 +292,7 @@ def classify_intent_agentic(
             reason="agent_cascade_failed",
         )
 
-    topic_raw = str(parsed.get("topic") or parsed.get("theme") or "")
-    lane = _normalize_lane(str(parsed.get("lane", "")))
-    if topic_raw:
-        from src.agents.handoff import normalize_topic
-
-        topic = normalize_topic(topic_raw, lane=lane)
-        if topic == "pet_catalog" and lane == "conversational":
-            lane = "catalog_search"
-        if topic == "shop_social" and lane == "decline_off_topic":
-            lane = "conversational"
-        if topic == "off_topic":
-            lane = "decline_off_topic"
-    kind = _normalize_social_kind(
-        str(parsed.get("social_kind") or parsed.get("social") or "") or None
-    )
-    try:
-        confidence = float(parsed.get("confidence", 0.8))
-    except (TypeError, ValueError):
-        confidence = 0.8
-    reason = str(parsed.get("reason") or parsed.get("brief_reason") or "")
-
-    decline_msg = None
-    if lane == "decline_off_topic":
-        decline_msg = _decline_copy(reason, query=query)
-
-    from src.agents.handoff import normalize_topic
-
-    topic = normalize_topic(topic_raw or None, lane=lane)
-    if lane == "conversational" and not kind:
-        if topic == "shop_social" and any(
-            w in query.lower() for w in ("service", "provide", "offer", "capabilities", "help")
-        ):
-            kind = "help"
-
-    decision = IntentDecision(
-        lane=lane,
-        social_kind=kind if lane == "conversational" else None,
-        topic=topic,
-        confidence=confidence,
-        reason=reason,
-        source=agent_source,
-        decline_message=decline_msg,
-    )
+    decision = _intent_decision_from_parsed(query, parsed, source=agent_source)
     if os.environ.get("ZOOPLUS_INTENT_REPAIR", "0").lower() in ("1", "true", "yes"):
         return _repair_agentic_misroute(query, decision)
     return decision
@@ -368,6 +325,93 @@ def load_oracle_decision(query: str) -> IntentDecision | None:
     )
 
 
+def _intent_decision_from_parsed(
+    query: str,
+    parsed: dict,
+    *,
+    source: str,
+) -> IntentDecision:
+    """Build IntentDecision from agent JSON (shared by agentic + timeout fallback)."""
+    from src.agents.handoff import normalize_topic
+
+    topic_raw = str(parsed.get("topic") or parsed.get("theme") or "")
+    lane = _normalize_lane(str(parsed.get("lane", "")))
+    if topic_raw:
+        topic = normalize_topic(topic_raw, lane=lane)
+        if topic == "pet_catalog" and lane == "conversational":
+            lane = "catalog_search"
+        if topic == "shop_social" and lane == "decline_off_topic":
+            lane = "conversational"
+        if topic == "off_topic":
+            lane = "decline_off_topic"
+    topic = normalize_topic(topic_raw or None, lane=lane)
+    kind = _normalize_social_kind(
+        str(parsed.get("social_kind") or parsed.get("social") or "") or None
+    )
+    try:
+        confidence = float(parsed.get("confidence", 0.8))
+    except (TypeError, ValueError):
+        confidence = 0.8
+    reason = str(parsed.get("reason") or parsed.get("brief_reason") or "")
+    decline_msg = _decline_copy(reason, query=query) if lane == "decline_off_topic" else None
+    if lane == "conversational" and not kind:
+        if topic == "shop_social" and any(
+            w in query.lower() for w in ("service", "provide", "offer", "capabilities", "help")
+        ):
+            kind = "help"
+    return IntentDecision(
+        lane=lane,
+        social_kind=kind if lane == "conversational" else None,
+        topic=topic,
+        confidence=confidence,
+        reason=reason,
+        source=source,
+        decline_message=decline_msg,
+    )
+
+
+def classify_intent_conductor_fallback(
+    query: str,
+    site_id: int,
+    *,
+    settings: Settings | None = None,
+) -> IntentDecision:
+    """One-shot agentic intent when the full cascade exceeds the lane time budget."""
+    cfg = settings or apply_settings()
+    prompt = _build_intent_prompt(query, site_id)
+
+    cascade = run_agent_cascade(
+        "conductor",
+        prompt,
+        settings=cfg,
+        parse=_parse_intent_json,
+        attach_roster=False,
+    )
+    parsed = cascade.value
+    if parsed:
+        agent_source = f"opencode_timeout:{cascade.agent_id or 'conductor'}"
+        return _intent_decision_from_parsed(query, parsed, source=agent_source)
+    logger.warning(
+        "intent timeout fallback exhausted; topic fallback (decline still agentic in social lane)"
+    )
+    return _fallback_intent_decision(query, site_id=site_id, reason="intent_lane_timeout")
+
+
+def _store_intent_cache(site_id: int, query: str, decision: IntentDecision) -> None:
+    from src.cache.ttl_cache import cache_enabled, intent_cache
+
+    if cache_enabled():
+        intent_cache.set(_intent_cache_key(site_id, query), asdict(decision))
+
+
+def _intent_cache_key(site_id: int, query: str) -> str:
+    return f"{site_id}:{query.strip().lower()}"
+
+
+def _intent_from_cache_row(row: dict) -> IntentDecision:
+    return IntentDecision(**row)
+
+
 def classify_intent(
     query: str,
     site_id: int,
@@ -375,8 +419,16 @@ def classify_intent(
     settings: Settings | None = None,
 ) -> IntentDecision:
     """Route intent: oracle (tests), agentic OpenCode (prod), or safe decline if agent unavailable."""
+    from src.cache.ttl_cache import cache_enabled, intent_cache
+
     mode = intent_mode()
     text = (query or "").strip()
+    if cache_enabled() and mode in ("agentic", "auto"):
+        cached = intent_cache.get(_intent_cache_key(site_id, text))
+        if cached:
+            logger.debug("intent cache hit site=%s", site_id)
+            return _intent_from_cache_row(cached)
+
     if not text:
         return IntentDecision(
             lane="decline_off_topic",
@@ -399,13 +451,18 @@ def classify_intent(
 
     cfg = settings or apply_settings()
     if mode == "agentic" or (mode == "auto" and opencode_auth_present(cfg)):
-        fast_catalog = try_fast_catalog_intent(text)
-        if fast_catalog:
-            return fast_catalog
-        fast = try_fast_conversational_intent(text)
-        if fast:
-            return fast
-        return classify_intent_agentic(text, site_id, settings=cfg)
+        if fast_intent_enabled():
+            fast_catalog = try_fast_catalog_intent(text)
+            if fast_catalog:
+                _store_intent_cache(site_id, text, fast_catalog)
+                return fast_catalog
+            fast = try_fast_conversational_intent(text)
+            if fast:
+                _store_intent_cache(site_id, text, fast)
+                return fast
+        decision = classify_intent_agentic(text, site_id, settings=cfg)
+        _store_intent_cache(site_id, text, decision)
+        return decision
 
     # Agentic required but OpenCode unavailable — do NOT keyword-route or RAG blindly.
     return IntentDecision(

@@ -25,13 +25,21 @@ class CascadeResult:
     attempts: tuple[str, ...]
 
 
-def _per_agent_timeout(settings: Settings, chain_len: int) -> int:
+def _per_agent_timeout(settings: Settings, chain_len: int, role: AgentRole) -> int:
     total = max(10, settings.opencode_timeout_seconds)
     if chain_len <= 0:
         return total
-    # Cap each attempt; allow longer when total budget is high (integration / dev)
-    cap = 12 if total <= 25 else min(25, total // max(1, chain_len))
-    return max(8, cap)
+    role_caps: dict[AgentRole, int] = {
+        "intent": 10,
+        "social": 12,
+        "synthesis": 14,
+        "conductor": 12,
+    }
+    cap = role_caps.get(role, 12)
+    if total > 40:
+        cap = min(cap + 2, 16)
+    per = min(cap, total // max(1, chain_len))
+    return max(8, per)
 
 
 def run_agent_cascade(
@@ -56,7 +64,7 @@ def run_agent_cascade(
     if attach_roster and role in ("intent", "conductor"):
         full_prompt = f"{prompt}\n\n{format_agent_roster()}\n"
 
-    timeout = _per_agent_timeout(settings, len(chain))
+    timeout = _per_agent_timeout(settings, len(chain), role)
     tried: list[str] = []
 
     for agent_id in chain:

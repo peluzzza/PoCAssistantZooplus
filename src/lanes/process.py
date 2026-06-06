@@ -44,12 +44,15 @@ def _to_retrieved_product(hit: dict) -> RetrievedProduct:
 async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
     cap = max_recommendations()
     pool_n = max(cap * 6, 24) if parse_eur_price_range(envelope.query) else cap
-    hits = await asyncio.to_thread(
-        search_catalog,
-        envelope.query,
-        envelope.site_id,
-        n_results=pool_n,
-    )
+    if envelope.prefetched_hits is not None:
+        hits = list(envelope.prefetched_hits)
+    else:
+        hits = await asyncio.to_thread(
+            search_catalog,
+            envelope.query,
+            envelope.site_id,
+            n_results=pool_n,
+        )
     hits = apply_price_range_filter(envelope.query, hits)
     products = [_to_retrieved_product(hit) for hit in hits][:cap]
 
