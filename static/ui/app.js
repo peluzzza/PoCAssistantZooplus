@@ -19,6 +19,31 @@ let uiConfig = {
 let activeChatAbort = null;
 /** Single transient status bubble — updated in place, removed when the answer arrives. */
 let activeStatusEl = null;
+let configReady = false;
+
+function resolvedSiteId() {
+  const picked = Number(siteSelect.value);
+  if (Number.isFinite(picked) && picked >= 1) return picked;
+  const fallback = Number(uiConfig.default_site_id);
+  return Number.isFinite(fallback) && fallback >= 1 ? fallback : 3;
+}
+
+function populateSiteSelect() {
+  siteSelect.innerHTML = "";
+  const labels = uiConfig.site_labels || {};
+  for (const id of uiConfig.sites || [1, 3, 15]) {
+    const opt = document.createElement("option");
+    opt.value = String(id);
+    opt.textContent = labels[id] || labels[String(id)] || `Shop site_id ${id}`;
+    siteSelect.appendChild(opt);
+  }
+  const desired = String(uiConfig.default_site_id || 3);
+  if ([...siteSelect.options].some((o) => o.value === desired)) {
+    siteSelect.value = desired;
+  } else if (siteSelect.options.length > 0) {
+    siteSelect.value = siteSelect.options[0].value;
+  }
+}
 
 function showTransientStatus(text) {
   if (!text) return;
@@ -177,15 +202,7 @@ async function loadConfig() {
   } catch (_) {
     /* use defaults */
   }
-  siteSelect.innerHTML = "";
-  const labels = uiConfig.site_labels || {};
-  for (const id of uiConfig.sites || [1, 3, 15]) {
-    const opt = document.createElement("option");
-    opt.value = String(id);
-    opt.textContent = labels[id] || labels[String(id)] || `Shop site_id ${id}`;
-    siteSelect.appendChild(opt);
-  }
-  siteSelect.value = String(uiConfig.default_site_id || 3);
+  populateSiteSelect();
   populateAgentModels();
   populateModelSelect();
   setModeBadge();
@@ -245,7 +262,11 @@ form.addEventListener("submit", async (e) => {
   }
   clearTransientStatus();
 
-  const siteId = Number(siteSelect.value);
+  const siteId = resolvedSiteId();
+  if (!configReady && siteId < 1) {
+    appendMessage("bot", "Shop list still loading — wait a moment and try again.", [], { error: true });
+    return;
+  }
   const preferredModel = selectedModel();
   appendMessage("user", query);
   queryInput.value = "";
@@ -270,7 +291,16 @@ form.addEventListener("submit", async (e) => {
 
     if (!res.ok) {
       const err = await res.text();
-      appendMessage("bot", `Error ${res.status}: ${err}`, [], { error: true });
+      if (res.status === 422 && err.includes("site_id")) {
+        appendMessage(
+          "bot",
+          "Please pick a shop from the dropdown above, then send your message again.",
+          [],
+          { error: true },
+        );
+      } else {
+        appendMessage("bot", `Error ${res.status}: ${err}`, [], { error: true });
+      }
       return;
     }
 
@@ -310,7 +340,12 @@ queryInput.addEventListener("keydown", (e) => {
   }
 });
 
+populateSiteSelect();
+sendBtn.disabled = true;
+
 loadConfig().then(() => {
+  configReady = true;
+  sendBtn.disabled = false;
   appendMessage(
     "bot",
     "Hi! Pick a shop and model, then ask about pet products. Off-topic questions are declined.",
