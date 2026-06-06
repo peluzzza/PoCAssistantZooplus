@@ -1,4 +1,4 @@
-"""Integration fixtures — agentic mode with real OpenCode (no mocks)."""
+"""Integration fixtures — fast oracle/template by default; OpenCode only for @agentic / @social."""
 
 from __future__ import annotations
 
@@ -10,9 +10,8 @@ from src.config import ROOT, apply_settings
 from src.llm.opencode import opencode_auth_paths, opencode_auth_present
 
 
-def pytest_configure(config: pytest.Config) -> None:
+def _apply_agentic_env() -> None:
     apply_settings()
-    # Force agentic (do not use setdefault — shell may still have oracle from CI)
     os.environ["ZOOPLUS_INTENT_MODE"] = "agentic"
     os.environ["ZOOPLUS_SYNTHESIS_MODE"] = "opencode"
     os.environ["ZOOPLUS_SOCIAL_SYNTHESIS"] = "agentic"
@@ -24,9 +23,27 @@ def pytest_configure(config: pytest.Config) -> None:
     os.environ["ZOOPLUS_OPENCODE_MODEL"] = "opencode/deepseek-v4-flash-free"
 
 
+@pytest.fixture(autouse=True)
+def _agentic_profile_for_marked_integration(request: pytest.FixtureRequest) -> None:
+    """Real OpenCode only when test is @agentic or @social (F3 / release verify)."""
+    if (
+        request.node.get_closest_marker("agentic") is None
+        and request.node.get_closest_marker("social") is None
+    ):
+        return
+    _apply_agentic_env()
+
+
 @pytest.fixture(scope="session", autouse=True)
-def _ensure_project_opencode_auth() -> None:
-    """Copy global auth into gitignored .opencode/data so CLI + tests share one profile."""
+def _ensure_project_opencode_auth(request: pytest.FixtureRequest) -> None:
+    """Copy global auth when this session runs agentic/social integration tests."""
+    session = request.session
+    has_slow = any(
+        item.get_closest_marker("agentic") or item.get_closest_marker("social")
+        for item in session.items
+    )
+    if not has_slow:
+        return
     local_auth = ROOT / ".opencode" / "data" / "auth.json"
     if local_auth.is_file() and local_auth.stat().st_size > 2:
         return
@@ -39,7 +56,7 @@ def _ensure_project_opencode_auth() -> None:
 
 @pytest.fixture(scope="session")
 def require_opencode() -> None:
-    apply_settings()
+    _apply_agentic_env()
     if shutil.which("opencode") is None:
         pytest.fail("opencode CLI not on PATH — install OpenCode and retry")
     if not opencode_auth_present():

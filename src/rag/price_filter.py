@@ -45,10 +45,7 @@ def parse_eur_price_range(query: str) -> tuple[float, float] | None:
     if len(amounts) >= 2:
         return (min(amounts), max(amounts))
     if re.search(r"€|eur(?:os?)?", text, re.I):
-        bare = [
-            float(n.replace(",", "."))
-            for n in re.findall(r"\d+(?:[.,]\d+)?", text)
-        ]
+        bare = [float(n.replace(",", ".")) for n in re.findall(r"\d+(?:[.,]\d+)?", text)]
         if len(bare) >= 2:
             return (min(bare), max(bare))
     return None

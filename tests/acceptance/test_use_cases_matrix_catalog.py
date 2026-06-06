@@ -37,7 +37,9 @@ def test_coding_task_artifacts_present() -> None:
 
 def test_matrix_at_least_100_cases() -> None:
     cases = _load_matrix()
-    assert len(cases) >= 100, f"matrix has {len(cases)} cases; need >= 100 per Coding Task validation"
+    assert len(cases) >= 100, (
+        f"matrix has {len(cases)} cases; need >= 100 per Coding Task validation"
+    )
 
 
 def test_matrix_covers_coding_task_requirements() -> None:
@@ -62,7 +64,8 @@ def test_matrix_catalog_refs_exist_in_instructions_dataset() -> None:
             continue
         if (sid, int(aid)) not in index:
             missing.append(f"{case['id']} article_id={aid} site={sid}")
-    assert not missing, "catalog refs not in product_catalog_dataset.json:\n" + "\n".join(missing[:15])
+    msg = "catalog refs not in product_catalog_dataset.json:\n" + "\n".join(missing[:15])
+    assert not missing, msg
 
 
 @pytest.mark.parametrize(
