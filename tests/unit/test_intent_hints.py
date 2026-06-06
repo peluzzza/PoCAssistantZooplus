@@ -1,0 +1,80 @@
+"""Unit tests — fast intent hints and chat routing for help/catalog phrasing."""
+
+import pytest
+from fastapi.testclient import TestClient
+from src.agents.intent_agent import (
+    classify_intent,
+    try_fast_catalog_intent,
+    try_fast_conversational_intent,
+)
+from src.api.app import app
+from src.llm.conversation import classify_conversation
+
+pytestmark = pytest.mark.unit
+
+
+def test_help_services_classified() -> None:
+    q = "what can you tell me about your services"
+    assert classify_conversation(q).value == "help"
+    fast = try_fast_conversational_intent(q)
+    assert fast is not None
+    assert fast.lane == "conversational"
+    assert fast.social_kind == "help"
+
+
+def test_catalog_browse_classified() -> None:
+    q = "show me some options about cats and dogs"
+    assert try_fast_conversational_intent(q) is None
+    fast = try_fast_catalog_intent(q)
+    assert fast is not None
+    assert fast.lane == "catalog_search"
+
+
+def test_product_availability_not_declined(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
+    monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
+    monkeypatch.setenv("ZOOPLUS_SOCIAL_SYNTHESIS", "agentic")
+    client = TestClient(app)
+    resp = client.post(
+        "/chat",
+        json={"site_id": 3, "query": "what products do you have available"},
+    )
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert "can't help with that topic" not in (payload.get("answer") or "").lower()
+
+
+def test_chat_help_and_catalog_no_decline(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ZOOPLUS_INTENT_MODE", "oracle")
+    monkeypatch.setenv("ZOOPLUS_SYNTHESIS_MODE", "template")
+    monkeypatch.setenv("ZOOPLUS_SOCIAL_SYNTHESIS", "agentic")
+    monkeypatch.setattr(
+        "src.agents.social_agent.social_reply",
+        lambda q, sid, intent, handoff_brief=None, *, settings=None: (
+            f"I'm the zooplus Assistant for shop {sid} — describe dog or cat products you need."
+        ),
+    )
+    client = TestClient(app)
+
+    for q in (
+        "what can you tell me about your services",
+        "hello, what services do you provide",
+    ):
+        help_resp = client.post("/chat", json={"site_id": 3, "query": q})
+        assert help_resp.status_code == 200
+        help_payload = help_resp.json()
+        assert help_payload["retrieved_products"] == []
+        assert "can't help with that topic" not in help_payload["answer"].lower()
+        assert any(
+            w in help_payload["answer"].lower()
+            for w in ("zooplus", "catalog", "shop", "dog", "cat")
+        )
+
+    cat_resp = client.post(
+        "/chat",
+        json={"site_id": 3, "query": "show me some options about cats and dogs"},
+    )
+    assert cat_resp.status_code == 200
+    cat_payload = cat_resp.json()
+    assert "can't help with that topic" not in cat_payload["answer"].lower()
+    assert len(cat_payload["retrieved_products"]) >= 1

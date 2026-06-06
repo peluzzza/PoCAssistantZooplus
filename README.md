@@ -2,6 +2,34 @@
 
 Async FastAPI chat API for pet-product questions using RAG over the provided catalog, with strict `site_id` isolation and topic guardrails.
 
+---
+
+## Start here (local install)
+
+**New to the repo?** Use the wizard — it installs Python deps, builds the index, and optionally logs you into OpenCode:
+
+```powershell
+git checkout releases
+.\scripts\setup_wizard.ps1
+.\scripts\run_dev.ps1
+```
+
+| URL | Purpose |
+|-----|---------|
+| **http://127.0.0.1:8090/ui/** | Chat UI (default dev port) |
+| **http://127.0.0.1:8090/docs** | Swagger — FR1 async `/chat` |
+| **http://127.0.0.1:8090/health** | Liveness check |
+
+**Step-by-step (all paths):** [`docs/QUICKSTART.md`](docs/QUICKSTART.md)  
+**Developer branches + filters:** [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md)
+
+| Mode | OpenCode | Use when |
+|------|----------|----------|
+| **Template** (wizard option 1) | Not needed | Fastest setup, CI, acceptance tests |
+| **OpenCode** (wizard option 2) | `opencode auth login` | Interview demo with free LLMs |
+
+---
+
 ## Architecture
 
 ```mermaid
@@ -58,77 +86,83 @@ Behavior:
 - Off-topic (`weather`, `time`, `datetime`, `news`, general-knowledge patterns) returns polite decline with empty `retrieved_products`.
 - In-scope requests return products retrieved only from the same `site_id`.
 
-## Setup
+## Manual setup (without wizard)
 
-**Python 3.11** (matches CI and Docker — see [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md)):
+**Python 3.11** required — see [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md).
 
-```bash
+```powershell
 py -3.11 -m venv .venv
-.venv\Scripts\activate   # Windows
+.\.venv\Scripts\Activate.ps1
 pip install -e ".[rag,dev]"
-python -m cli ingest
-uvicorn src.api.app:app --reload --port 8080
+copy .env.example .env
+py -3.11 -m cli ingest
+.\scripts\run_dev.ps1
 ```
 
-**Chat UI:** open [http://127.0.0.1:8080/ui/](http://127.0.0.1:8080/ui/) after the server starts. Details: [`docs/CHAT_UI.md`](docs/CHAT_UI.md).
-
-**Docker (v2):**
+**Docker:**
 
 ```bash
 docker compose up --build -d
 python scripts/deploy_smoke.py http://127.0.0.1:8080
 ```
 
-Runbook: [`docs/RUNBOOK.md`](docs/RUNBOOK.md)  
-**Demo completa:** [`docs/DEMO.md`](docs/DEMO.md) — `python scripts/demo_all.py`
+## Verify
 
-Useful checks:
-
-```bash
-python scripts/run_quality_gates.py
-python -m cli evaluate
-py -3 scripts/topic_guard_load_test.py   # G1 p95 budget check
+```powershell
+.\scripts\smoke_minimal.ps1              # ~2 min, no OpenCode
+py -3.11 scripts/run_quality_gates.py    # full gates
+.\scripts\run_release_verify.ps1         # release line (incl. OpenCode social)
 ```
 
-## OpenCode LLM (optional, user-configured)
+## OpenCode (optional — wizard configures this)
 
-By default answers use **template synthesis** (no API keys). To use **free-tier models from your OpenCode account**:
+Free-tier models via your OpenCode account. Credentials live in **gitignored** `.opencode/data/auth.json`.
 
-1. Copy [`.env.example`](.env.example) → `.env` (`.env` is gitignored).
-2. Run `opencode auth login` — credentials go to `~/.local/share/opencode/auth.json`, **never commit this file**.
-3. Optional project-local profile: set `ZOOPLUS_OPENCODE_DATA_DIR=.opencode/data` and `OPENCODE_DATA_DIR=.opencode/data` before login; that directory is gitignored.
-4. Set `ZOOPLUS_SYNTHESIS_MODE=opencode` and `ZOOPLUS_OPENCODE_MODEL` (see `opencode models`).
+```powershell
+.\scripts\setup_opencode_local.ps1   # copy or prompt login
+opencode models                    # list free models
+```
 
-**Never commit:** `auth.json`, `.opencode/auth.json`, `.opencode/data/auth.json`, or `.env`. They are listed in [`.gitignore`](.gitignore).
+Never commit: `.env`, `auth.json`, `.opencode/data/`.
 
-If OpenCode is missing or fails, the API **falls back** to template synthesis automatically.
+If OpenCode fails, the API **falls back to template synthesis**.
 
 ## Trade-offs
 
 - **Local Chroma over hosted vector DB:** fastest PoC setup, not production-scale.
 - **Rule-first topic guard:** deterministic and low latency, less nuanced than full classifier models.
-- **Template synthesis (default):** reproducible without keys; set `ZOOPLUS_SYNTHESIS_MODE=opencode` for richer LLM replies via your OpenCode login.
+- **Template synthesis:** reproducible without keys; wizard option 2 enables OpenCode for richer replies.
 - **Max 4 recommendations:** clear UX and constraint-compliant, may omit longer-tail candidates.
 
 ## Roadmap
 
-1. Add richer reranking (brand/stock/price-aware) with calibrated relevance scores.
-2. Add streaming endpoint (`/chat/stream`) with early interactive acknowledgements.
-3. Add observability (latency buckets per lane, decline reasons, retrieval hit rates).
-4. Add hybrid search (vector + lexical fallback) for SKU/name exact-match robustness.
-5. Add production deployment profile (containerization + managed vector store).
+1. Harden constraints + prompt-injection defense (versioned policy packs).
+2. Structured intent filters (`pet_type`, price band, category) for better retrieval.
+3. LLM provider abstraction (OpenCode local · HTTP API in cloud).
+4. MCP server for external agents; extend internal ACP envelopes.
+5. Optional promo slots during long `/chat/stream` turns (commerce UX).
+6. Managed vector DB + observability (latency, decline reasons, hit rates).
+
+Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md).
 
 ## Release status
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| `main` @ **v2.1.0** | Production profile + Python 3.11 / pinned deps |
-| `dev` | Post-v2 enhancements (see [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)) |
+| **`releases`** | Interview / take-home line — use wizard here |
+| **`main`** | Full dev history, matrix tooling |
 
-## Docs and trace
+## Interview / submission
 
-- Release plan: [`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md)
-- Main docs index: [`docs/README.md`](docs/README.md)
-- Proposal: [`docs/plans/PROPOSAL.md`](docs/plans/PROPOSAL.md)
-- Progress dashboard: [`docs/trace/PROGRESS.md`](docs/trace/PROGRESS.md)
-- Step logs T0-T6: [`docs/trace/README.md`](docs/trace/README.md)
+- Checklist: [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md)
+- **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
+- Speaker script: [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](docs/deliverables/v0.1/PRESENTATION_15MIN.md)
+
+## Docs
+
+| Doc | Purpose |
+|-----|---------|
+| [`docs/QUICKSTART.md`](docs/QUICKSTART.md) | **Install step-by-step** |
+| [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) | feature → filters → release |
+| [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Operations |
+| [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md) | Tag verify |

@@ -22,7 +22,7 @@ def _load_dotenv() -> None:
         key = key.strip()
         value = value.strip().strip('"').strip("'")
         if key:
-            os.environ[key] = value
+            os.environ.setdefault(key, value)
 
 
 @dataclass(frozen=True)

@@ -29,10 +29,26 @@ OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bnews\b", re.IGNORECASE), "off_topic_news"),
     (
         re.compile(
-            r"\b(who is|what is|capital of|history of|election|president|prime minister)\b",
+            r"\b("
+            r"search\s+(in\s+)?(the\s+)?internet|internet\s+search|search\s+online|"
+            r"browse\s+the\s+web|google\s+it|look\s+up\s+online|web\s+search|"
+            r"search\s+the\s+web|use\s+the\s+internet"
+            r")\b",
             re.IGNORECASE,
         ),
-        "off_topic_general_knowledge",
+        "off_topic_external_web",
+        None,  # filled below
+    ),
+    (
+        re.compile(
+            r"(ignore\s+(all\s+)?(previous|prior)\s+instructions|"
+            r"disregard\s+(your\s+)?(rules|instructions)|"
+            r"you\s+are\s+now\s+(a|an)|system\s*:\s*|"
+            r"<\s*/?\s*system\s*>|jailbreak|DAN\s+mode)",
+            re.IGNORECASE,
+        ),
+        "off_topic_prompt_injection",
+        None,
     ),
 ]
 

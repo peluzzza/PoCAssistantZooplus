@@ -43,6 +43,10 @@ markers = [
   "agentic: requires local OpenCode auth (no mocks)",
   "social: conversational /chat with real OpenCode (no mocks)",
   "e2e: full PoC path smoke",
+  "acceptance: Coding Task.docx + docs/instructions catalog",
+  "security: guardrails, injection, off-topic matrix",
+  "social: 50+ use-case chat matrix from instructions",
+  "agentic: intent oracle + sociable UX (no rigid catalog on chitchat)",
 ]
 filterwarnings = [
   "ignore:Using `httpx` with `starlette.testclient`:UserWarning",

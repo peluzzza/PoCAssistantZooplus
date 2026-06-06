@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
+
+# Deterministic CI/local smoke — override .env so acceptance stays reproducible.
+os.environ["ZOOPLUS_INTENT_MODE"] = "oracle"
+os.environ["ZOOPLUS_SYNTHESIS_MODE"] = "template"
+os.environ.setdefault("ZOOPLUS_SOCIAL_SYNTHESIS", "agentic")
+os.environ.setdefault("ZOOPLUS_AGENT_CASCADE", "0")
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "product_catalog_dataset.json"
