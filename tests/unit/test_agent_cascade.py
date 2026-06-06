@@ -30,7 +30,9 @@ def test_cascade_tries_second_agent(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_run(prompt: str, *, settings, agent_id: str, timeout_seconds=None, model=None):
         calls.append(agent_id)
         if agent_id == "zooplus-topic-guard":
-            return json.dumps({"lane": "conversational", "topic": "shop_social", "social_kind": "greeting"})
+            return json.dumps(
+                {"lane": "conversational", "topic": "shop_social", "social_kind": "greeting"}
+            )
         return None
 
     monkeypatch.setattr("src.agents.agent_cascade.run_opencode_agent", fake_run)

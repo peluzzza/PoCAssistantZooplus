@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from src.agents.intent_agent import _fallback_intent_decision
 from src.agents.intent_hints import (
-    looks_like_product_browse,
     looks_like_non_catalog_species,
+    looks_like_product_browse,
 )
 from src.llm.conversation import emergency_social_fallback, social_kind_hint
 from src.llm.template import synthesize_template
