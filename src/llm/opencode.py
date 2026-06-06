@@ -13,7 +13,7 @@ from src.models.chat import RetrievedProduct
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "opencode-go/deepseek-v4-flash"
+DEFAULT_MODEL = "opencode/deepseek-v4-flash-free"
 
 
 def _opencode_env(settings: Settings) -> dict[str, str]:
@@ -72,6 +72,7 @@ def _build_prompt(
         "- Vary wording each turn; avoid rigid template openings.\n"
         "- Match the customer's language when possible.\n"
         "- End with one short follow-up question when appropriate.\n"
+        "- Reply in plain text only — never wrap the answer in JSON or markdown code fences.\n"
     )
 
 
@@ -196,14 +197,22 @@ def synthesize_opencode(
     return _run_opencode_prompt(prompt, settings=cfg)
 
 
-def opencode_auth_present(settings: Settings | None = None) -> bool:
-    """True if a local or default auth.json exists (does not validate keys)."""
-    from src.config import Settings as SettingsCls
+def opencode_auth_paths(settings: Settings | None = None) -> list[Path]:
+    """Auth.json locations checked in order (project-local first)."""
+    from src.config import ROOT, apply_settings
 
-    cfg = settings or SettingsCls.from_env()
+    cfg = settings or apply_settings()
     candidates: list[Path] = []
     if cfg.opencode_data_dir:
-        candidates.append(Path(cfg.opencode_data_dir) / "auth.json")
+        data = Path(cfg.opencode_data_dir)
+        if not data.is_absolute():
+            data = (ROOT / data).resolve()
+        candidates.append(data / "auth.json")
+    candidates.append((ROOT / ".opencode" / "data" / "auth.json").resolve())
     candidates.append(Path.home() / ".local" / "share" / "opencode" / "auth.json")
-    candidates.append(Path(__file__).resolve().parents[2] / ".opencode" / "auth.json")
-    return any(p.is_file() for p in candidates)
+    return candidates
+
+
+def opencode_auth_present(settings: Settings | None = None) -> bool:
+    """True if a local or default auth.json exists (does not validate keys)."""
+    return any(p.is_file() and p.stat().st_size > 2 for p in opencode_auth_paths(settings))

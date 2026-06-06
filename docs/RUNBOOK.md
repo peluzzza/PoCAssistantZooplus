@@ -1,7 +1,9 @@
 # Operations runbook (v2.0 production profile)
 
+**First install?** Start with [`QUICKSTART.md`](QUICKSTART.md) and `.\scripts\setup_wizard.ps1`.
+
 **Service:** zooplus Assistant API  
-**Default port:** 8080
+**Dev port:** 8090 (`run_dev.ps1`) · **Docker:** 8080
 
 ---
 

@@ -9,6 +9,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_apply_settings_sets_retrieval_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("src.config._load_dotenv", lambda: None)
     monkeypatch.setenv("ZOOPLUS_RETRIEVAL_MODE", "vector")
     cfg = apply_settings()
     assert cfg.retrieval_mode == "vector"

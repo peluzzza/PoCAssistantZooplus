@@ -9,6 +9,7 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
+from src.agents.agent_cascade import run_agent_cascade
 from src.agents.intent_hints import (
     looks_like_catalog_search,
     looks_like_help_about_shop,
@@ -18,8 +19,7 @@ from src.agents.intent_hints import (
 )
 from src.agents.prompts import INTENT_SYSTEM
 from src.config import Settings, apply_settings
-from src.guardian.engine import EXTERNAL_WEB_DECLINE, polite_decline_for
-from src.agents.agent_cascade import run_agent_cascade
+from src.guardian.engine import polite_decline_for
 from src.llm.opencode import opencode_auth_present
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,6 @@ def try_fast_conversational_intent(query: str) -> IntentDecision | None:
         return None
     social_map: dict[ConvoKind, SocialKind] = {
         ConvoKind.GREETING: "greeting",
-        ConvoKind.IDENTITY: "identity",
         ConvoKind.THANKS: "thanks",
         ConvoKind.HELP: "help",
         ConvoKind.BYE: "bye",
@@ -164,12 +163,16 @@ def try_fast_conversational_intent(query: str) -> IntentDecision | None:
 
 
 def _build_intent_prompt(query: str, site_id: int) -> str:
+    from src.agents.instructions_skill import instructions_skill_context
+
+    skill = instructions_skill_context(site_id=site_id)
     return (
-        f"{INTENT_SYSTEM}\n\n"
+        f"{skill}\n\n{INTENT_SYSTEM}\n\n"
         f"shop site_id: {site_id}\n"
         f'Customer message: "{query}"\n'
         "Classify by TOPIC (what they are talking about), not single keywords.\n"
         "Combined messages: use the dominant topic (e.g. hello + services → shop_social/help).\n"
+        "Reply with JSON only: lane, topic, social_kind, confidence, reason.\n"
     )
 
 
@@ -253,8 +256,6 @@ def _decline_copy(reason: str, *, query: str) -> str:
         return polite_decline_for("off_topic_external_web", query=query)
     if looks_like_non_catalog_species(query):
         return polite_decline_for("off_topic_non_pet_species", query=query)
-    if any(w in q for w in ("weather", "wetter", "traffic", "news headline", "what time")):
-        return polite_decline_for("off_topic_life", query=query)
     code = reason if reason.startswith("off_topic") else "out_of_scope_default_deny"
     return polite_decline_for(code, query=query)
 
@@ -398,20 +399,13 @@ def classify_intent(
 
     cfg = settings or apply_settings()
     if mode == "agentic" or (mode == "auto" and opencode_auth_present(cfg)):
-        if fast_intent_enabled():
-            fast = try_fast_conversational_intent(text)
-            if fast:
-                return fast
-            fast_catalog = try_fast_catalog_intent(text)
-            if fast_catalog:
-                return fast_catalog
-        decision = classify_intent_agentic(text, site_id, settings=cfg)
-        if decision.source in ("repair", "topic_fallback") or decision.source.startswith("opencode"):
-            return decision
-        oracle = load_oracle_decision(text)
-        if oracle:
-            return oracle
-        return decision
+        fast_catalog = try_fast_catalog_intent(text)
+        if fast_catalog:
+            return fast_catalog
+        fast = try_fast_conversational_intent(text)
+        if fast:
+            return fast
+        return classify_intent_agentic(text, site_id, settings=cfg)
 
     # Agentic required but OpenCode unavailable — do NOT keyword-route or RAG blindly.
     return IntentDecision(

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {},
+  "tools": {
+    "zooplus_*": false
+  },
+  "agent": {
+    "zooplus-conductor": {
+      "mode": "primary",
+      "description": "Shop orchestrator (intent → social | catalog)",
+      "permission": {
+        "task": {
+          "*": "deny",
+          "zooplus-intent-agent": "allow",
+          "zooplus-social-agent": "allow",
+          "zooplus-topic-guard": "allow",
+          "zooplus-rag-worker": "allow",
+          "zooplus-logic-worker": "allow",
+          "zooplus-synthesis": "allow"
+        }
+      }
+    },
+    "zooplus-intent-agent": { "mode": "subagent", "description": "Intent router" },
+    "zooplus-social-agent": { "mode": "subagent", "description": "Social replies" },
+    "zooplus-topic-guard": { "mode": "subagent", "description": "Topic guard" },
+    "zooplus-rag-worker": { "mode": "subagent", "description": "RAG worker" },
+    "zooplus-logic-worker": { "mode": "subagent", "description": "Logic worker" },
+    "zooplus-synthesis": { "mode": "subagent", "description": "Catalog synthesis" }
+  }
+}

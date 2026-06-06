@@ -1,69 +1,75 @@
-# Git workflow
+# Git workflow — feature → release
 
-**Remote:** [https://github.com/peluzzza/PoCAssistantZooplus.git](https://github.com/peluzzza/PoCAssistantZooplus.git)
+**Branches**
 
-## Release policy
+| Branch | Purpose |
+|--------|---------|
+| `feature/*` | Your change (docs, fix, demo) |
+| `releases` | **Interview / take-home line** — slim, verified |
+| `main` | Full dev history, matrix tooling, generators |
 
-Merges to `main` follow [`RELEASE_PLAN.md`](RELEASE_PLAN.md) — only when milestone exit criteria pass.
+For local setup and demo, use **`releases`** (`git checkout releases`).
 
-| Tag on `main` | When |
-|---------------|------|
-| `v0.1.0` | P0 bootstrap only |
-| `v1.0.0` | MVP — B1–B9, 19 tests, CI green |
-| `v1.1.0+` | Planned (streaming, golden queries, …) |
+---
 
-## Current state
+## Day-to-day (contributor)
 
-| Branch | Role |
-|--------|------|
-| `main` | Stable tagged releases |
-| `dev` | Integration — all `feature/*` merge here first |
-| `feature/<name>` | Short-lived steps |
-
-## Pre-merge quality (required)
-
-```bash
-pip install -e ".[rag,dev]"
-python scripts/run_quality_gates.py
+```text
+releases ──► feature/my-change ──► (filters) ──► releases ──► tag v0.1.x
 ```
 
-Details: [`QUALITY.md`](QUALITY.md).
+### 1. Start from `releases`
 
-## Flow
-
-```mermaid
-gitGraph
-  commit id: "v0.1.0"
-  branch dev
-  checkout dev
-  commit id: "T1-T6 MVP"
-  checkout main
-  merge dev tag: "v1.0.0"
-  checkout dev
-  commit id: "v1.1 work"
+```powershell
+git checkout releases
+git pull origin releases
+git checkout -b feature/my-change
 ```
 
-1. `git checkout dev && git pull`
-2. `git checkout -b feature/<step>` → work → merge to `dev` → push
-3. When milestone ready: merge `dev` → `main`, tag `vX.Y.Z`, push (see `RELEASE_PLAN.md`)
+### 2. Develop
 
-## Commands
-
-```bash
-git fetch origin
-git checkout dev && git pull origin dev
-git checkout -b feature/my-step
-# ... work, quality gates ...
-git push -u origin feature/my-step
-git checkout dev && git merge feature/my-step && git push origin dev
+```powershell
+.\scripts\setup_wizard.ps1          # first time only
+.\scripts\run_dev.ps1               # http://127.0.0.1:8090/ui/
 ```
 
-Release to main:
+### 3. Filters (in order — do not skip)
 
-```bash
-python scripts/run_quality_gates.py
-git checkout main && git pull origin main
-git merge dev -m "release: vX.Y.Z — title"
-git tag -a vX.Y.Z -m "vX.Y.Z — title"
-git push origin main && git push origin vX.Y.Z
+| Step | Script | When |
+|------|--------|------|
+| **F1** Fast smoke | `.\scripts\smoke_minimal.ps1` | After every meaningful change |
+| **F2** Quality gates | `py -3.11 scripts/run_quality_gates.py` | Before merge |
+| **F3** Release verify | `.\scripts\run_release_verify.ps1` | Before merging to `releases` |
+
+```powershell
+.\scripts\smoke_minimal.ps1
+py -3.11 scripts/run_quality_gates.py
+.\scripts\run_release_verify.ps1
 ```
+
+### 4. Merge to `releases`
+
+```powershell
+git checkout releases
+git merge --no-ff feature/my-change -m "merge feature/my-change into releases"
+git push origin releases
+```
+
+Optional tag after interview milestones: `git tag -a v0.1.x -m "..."` · `git push origin v0.1.x`
+
+### 5. Sync to `main` (optional)
+
+Heavy dev artifacts live on `main` only. Merge `releases` → `main` when you want the slim app line on main, or cherry-pick specific fixes.
+
+---
+
+## Reviewer / interviewer (clone only)
+
+```powershell
+git clone git@github.com:peluzzza/PoCAssistantZooplus.git
+cd PoCAssistantZooplus
+git checkout releases
+.\scripts\setup_wizard.ps1
+```
+
+No feature branch needed — run wizard, open UI, done.

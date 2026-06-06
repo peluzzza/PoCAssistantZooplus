@@ -10,6 +10,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 CONSTRAINTS_PATH = ROOT / "src" / "guardian" / "constraints.yaml"
+
+
 def _zooplus_decline(body: str) -> str:
     """Warm decline copy with consistent assistant branding."""
     return f"I'm the zooplus Assistant — {body}"
@@ -19,6 +21,36 @@ DEFAULT_DECLINE = _zooplus_decline(
     "I can't help with that topic. This shop's catalog is for dog and cat products — "
     "tell me what you'd like (food, treats, toys…) and I'll suggest a few options."
 )
+
+# Legacy fast-path patterns (unit tests / MCP — no OpenCode).
+OFF_TOPIC_PATTERNS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\bweather\b", re.IGNORECASE), "off_topic_weather"),
+    (re.compile(r"\b(time|datetime|date)\b", re.IGNORECASE), "off_topic_datetime"),
+    (re.compile(r"\bnews\b", re.IGNORECASE), "off_topic_news"),
+    (
+        re.compile(
+            r"\b("
+            r"search\s+(in\s+)?(the\s+)?internet|internet\s+search|search\s+online|"
+            r"browse\s+the\s+web|google\s+it|look\s+up\s+online|web\s+search|"
+            r"search\s+the\s+web|use\s+the\s+internet"
+            r")\b",
+            re.IGNORECASE,
+        ),
+        "off_topic_external_web",
+        None,  # filled below
+    ),
+    (
+        re.compile(
+            r"(ignore\s+(all\s+)?(previous|prior)\s+instructions|"
+            r"disregard\s+(your\s+)?(rules|instructions)|"
+            r"you\s+are\s+now\s+(a|an)|system\s*:\s*|"
+            r"<\s*/?\s*system\s*>|jailbreak|DAN\s+mode)",
+            re.IGNORECASE,
+        ),
+        "off_topic_prompt_injection",
+        None,
+    ),
+]
 
 # Traffic, weather, time, news — default-deny with a friendly redirect (not catalog search).
 _LIFE_OFF_TOPIC = re.compile(
@@ -200,6 +232,10 @@ def polite_decline_for(reason_code: str, *, query: str = "") -> str:
         "off_topic_external_web": (EXTERNAL_WEB_DECLINE,),
         "off_topic_life": (_DECLINE_BY_REASON["off_topic_life"],),
         "off_topic_non_pet_consumer": (_DECLINE_BY_REASON["off_topic_non_pet_consumer"],),
+        "off_topic_weather": (_DECLINE_BY_REASON["off_topic_life"],),
+        "off_topic_general_knowledge": (_DECLINE_BY_REASON["off_topic_life"],),
+        "off_topic_datetime": (_DECLINE_BY_REASON["off_topic_life"],),
+        "off_topic_news": (_DECLINE_BY_REASON["off_topic_life"],),
     }
     if reason_code == "off_topic_external_web":
         return EXTERNAL_WEB_DECLINE
@@ -240,9 +276,17 @@ def is_pet_catalog_in_scope(query: str) -> bool:
 
 
 def topic_check(query: str, site_id: int = 3) -> TopicDecision:
-    """Bridge to agentic intent router (legacy MCP / unit tests)."""
-    from src.lanes.interactive import intent_to_topic_decision
-    from src.agents.intent_agent import classify_intent
-
-    intent = classify_intent(query, site_id)
-    return intent_to_topic_decision(intent)
+    """Fast regex guard for unit tests and MCP tools (no OpenCode)."""
+    _ = site_id
+    for pattern, reason_code in OFF_TOPIC_PATTERNS:
+        if pattern.search(query):
+            return TopicDecision(
+                decision="DECLINE",
+                reason_code=reason_code,
+                polite_decline=polite_decline_for(reason_code, query=query),
+            )
+    return TopicDecision(
+        decision="ALLOW",
+        reason_code="in_scope_pet_catalog",
+        polite_decline=None,
+    )

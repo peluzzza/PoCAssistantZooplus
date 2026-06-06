@@ -1,4 +1,4 @@
-"""Process lane for retrieval and grounded answer synthesis."""
+"""Process lane — RAG + OpenCode synthesis (internal agents)."""
 
 from __future__ import annotations
 
@@ -8,8 +8,10 @@ import logging
 from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
 from src.guardian.engine import load_constraints, max_recommendations
 from src.llm.synthesis import synthesize_answer
+from src.llm.template import synthesize_template
 from src.models.chat import RetrievedProduct
 from src.rag.hybrid import retrieval_mode
+from src.rag.price_filter import apply_price_range_filter, parse_eur_price_range
 from src.rag.rerank import recommendation_reason, vector_similarity
 from src.rag.retrieve import search_catalog
 
@@ -40,18 +42,22 @@ def _to_retrieved_product(hit: dict) -> RetrievedProduct:
 
 
 async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
+    cap = max_recommendations()
+    pool_n = max(cap * 6, 24) if parse_eur_price_range(envelope.query) else cap
     hits = await asyncio.to_thread(
         search_catalog,
         envelope.query,
         envelope.site_id,
-        n_results=max_recommendations(),
+        n_results=pool_n,
     )
-    products = [_to_retrieved_product(hit) for hit in hits][: max_recommendations()]
+    hits = apply_price_range_filter(envelope.query, hits)
+    products = [_to_retrieved_product(hit) for hit in hits][:cap]
 
-    constraints = load_constraints()
-    process_cfg = constraints.get("process_lane", {})
-    synth_timeout = float(process_cfg.get("synthesis_timeout_seconds", 12))
+    handoff = getattr(envelope, "intent_handoff", None)
+    process_cfg = load_constraints().get("process_lane", {})
+    syn_timeout = float(process_cfg.get("synthesis_timeout_seconds", 18))
 
+    answer: str
     try:
         answer = await asyncio.wait_for(
             asyncio.to_thread(
@@ -59,18 +65,15 @@ async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
                 envelope.query,
                 envelope.site_id,
                 products,
-                handoff_context=envelope.intent_handoff,
+                handoff_context=handoff,
             ),
-            timeout=synth_timeout,
+            timeout=syn_timeout,
         )
     except TimeoutError:
-        from src.llm.template import synthesize_template
-
+        logger.warning("synthesis timed out after %ss; template fallback", syn_timeout)
         answer = synthesize_template(envelope.query, products)
     except Exception as exc:
-        from src.llm.template import synthesize_template
-
-        logger.warning("synthesis failed, template fallback: %s", exc)
+        logger.warning("synthesis error, template fallback: %s", exc)
         answer = synthesize_template(envelope.query, products)
 
     return ProcessLaneReceipt(

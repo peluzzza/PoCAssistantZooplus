@@ -2,12 +2,14 @@
 
 ## Quick start
 
-```bash
-python -m cli ingest
-uvicorn src.api.app:app --reload --port 8080
+```powershell
+.\scripts\setup_wizard.ps1   # first time
+.\scripts\run_dev.ps1
 ```
 
-Open **http://127.0.0.1:8080/ui/** (root `/` redirects there).
+Open **http://127.0.0.1:8090/ui/** (default dev port; root `/` redirects there).
+
+See [`QUICKSTART.md`](QUICKSTART.md) for template vs OpenCode profiles.
 
 ## Features
 
@@ -52,7 +54,7 @@ Open **http://127.0.0.1:8080/ui/** (root `/` redirects there).
 
    ```env
    ZOOPLUS_SYNTHESIS_MODE=opencode
-   ZOOPLUS_OPENCODE_MODEL=opencode-go/deepseek-v4-flash
+   ZOOPLUS_OPENCODE_MODEL=opencode/deepseek-v4-flash-free
    ZOOPLUS_OPENCODE_DATA_DIR=.opencode/data
    ```
 
