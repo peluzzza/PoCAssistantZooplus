@@ -1,6 +1,6 @@
 # zooplus Assistant (PoC)
 
-Async FastAPI chat API for pet-product questions using RAG over the provided catalog, with strict `site_id` isolation and topic guardrails.
+Async FastAPI chat API for pet-product questions: conductor-first agentic routing, hybrid RAG over the provided catalog, strict `site_id` isolation, and default-deny guardrails.
 
 ---
 
@@ -33,58 +33,105 @@ git checkout releases
 ## Architecture
 
 ```mermaid
-flowchart LR
-  U[User] --> API[POST /chat]
-  API --> ORCH[Dual-lane orchestrator]
-  ORCH --> IG[Interactive lane: topic guard]
-  ORCH --> ACP[ACP dispatch]
-  ACP --> PL[Process lane: retrieval + synthesis]
-  PL --> CHROMA[(Chroma index)]
-  API --> MCP[MCP routes /mcp/tools]
+flowchart TB
+  subgraph offline [Offline ingest]
+    RAW[data/raw catalog JSON] --> NORM[HTML normalize]
+    NORM --> CHROMA[(Chroma zooplus_variants)]
+    NORM --> LEX[routing_lexicon.json]
+  end
+
+  subgraph online [Online request]
+    U[User / Chat UI] --> API["POST /chat · POST /chat/stream"]
+    API --> ORCH[Orchestrator]
+    ORCH --> COND[Conductor-first intent OpenCode]
+    COND -->|decline_off_topic| SOC[Social agent — no RAG]
+    COND -->|conversational| SOC
+    COND -->|catalog_search| HYB[Hybrid retrieval prefetch]
+    HYB --> CHROMA
+    HYB --> ACP[ACP process lane]
+    ACP --> SYN[Synthesis OpenCode or template]
+    SYN --> RESP["answer + retrieved_products + meta"]
+    SOC --> RESP
+  end
+
+  LEX -.-> COND
+  API --> MCP[MCP topic_check · catalog_search]
 ```
 
-- **Interactive lane** decides `ALLOW`/`DECLINE` quickly via topic guard.
-- **Process lane** runs **hybrid retrieval** (vector candidates + BM25 + rating/sales/stock rerank).
-- Override: `ZOOPLUS_RETRIEVAL_MODE=vector` for vector-only A/B.
-- **MCP tools** expose `topic_check` and `catalog_search` on the same FastAPI host.
-- **Constraints** in `src/guardian/constraints.yaml` enforce recommendation caps and grounding.
+**Request flow (v0.1.3):**
+
+1. **Conductor-first intent** (`zooplus-conductor`) classifies the turn into `conversational`, `decline_off_topic`, or `catalog_search` **before** Chroma is queried on greetings and off-topic traffic.
+2. **Social lane** handles greetings and declines via `zooplus-social-agent` — `retrieved_products` stays empty; the index is not searched.
+3. **Catalog lane** prefetches **hybrid retrieval** (Chroma vector candidates + in-memory BM25 + business-signal fusion), optional EUR price-band filter, then **grounded synthesis** (max 4 products).
+4. **Catalog lexicon** built at ingest (`routing_lexicon.json`) feeds agent prompts — no hardcoded dog/cat word lists.
+5. **Blocking work** (Chroma, OpenCode) runs in `asyncio.to_thread` inside async FastAPI handlers (FR1).
+6. **Optional Redis** (`ZOOPLUS_CACHE_BACKEND=redis`) mirrors TTL caches and lexicon for multi-replica setups.
+
+| Knob | Purpose |
+|------|---------|
+| `ZOOPLUS_RETRIEVAL_MODE=vector` | Vector-only retrieval for A/B |
+| `ZOOPLUS_SYNTHESIS_MODE=template` | Deterministic answers without OpenCode (CI) |
+| `ZOOPLUS_CONDUCTOR_INTENT=1` | Conductor classifies before RAG (default on `releases`) |
+
+- **Constraints** in `src/guardian/constraints.yaml`: default-deny scope, max 4 recommendations, `must_ground_in_retrieval`.
+- **MCP tools** on the same host: `topic_check`, `catalog_search`.
+- **Deep dive:** [`docs/02-rag-architecture.md`](docs/02-rag-architecture.md)
 
 ## Core API
 
-### `POST /chat/stream`
+The Chat UI uses **`POST /chat/stream`**; Swagger and integrations can use **`POST /chat`** (same contract, JSON response).
 
-Same body as `/chat`. Returns **NDJSON** (`application/x-ndjson`) events:
-
-| Event type | When |
-|------------|------|
-| `topic` | Fast lane decision (`ALLOW` / `DECLINE`) |
-| `products` | Retrieved catalog hits (in-scope only) |
-| `answer_chunk` | Streaming answer fragments |
-| `done` | Final `answer` + `retrieved_products` |
-
-### `POST /chat`
-
-Request:
+### Request
 
 ```json
 {
   "site_id": 3,
-  "query": "best dry food for puppy"
+  "query": "best dry food for puppy",
+  "preferred_model": null
 }
 ```
 
-Response:
+`preferred_model` is an optional OpenCode model override from the UI debug selector.
+
+### `POST /chat` response
 
 ```json
 {
   "answer": "I found these options in your shop catalog: ...",
-  "retrieved_products": []
+  "retrieved_products": [],
+  "meta": {
+    "lane": "catalog_search",
+    "intent_source": "conductor",
+    "llm_agent": "zooplus-synthesis",
+    "llm_model": "opencode/deepseek-v4-flash-free"
+  }
 }
 ```
 
-Behavior:
-- Off-topic (`weather`, `time`, `datetime`, `news`, general-knowledge patterns) returns polite decline with empty `retrieved_products`.
-- In-scope requests return products retrieved only from the same `site_id`.
+`meta` is populated when OpenCode runs; template-only profiles may omit some fields.
+
+### `POST /chat/stream` (NDJSON)
+
+Returns `application/x-ndjson` — one JSON object per line:
+
+| Event type | When |
+|------------|------|
+| `status` | Backend-driven phases (`reading`, `understood`, `searching`, …) with optional `shopper_status` from the conductor |
+| `topic` | Lane decision (`ALLOW` / `DECLINE` + `reason_code`) |
+| `products` | Catalog hits (catalog lane only) |
+| `done` | Final `answer`, `retrieved_products`, and `meta` |
+
+The UI shows a **single transient status bubble** that updates from `status` events and clears on `done`.
+
+### Behavior
+
+| Lane | RAG | `retrieved_products` |
+|------|-----|----------------------|
+| `conversational` | No | `[]` — greetings, thanks, help |
+| `decline_off_topic` | No | `[]` — weather, news, non-pet, competitors |
+| `catalog_search` | Yes | Up to 4 products from the same `site_id` only |
+
+Multilingual shopper replies; static UI copy stays English. Pick shop **1**, **3**, or **15** before sending (UI blocks Send until config loads).
 
 ## Manual setup (without wizard)
 
@@ -116,7 +163,7 @@ py -3.11 scripts/run_quality_gates.py    # full gates
 
 ## OpenCode (optional — wizard configures this)
 
-Free-tier models via your OpenCode account. Credentials live in **gitignored** `.opencode/data/auth.json`.
+Free-tier models via your OpenCode account — **one model per agent** (conductor, social, intent, synthesis) in `.opencode/config-cli/opencode.json`. Credentials live in **gitignored** `.opencode/data/auth.json`.
 
 ```powershell
 .\scripts\setup_opencode_local.ps1   # copy or prompt login
@@ -125,14 +172,16 @@ opencode models                    # list free models
 
 Never commit: `.env`, `auth.json`, `.opencode/data/`.
 
-If OpenCode fails, the API **falls back to template synthesis**.
+If OpenCode fails or times out, the API **falls back to template synthesis** or topic-based intent fallback.
 
 ## Trade-offs
 
-- **Local Chroma over hosted vector DB:** fastest PoC setup, not production-scale.
-- **Rule-first topic guard:** deterministic and low latency, less nuanced than full classifier models.
-- **Template synthesis:** reproducible without keys; wizard option 2 enables OpenCode for richer replies.
+- **Local Chroma over hosted vector DB:** fastest PoC setup, not production-scale (`ZOOPLUS_VECTOR_BACKEND=managed` is a placeholder).
+- **Conductor-first agentic routing:** multilingual and fast on social turns; adds OpenCode latency on catalog path vs pure rules.
+- **Hybrid retrieval on a small catalog:** BM25 over Chroma candidates works at 300 rows; at millions of SKUs you would add metadata-first filters and a dedicated sparse index (see [`QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md)).
+- **Template synthesis fallback:** reproducible without keys; wizard option 2 enables per-agent OpenCode models for richer replies.
 - **Max 4 recommendations:** clear UX and constraint-compliant, may omit longer-tail candidates.
+- **In-process TTL cache (optional Redis):** cuts repeat latency; not shared until Redis is enabled.
 
 ## Roadmap
 
@@ -164,7 +213,9 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | Doc | Purpose |
 |-----|---------|
 | [`docs/QUICKSTART.md`](docs/QUICKSTART.md) | **Install step-by-step** |
+| [`docs/02-rag-architecture.md`](docs/02-rag-architecture.md) | Ingest, hybrid retrieval, metadata |
 | [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) | feature → filters → release |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Operations |
 | [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md) | Tag verify |
+| [`docs/deliverables/v0.1/README.md`](docs/deliverables/v0.1/README.md) | Interview deliverable pack |
 | [`docs/deliverables/v0.1/QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md) | Interview Q&A and scale-out talking points |
