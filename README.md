@@ -131,7 +131,7 @@ The UI shows a **single transient status bubble** that updates from `status` eve
 | `decline_off_topic` | No | `[]` — weather, news, non-pet, competitors |
 | `catalog_search` | Yes | Up to 4 products from the same `site_id` only |
 
-Multilingual shopper replies; static UI copy stays English. Pick shop **1**, **3**, or **15** before sending (UI blocks Send until config loads).
+Multilingual shopper replies; static UI copy stays English. Pick a shop (**Germany**, **UK**, or **Spain**) before sending (UI blocks Send until config loads).
 
 ## Manual setup (without wizard)
 

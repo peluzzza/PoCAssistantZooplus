@@ -9,6 +9,11 @@ const agentModelsList = document.getElementById("agentModelsList");
 
 let uiConfig = {
   sites: [1, 3, 15],
+  site_labels: {
+    1: "Germany (de-DE)",
+    3: "United Kingdom (en-GB)",
+    15: "Spain (es-ES)",
+  },
   default_site_id: 3,
   synthesis_mode: "template",
   chat_endpoint: "/chat/stream",
@@ -34,7 +39,12 @@ function populateSiteSelect() {
   for (const id of uiConfig.sites || [1, 3, 15]) {
     const opt = document.createElement("option");
     opt.value = String(id);
-    opt.textContent = labels[id] || labels[String(id)] || `Shop site_id ${id}`;
+    opt.textContent =
+      labels[id] ||
+      labels[String(id)] ||
+      uiConfig.site_labels?.[id] ||
+      uiConfig.site_labels?.[String(id)] ||
+      `Shop site_id ${id}`;
     siteSelect.appendChild(opt);
   }
   const desired = String(uiConfig.default_site_id || 3);
