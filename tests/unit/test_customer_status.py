@@ -16,14 +16,19 @@ def test_phases_for_catalog_lane() -> None:
     assert len(phases) <= MAX_STATUS_MESSAGES
 
 
-def test_catalog_status_mentions_price_band() -> None:
+def test_understood_uses_agent_shopper_status() -> None:
     text = status_message(
         "understood",
         lane="catalog_search",
-        query="dog food between 20 and 30 €",
+        shopper_status="Cat food options in a 40–60 € range.",
     )
-    assert "20" in text and "30" in text
-    assert "dog" in text.lower()
+    assert "40" in text and "60" in text
+    assert "gato" not in text.lower()
+
+
+def test_understood_without_agent_status_falls_back_to_phase_copy() -> None:
+    text = status_message("understood", lane="catalog_search", shopper_status=None)
+    assert text == "Got your request…"
 
 
 def test_social_lane_short_phases() -> None:
@@ -32,10 +37,6 @@ def test_social_lane_short_phases() -> None:
     assert "searching" not in phases
 
 
-def test_decline_understood_message() -> None:
-    text = status_message(
-        "understood",
-        lane="decline_off_topic",
-        query="what is the weather?",
-    )
-    assert "outside" in text.lower()
+def test_decline_composing_generic() -> None:
+    text = status_message("composing", lane="decline_off_topic")
+    assert "help" in text.lower()

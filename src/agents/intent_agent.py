@@ -13,12 +13,13 @@ from src.agents.agent_body import wrap_prompt_with_agent
 from src.agents.agent_cascade import run_agent_cascade
 from src.agents.intent_hints import (
     looks_like_catalog_search,
-    looks_like_price_filtered_catalog,
     looks_like_help_about_shop,
     looks_like_non_catalog_species,
     looks_like_off_topic,
+    looks_like_price_filtered_catalog,
     looks_like_product_browse,
 )
+from src.rag.catalog_lexicon import has_catalog_signal
 from src.agents.prompts import INTENT_SYSTEM
 from src.agents.registry import agent_chain_for_role, cli_model_arg
 from src.config import Settings, apply_settings
@@ -42,6 +43,7 @@ class IntentDecision:
     reason: str = ""
     source: str = "agent"
     decline_message: str | None = None
+    shopper_status: str | None = None
 
 
 def intent_mode() -> str:
@@ -56,6 +58,11 @@ def fast_intent_enabled() -> bool:
 def conductor_intent_enabled() -> bool:
     """Conductor classifies lane first; catalog search only after green light."""
     return os.environ.get("ZOOPLUS_CONDUCTOR_INTENT", "1").lower() in ("1", "true", "yes")
+
+
+def intent_repair_enabled() -> bool:
+    """Opt-in lexicon repair when the agent mis-declines — off in production agentic mode."""
+    return os.environ.get("ZOOPLUS_INTENT_REPAIR", "0").lower() in ("1", "true", "yes")
 
 
 def _parse_intent_json(raw: str) -> dict | None:
@@ -118,8 +125,8 @@ def try_fast_catalog_intent(query: str) -> IntentDecision | None:
 
 
 def _repair_agentic_misroute(query: str, decision: IntentDecision) -> IntentDecision:
-    """If the LLM declined an obvious help/catalog turn, override (allow-list only)."""
-    if decision.lane != "decline_off_topic":
+    """Opt-in repair using catalog-derived signals only (ZOOPLUS_INTENT_REPAIR=1)."""
+    if not intent_repair_enabled() or decision.lane != "decline_off_topic":
         return decision
     if looks_like_help_about_shop(query):
         return IntentDecision(
@@ -128,13 +135,15 @@ def _repair_agentic_misroute(query: str, decision: IntentDecision) -> IntentDeci
             confidence=1.0,
             reason="repair_help",
             source="repair",
+            shopper_status=decision.shopper_status,
         )
-    if looks_like_catalog_search(query) or looks_like_price_filtered_catalog(query):
+    if has_catalog_signal(query) or looks_like_price_filtered_catalog(query):
         return IntentDecision(
             lane="catalog_search",
             confidence=1.0,
             reason="repair_catalog",
             source="repair",
+            shopper_status=decision.shopper_status,
         )
     return decision
 
@@ -455,6 +464,8 @@ def _intent_decision_from_parsed(
     except (TypeError, ValueError):
         confidence = 0.8
     reason = str(parsed.get("reason") or parsed.get("brief_reason") or "")
+    raw_status = str(parsed.get("shopper_status") or parsed.get("status_hint") or "").strip()
+    shopper_status = raw_status[:140] if raw_status else None
     decline_msg = _decline_copy(reason, query=query) if lane == "decline_off_topic" else None
     if lane == "conversational" and not kind:
         if topic == "shop_social" and any(
@@ -469,6 +480,7 @@ def _intent_decision_from_parsed(
         reason=reason,
         source=source,
         decline_message=decline_msg,
+        shopper_status=shopper_status,
     )
 
 

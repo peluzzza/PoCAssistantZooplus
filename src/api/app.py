@@ -35,6 +35,18 @@ def create_app() -> FastAPI:
     application.include_router(system_router, tags=["system"])
     application.include_router(chat_router, tags=["chat"])
     application.include_router(mcp_router, tags=["mcp"])
+
+    @application.on_event("startup")
+    def _warm_catalog_lexicon() -> None:
+        from src.rag.catalog_lexicon import load_lexicon
+
+        lex = load_lexicon()
+        logging.getLogger(__name__).info(
+            "catalog lexicon ready: %s brands, %s tokens",
+            len(lex.get("brands", [])),
+            len(lex.get("product_tokens", [])),
+        )
+
     return application
 
 

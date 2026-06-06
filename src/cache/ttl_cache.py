@@ -1,4 +1,4 @@
-"""Small in-process TTL cache — PoC default; swap backend for Redis in multi-instance deploy."""
+"""In-process TTL cache with optional Redis mirror for multi-instance deploy."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ import os
 import time
 from collections import OrderedDict
 from typing import Generic, TypeVar
+
+from src.cache.redis_store import RedisTTLCache, redis_cache_enabled
 
 T = TypeVar("T")
 
@@ -60,10 +62,39 @@ class TTLCache(Generic[T]):
         self._data.clear()
 
 
-def _make_cache() -> TTLCache:
-    return TTLCache(max_entries=cache_max_entries(), ttl_seconds=cache_ttl_seconds())
+class HybridTTLCache(Generic[T]):
+    """Memory-first cache; mirrors to Redis when ZOOPLUS_CACHE_BACKEND=redis."""
+
+    def __init__(self, namespace: str) -> None:
+        self._mem = TTLCache(max_entries=cache_max_entries(), ttl_seconds=cache_ttl_seconds())
+        self._redis: RedisTTLCache[T] | None = None
+        if redis_cache_enabled():
+            self._redis = RedisTTLCache(
+                namespace,
+                ttl_seconds=cache_ttl_seconds(),
+                max_entries=cache_max_entries(),
+            )
+
+    def get(self, key: str) -> T | None:
+        if self._redis is not None:
+            hit = self._redis.get(key)
+            if hit is not None:
+                return hit
+        return self._mem.get(key)
+
+    def set(self, key: str, value: T) -> None:
+        self._mem.set(key, value)
+        if self._redis is not None:
+            self._redis.set(key, value)
+
+    def clear(self) -> None:
+        self._mem.clear()
 
 
-chat_cache: TTLCache[dict] = _make_cache()
-intent_cache: TTLCache[dict] = _make_cache()
-retrieval_cache: TTLCache[list] = _make_cache()
+def _make_cache(namespace: str) -> HybridTTLCache:
+    return HybridTTLCache(namespace)
+
+
+chat_cache: HybridTTLCache[dict] = _make_cache("chat")
+intent_cache: HybridTTLCache[dict] = _make_cache("intent")
+retrieval_cache: HybridTTLCache[list] = _make_cache("retrieval")

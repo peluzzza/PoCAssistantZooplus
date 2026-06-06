@@ -9,7 +9,8 @@ from src.agents.intent_agent import (
     try_fast_conversational_intent,
     IntentDecision,
 )
-from src.agents.intent_hints import looks_like_catalog_search, looks_like_price_filtered_catalog
+from src.agents.intent_hints import looks_like_catalog_search
+from src.rag.catalog_lexicon import build_lexicon_from_raw, persist_lexicon, reload_lexicon
 from src.api.app import app
 from src.llm.conversation import classify_conversation
 
@@ -30,17 +31,24 @@ def test_help_services_classified() -> None:
     assert fast.social_kind == "help"
 
 
-def test_spanish_cat_food_price_band_is_catalog() -> None:
-    q = "necesito ver las opciones de comida a gatos entre 40 y 60€"
+def _ensure_lexicon() -> None:
+    persist_lexicon(build_lexicon_from_raw())
+    reload_lexicon()
+
+
+def test_catalog_brand_signal_is_catalog() -> None:
+    _ensure_lexicon()
+    q = "show me Eukanuba options between 20 and 30 euros"
     assert looks_like_catalog_search(q)
-    assert looks_like_price_filtered_catalog(q)
     fast = try_fast_catalog_intent(q)
     assert fast is not None
     assert fast.lane == "catalog_search"
 
 
-def test_repair_declined_spanish_catalog_query() -> None:
-    q = "necesito ver las opciones de comida a gatos entre 40 y 60€"
+def test_repair_declined_brand_query_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    _ensure_lexicon()
+    monkeypatch.setenv("ZOOPLUS_INTENT_REPAIR", "1")
+    q = "Eukanuba puppy food under 25€"
     wrong = IntentDecision(lane="decline_off_topic", reason="llm_miss", source="conductor")
     fixed = _repair_agentic_misroute(q, wrong)
     assert fixed.lane == "catalog_search"
@@ -48,7 +56,7 @@ def test_repair_declined_spanish_catalog_query() -> None:
 
 
 def test_catalog_browse_classified() -> None:
-    q = "show me some options about cats and dogs"
+    q = "what products do you have available"
     assert try_fast_conversational_intent(q) is None
     fast = try_fast_catalog_intent(q)
     assert fast is not None

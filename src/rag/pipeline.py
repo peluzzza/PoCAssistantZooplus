@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 
+from src.rag.catalog_lexicon import build_lexicon, persist_lexicon
 from src.rag.chunking import record_to_index_item
 from src.rag.store.chroma_store import upsert_items
 
@@ -44,6 +45,10 @@ def run_ingest() -> dict:
         "source_rows": len(records),
         "indexed_ids": count,
     }
+    lexicon = build_lexicon(records)
+    lexicon_path = persist_lexicon(lexicon)
+    manifest["routing_lexicon"] = str(lexicon_path)
+    manifest["lexicon_brands"] = len(lexicon.get("brands", []))
     MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     MANIFEST.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest

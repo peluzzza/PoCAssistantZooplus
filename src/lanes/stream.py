@@ -53,12 +53,16 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
     model_token = request_llm_model.set(request.preferred_model)
     status_count = 0
 
+    shopper_status: str | None = None
+
     def _emit_status(phase: str, *, lane: str) -> str | None:
         nonlocal status_count
         if status_count >= MAX_STATUS_MESSAGES:
             return None
         status_count += 1
-        return _line(status_event(phase, lane=lane, query=request.query))
+        return _line(
+            status_event(phase, lane=lane, shopper_status=shopper_status)
+        )
 
     try:
         if line := _emit_status("reading", lane="catalog_search"):
@@ -66,6 +70,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
 
         intent = await _classify_intent_bounded(request.query, request.site_id)
         lane = intent.lane
+        shopper_status = intent.shopper_status
         lane_phases = set(phases_for_lane(lane))
 
         if "understood" in lane_phases:

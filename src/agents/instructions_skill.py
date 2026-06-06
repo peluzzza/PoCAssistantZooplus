@@ -6,6 +6,8 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
+from src.rag.catalog_lexicon import prompt_context as catalog_lexicon_prompt
+
 ROOT = Path(__file__).resolve().parents[2]
 BUNDLE = ROOT / "docs" / "instructions" / "AGENT_BUNDLE.md"
 ORDER_CATALOG = ROOT / "docs" / "instructions" / "order" / "product_catalog_dataset.json"
@@ -41,6 +43,7 @@ def instructions_skill_context(*, site_id: int) -> str:
             "[internal skill: instructions]",
             bundle_excerpt(),
             catalog_scope_summary(),
+            catalog_lexicon_prompt(),
             f"active_site_id={site_id}",
             "Shopper-facing name: zooplus Assistant only.",
         ]

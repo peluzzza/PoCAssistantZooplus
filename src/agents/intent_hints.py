@@ -1,8 +1,11 @@
-"""Positive intent hints for fast routing (allow-list only — not off-topic deny lists)."""
+"""Policy-only hints and catalog-derived signals — production routing stays agentic."""
 
 from __future__ import annotations
 
 import re
+
+from src.rag.catalog_lexicon import has_catalog_signal
+from src.rag.price_filter import parse_eur_price_range
 
 _HELP_ABOUT = re.compile(
     r"\b("
@@ -11,35 +14,6 @@ _HELP_ABOUT = re.compile(
     r"about\s+your(\s+services?|\s+shop)?|capabilities|how\s+do\s+you\s+work|"
     r"help\s+me\s+understand\s+what\s+you\s+offer"
     r")\b",
-    re.I,
-)
-
-_CATALOG_ACTION = re.compile(
-    r"\b(show\s+me|options?|opciones?|recommend|recomienda|suggest|sugerir|"
-    r"find|buscar|busco|browse|looking\s+for|necesito|quiero\s+ver|ver\s+las|mostrar|"
-    r"best\s+\w+|need\s+\w+\s+food|in\s+stock|on\s+sale|discount)\b",
-    re.I,
-)
-
-_PET_PRODUCT = re.compile(
-    r"\b(cat|cats|gato|gatos|dog|dogs|perro|perros|puppy|puppies|cachorro|cachorros|"
-    r"kitten|kittens|gatito|gatitos|pet|mascota|"
-    r"food|comida|alimento|treats?|snacks?|golosinas?|toys?|juguetes?|litter|arena|"
-    r"chew|grain|eukanuba|royal\s+canin)\b",
-    re.I,
-)
-
-_PRODUCT_BROWSE = re.compile(
-    r"\b("
-    r"what\s+products?|products?\s+(do\s+you\s+)?(have|sell|carry|stock)|"
-    r"what\s+do\s+you\s+sell|what'?s?\s+available|show\s+me\s+(something|anything)|"
-    r"browse\s+(the\s+)?(shop|catalog)|anything\s+in\s+stock"
-    r")\b",
-    re.I,
-)
-
-_SHOW_PET_TOPIC = re.compile(
-    r"\bshow\s+me\b.*\b(about\s+)?(dogs?|cats?|pupp(?:y|ies)|kitt(?:en|ens)?)\b",
     re.I,
 )
 
@@ -77,62 +51,33 @@ def looks_like_non_catalog_species(query: str) -> bool:
 
 
 def looks_like_product_browse(query: str) -> bool:
+    """English browse phrasing — opt-in fast path only (ZOOPLUS_FAST_INTENT)."""
     text = query.strip()
     if not text or _OFF_TOPIC_HARD.search(text) or looks_like_non_catalog_species(text):
         return False
-    if _PRODUCT_BROWSE.search(text):
-        return True
-    if _SHOW_PET_TOPIC.search(text):
+    if re.search(
+        r"\b(what\s+products?|products?\s+(do\s+you\s+)?(have|sell|carry|stock)|"
+        r"what\s+do\s+you\s+sell|what'?s?\s+available|show\s+me\s+(something|anything)|"
+        r"browse\s+(the\s+)?(shop|catalog)|anything\s+in\s+stock)\b",
+        text,
+        re.I,
+    ):
         return True
     return False
 
 
 def looks_like_catalog_search(query: str) -> bool:
+    """Catalog signal from indexed brands/tokens — not hand-maintained species words."""
     text = query.strip()
-    if not text or _OFF_TOPIC_HARD.search(text):
-        return False
-    if looks_like_non_catalog_species(text):
+    if not text or _OFF_TOPIC_HARD.search(text) or looks_like_non_catalog_species(text):
         return False
     if looks_like_product_browse(text):
         return True
-    if _CATALOG_ACTION.search(text) and _PET_PRODUCT.search(text):
-        return True
-    if re.search(
-        r"\b(dry|wet|grain[- ]?free|sensitive|puppy|kitten|adult)\b.*\b(food|treats?)\b",
-        text,
-        re.I,
-    ):
-        return True
-    if re.search(r"\b(cat|dog)\s+food\b", text, re.I):
-        return True
-    if re.search(
-        r"\b(dog|cat|gato|gatos|perro|perros|puppy|kitten)s?\s+"
-        r"(product|toy|chew|food|comida|alimento|treats?|snack|litter)\b",
-        text,
-        re.I,
-    ):
-        return True
-    if re.search(
-        r"\b(comida|alimento|food)\b.*\b(gatos?|perros?|cats?|dogs?|pupp(?:y|ies)|kitt(?:en|ens)?)\b",
-        text,
-        re.I,
-    ):
-        return True
-    if re.search(
-        r"\b(gatos?|perros?|cats?|dogs?|pupp(?:y|ies)|kitt(?:en|ens)?)\b.*\b(comida|alimento|food)\b",
-        text,
-        re.I,
-    ):
-        return True
-    if looks_like_price_filtered_catalog(text):
-        return True
-    return False
+    return has_catalog_signal(text)
 
 
 def looks_like_price_filtered_catalog(query: str) -> bool:
-    """EUR band + pet/product wording → catalog (language-agnostic safety net)."""
-    from src.rag.price_filter import parse_eur_price_range
-
+    """EUR band plus catalog-derived vocabulary hit (fallback safety net only)."""
     if not parse_eur_price_range(query):
         return False
-    return bool(_PET_PRODUCT.search(query.strip()))
+    return has_catalog_signal(query, min_score=1)
