@@ -15,14 +15,17 @@ _HELP_ABOUT = re.compile(
 )
 
 _CATALOG_ACTION = re.compile(
-    r"\b(show\s+me|options?|recommend|suggest|find|browse|looking\s+for|"
+    r"\b(show\s+me|options?|opciones?|recommend|recomienda|suggest|sugerir|"
+    r"find|buscar|busco|browse|looking\s+for|necesito|quiero\s+ver|ver\s+las|mostrar|"
     r"best\s+\w+|need\s+\w+\s+food|in\s+stock|on\s+sale|discount)\b",
     re.I,
 )
 
 _PET_PRODUCT = re.compile(
-    r"\b(cat|cats|dog|dogs|puppy|puppies|kitten|kittens|pet|"
-    r"food|treats?|toys?|litter|chew|grain|eukanuba|royal\s+canin)\b",
+    r"\b(cat|cats|gato|gatos|dog|dogs|perro|perros|puppy|puppies|cachorro|cachorros|"
+    r"kitten|kittens|gatito|gatitos|pet|mascota|"
+    r"food|comida|alimento|treats?|snacks?|golosinas?|toys?|juguetes?|litter|arena|"
+    r"chew|grain|eukanuba|royal\s+canin)\b",
     re.I,
 )
 
@@ -103,9 +106,33 @@ def looks_like_catalog_search(query: str) -> bool:
     if re.search(r"\b(cat|dog)\s+food\b", text, re.I):
         return True
     if re.search(
-        r"\b(dog|cat|puppy|kitten)s?\s+(product|toy|chew|food|treats?|snack|litter)\b",
+        r"\b(dog|cat|gato|gatos|perro|perros|puppy|kitten)s?\s+"
+        r"(product|toy|chew|food|comida|alimento|treats?|snack|litter)\b",
         text,
         re.I,
     ):
         return True
+    if re.search(
+        r"\b(comida|alimento|food)\b.*\b(gatos?|perros?|cats?|dogs?|pupp(?:y|ies)|kitt(?:en|ens)?)\b",
+        text,
+        re.I,
+    ):
+        return True
+    if re.search(
+        r"\b(gatos?|perros?|cats?|dogs?|pupp(?:y|ies)|kitt(?:en|ens)?)\b.*\b(comida|alimento|food)\b",
+        text,
+        re.I,
+    ):
+        return True
+    if looks_like_price_filtered_catalog(text):
+        return True
     return False
+
+
+def looks_like_price_filtered_catalog(query: str) -> bool:
+    """EUR band + pet/product wording → catalog (language-agnostic safety net)."""
+    from src.rag.price_filter import parse_eur_price_range
+
+    if not parse_eur_price_range(query):
+        return False
+    return bool(_PET_PRODUCT.search(query.strip()))

@@ -3,10 +3,13 @@
 import pytest
 from fastapi.testclient import TestClient
 from src.agents.intent_agent import (
+    _repair_agentic_misroute,
     fast_intent_enabled,
     try_fast_catalog_intent,
     try_fast_conversational_intent,
+    IntentDecision,
 )
+from src.agents.intent_hints import looks_like_catalog_search, looks_like_price_filtered_catalog
 from src.api.app import app
 from src.llm.conversation import classify_conversation
 
@@ -25,6 +28,23 @@ def test_help_services_classified() -> None:
     assert fast is not None
     assert fast.lane == "conversational"
     assert fast.social_kind == "help"
+
+
+def test_spanish_cat_food_price_band_is_catalog() -> None:
+    q = "necesito ver las opciones de comida a gatos entre 40 y 60€"
+    assert looks_like_catalog_search(q)
+    assert looks_like_price_filtered_catalog(q)
+    fast = try_fast_catalog_intent(q)
+    assert fast is not None
+    assert fast.lane == "catalog_search"
+
+
+def test_repair_declined_spanish_catalog_query() -> None:
+    q = "necesito ver las opciones de comida a gatos entre 40 y 60€"
+    wrong = IntentDecision(lane="decline_off_topic", reason="llm_miss", source="conductor")
+    fixed = _repair_agentic_misroute(q, wrong)
+    assert fixed.lane == "catalog_search"
+    assert fixed.source == "repair"
 
 
 def test_catalog_browse_classified() -> None:

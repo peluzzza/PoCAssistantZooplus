@@ -11,13 +11,15 @@ MAX_STATUS_MESSAGES = 5
 _PET_LABEL = (
     (re.compile(r"\b(pupp(?:y|ies))\b", re.I), "puppy"),
     (re.compile(r"\b(kitt(?:en|ens))\b", re.I), "kitten"),
+    (re.compile(r"\b(perros?)\b", re.I), "dog"),
+    (re.compile(r"\b(gatos?)\b", re.I), "cat"),
     (re.compile(r"\bdogs?\b", re.I), "dog"),
     (re.compile(r"\bcats?\b", re.I), "cat"),
 )
 
 _PRODUCT_LABEL = (
     (re.compile(r"\b(treats?|snacks?)\b", re.I), "treats"),
-    (re.compile(r"\b(food|futter|nourriture)\b", re.I), "food"),
+    (re.compile(r"\b(food|comida|alimento|futter|nourriture)\b", re.I), "food"),
     (re.compile(r"\b(toys?)\b", re.I), "toys"),
     (re.compile(r"\b(litter)\b", re.I), "litter"),
 )

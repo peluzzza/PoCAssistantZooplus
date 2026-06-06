@@ -5,9 +5,9 @@ from __future__ import annotations
 import re
 
 _EUR_RANGE = re.compile(
-    r"(?:between|from|price[s]?\s+(?:between|from)?)\s*"
+    r"(?:between|entre|from|de|price[s]?\s+(?:between|from)?)\s*"
     r"€?\s*(\d+(?:[.,]\d+)?)\s*€?\s*"
-    r"(?:and|to|-|–)\s*"
+    r"(?:and|y|to|-|–)\s*"
     r"€?\s*(\d+(?:[.,]\d+)?)\s*€?",
     re.IGNORECASE,
 )

@@ -13,6 +13,7 @@ from src.agents.agent_body import wrap_prompt_with_agent
 from src.agents.agent_cascade import run_agent_cascade
 from src.agents.intent_hints import (
     looks_like_catalog_search,
+    looks_like_price_filtered_catalog,
     looks_like_help_about_shop,
     looks_like_non_catalog_species,
     looks_like_off_topic,
@@ -128,7 +129,7 @@ def _repair_agentic_misroute(query: str, decision: IntentDecision) -> IntentDeci
             reason="repair_help",
             source="repair",
         )
-    if looks_like_catalog_search(query):
+    if looks_like_catalog_search(query) or looks_like_price_filtered_catalog(query):
         return IntentDecision(
             lane="catalog_search",
             confidence=1.0,
@@ -243,7 +244,11 @@ def _fallback_intent_decision(query: str, *, site_id: int, reason: str) -> Inten
             decline_message=_decline_copy(reason, query=text),
         )
 
-    if looks_like_catalog_search(text) or looks_like_product_browse(text):
+    if (
+        looks_like_catalog_search(text)
+        or looks_like_product_browse(text)
+        or looks_like_price_filtered_catalog(text)
+    ):
         return IntentDecision(
             lane="catalog_search",
             topic=TOPIC_PET_CATALOG,
@@ -320,7 +325,8 @@ def classify_intent_conductor_first(
     if not parsed:
         return None
     agent_source = f"conductor:{cascade.agent_id or 'conductor'}"
-    return _intent_decision_from_parsed(query, parsed, source=agent_source)
+    decision = _intent_decision_from_parsed(query, parsed, source=agent_source)
+    return _repair_agentic_misroute(query, decision)
 
 
 def classify_intent_single_agent(
@@ -351,7 +357,8 @@ def classify_intent_single_agent(
     parsed = _parse_intent(raw or "")
     if not parsed:
         return None
-    return _intent_decision_from_parsed(query, parsed, source=f"opencode:{agent_id}")
+    decision = _intent_decision_from_parsed(query, parsed, source=f"opencode:{agent_id}")
+    return _repair_agentic_misroute(query, decision)
 
 
 def classify_intent_agentic(
