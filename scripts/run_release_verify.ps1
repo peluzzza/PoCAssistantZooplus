@@ -1,4 +1,4 @@
-# v0.1 release verification — lint, unit, integration, social, agentic, e2e (no mocks).
+# F3 — release verify: F2 fast gates + real OpenCode (agentic + social matrix).
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $Root
@@ -21,15 +21,15 @@ if (-not (Test-Path $manifest)) {
     py -3 -m cli ingest
 }
 
-Write-Host "==> quality gates (unit + integration + e2e)"
+Write-Host "==> F2 quality gates (fast — no OpenCode matrix)"
 py -3 scripts/run_quality_gates.py
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "==> agentic integration"
-py -3 -m pytest tests/integration -m agentic -q --tb=short
+Write-Host "==> F3 agentic (integration + agentic suites)"
+py -3 -m pytest tests/integration tests/agentic -m agentic -q --tb=short
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-Write-Host "==> social (real OpenCode)"
+Write-Host "==> F3 social matrix (real OpenCode)"
 py -3 -m pytest tests/social -m social -q --tb=short
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
