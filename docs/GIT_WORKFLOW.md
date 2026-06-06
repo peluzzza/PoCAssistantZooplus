@@ -53,9 +53,9 @@ git checkout -b feature/my-change
 
 | Step | Script | Before merge to |
 |------|--------|-----------------|
-| **F1** Fast smoke | `.\scripts\smoke_minimal.ps1` | `dev` |
-| **F2** Quality gates | `py -3 scripts/run_quality_gates.py` | `main` |
-| **F3** Release verify | `.\scripts\run_release_verify.ps1` | `releases` |
+| **F1** Fast smoke | `.\scripts\smoke_minimal.ps1` (~4 min) | `dev` |
+| **F2** Quality gates | `py -3 scripts/run_quality_gates.py` (~8–12 min; oracle/template, no social matrix) | `main` |
+| **F3** Release verify | `.\scripts\run_release_verify.ps1` (F2 + OpenCode agentic/social, ~15–25 min) | `releases` |
 
 ```powershell
 .\scripts\smoke_minimal.ps1

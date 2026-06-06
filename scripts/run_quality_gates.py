@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run lint + unit + integration + e2e before merge (Python 3.11 aligned)."""
+"""F2 — lint + fast suites (oracle/template). Agentic/social only in F3 release verify."""
 
 from __future__ import annotations
 
@@ -25,7 +25,18 @@ def main() -> int:
         ("ruff check", [py, "-m", "ruff", "check", "cli", "src", "tests"]),
         ("ruff format", [py, "-m", "ruff", "format", "--check", "cli", "src", "tests"]),
         ("unit", [py, "-m", "pytest", "tests/unit", "-q", "-m", "unit"]),
-        ("integration", [py, "-m", "pytest", "tests/integration", "-q", "-m", "integration"]),
+        (
+            "integration (fast)",
+            [
+                py,
+                "-m",
+                "pytest",
+                "tests/integration",
+                "-q",
+                "-m",
+                "integration and not agentic",
+            ],
+        ),
         (
             "acceptance",
             [py, "-m", "pytest", "tests/acceptance", "-q", "-m", "acceptance"],
@@ -34,15 +45,13 @@ def main() -> int:
             "security",
             [py, "-m", "pytest", "tests/security", "-q", "-m", "security"],
         ),
-        ("social", [py, "-m", "pytest", "tests/social", "-q", "-m", "social"]),
-        ("agentic", [py, "-m", "pytest", "tests/agentic", "-q", "-m", "agentic"]),
         ("e2e", [py, "-m", "pytest", "tests/e2e", "-q", "-m", "e2e"]),
     ]
     for name, cmd in steps:
         if run(cmd) != 0:
             print(f"FAILED: {name}", file=sys.stderr)
             return 1
-    print("All quality gates passed.")
+    print("F2 quality gates passed (agentic/social deferred to F3).")
     return 0
 
 
