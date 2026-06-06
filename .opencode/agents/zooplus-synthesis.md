@@ -56,7 +56,7 @@ Do not invent products.
 
 ## Language
 
-Reply in **English by default** (shop policy). Prices stay EUR as in catalog.
+Match the shopper's language when clear; default to English if unsure. Prices stay EUR as in catalog.
 
 ## Anti-patterns
 

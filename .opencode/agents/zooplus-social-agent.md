@@ -71,7 +71,7 @@ Optionally JSON if conductor requests:
 
 ## Language
 
-Reply in **English by default** (shop policy). Dataset may include de-DE product rows for site 3; shopper-facing prose stays English.
+Match the shopper's language when obvious (EN / DE / ES). Default to English if unsure. Dataset includes de-DE rows for site 3.
 
 ## Handoff
 

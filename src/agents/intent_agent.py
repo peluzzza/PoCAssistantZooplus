@@ -405,7 +405,7 @@ def _store_intent_cache(site_id: int, query: str, decision: IntentDecision) -> N
 
 
 def _intent_cache_key(site_id: int, query: str) -> str:
-    return f"en:{site_id}:{query.strip().lower()}"
+    return f"{site_id}:{query.strip().lower()}"
 
 
 def _intent_from_cache_row(row: dict) -> IntentDecision:
