@@ -26,9 +26,10 @@ def _apply_agentic_env() -> None:
 @pytest.fixture(autouse=True)
 def _agentic_profile_for_marked_integration(request: pytest.FixtureRequest) -> None:
     """Real OpenCode only when test is @agentic or @social (F3 / release verify)."""
-    if request.node.get_closest_marker("agentic") is None and request.node.get_closest_marker(
-        "social"
-    ) is None:
+    if (
+        request.node.get_closest_marker("agentic") is None
+        and request.node.get_closest_marker("social") is None
+    ):
         return
     _apply_agentic_env()
 
