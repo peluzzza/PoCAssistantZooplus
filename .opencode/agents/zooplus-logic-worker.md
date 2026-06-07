@@ -1,9 +1,9 @@
 ---
 description: Recommendation logic — rank, cap at 4, grounded reasons (P1, B4).
 mode: subagent
-model: opencode-go/qwen3.6-plus
+model: opencode-go/minimax-m2.7
 temperature: 0.1
-steps: 5
+steps: 2
 permission:
   edit: deny
 ---

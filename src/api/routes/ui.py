@@ -13,6 +13,13 @@ from src.llm.opencode_models import models_for_ui
 
 router = APIRouter()
 
+# Dataset shops (EDA): site_id → locale — display only; API still sends numeric site_id.
+SITE_LABELS: dict[int, str] = {
+    1: "Germany (de-DE)",
+    3: "United Kingdom (en-GB)",
+    15: "Spain (es-ES)",
+}
+
 UI_DIR = Path(__file__).resolve().parents[3] / "static" / "ui"
 UI_ASSETS = frozenset({"styles.css", "app.js"})
 
@@ -63,12 +70,8 @@ async def ui_config() -> dict:
     settings = apply_settings()
     return {
         "sites": [1, 3, 15],
-        "site_labels": {
-            1: "Shop 1 (100 variants · dogs & cats)",
-            3: "Shop 3 (100 variants · dogs & cats)",
-            15: "Shop 15 (100 variants · dogs & cats)",
-        },
-        "catalog_scope": "DOGS and CATS only — 300 variants across 3 site_id shops",
+        "site_labels": {str(k): v for k, v in SITE_LABELS.items()},
+        "catalog_scope": "DOGS and CATS only — 300 variants across Germany, UK, and Spain shops",
         "default_site_id": 3,
         "synthesis_mode": settings.synthesis_mode,
         "opencode_model": settings.opencode_model,

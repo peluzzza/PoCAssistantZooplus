@@ -15,9 +15,10 @@ pytestmark = pytest.mark.unit
 
 def test_catalog_loads_per_agent_models() -> None:
     catalog = load_agent_catalog()
-    assert "zooplus-conductor" in catalog
-    assert catalog["zooplus-social-agent"].model == "opencode/mimo-v2.5-free"
-    assert catalog["zooplus-logic-worker"].model == "opencode-go/qwen3.6-plus"
+    assert catalog["zooplus-social-agent"].model == "opencode-go/deepseek-v4-flash"
+    assert catalog["zooplus-intent-agent"].model == "opencode-go/mimo-v2.5"
+    assert catalog["zooplus-rag-worker"].model == "opencode-go/deepseek-v4-pro"
+    assert catalog["zooplus-logic-worker"].model == "opencode-go/minimax-m2.7"
 
 
 def test_cli_model_arg_omits_flag_when_agent_has_model(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -33,10 +34,10 @@ def test_cli_model_arg_omits_flag_when_agent_has_model(monkeypatch: pytest.Monke
 
 def test_resolved_agent_model_for_meta() -> None:
     model = resolved_agent_model("zooplus-topic-guard", default="opencode/fallback")
-    assert model == "opencode-go/minimax-m2.5"
+    assert model == "opencode-go/qwen3.7-plus"
 
 
 def test_agent_models_map_has_all_workers() -> None:
     models = agent_models_map()
-    assert models["zooplus-conductor"] == "opencode/mimo-v2.5-free"
-    assert models["zooplus-synthesis"] == "opencode/deepseek-v4-flash-free"
+    assert models["zooplus-conductor"] == "opencode-go/minimax-m2.5"
+    assert models["zooplus-synthesis"] == "opencode-go/qwen3.6-plus"

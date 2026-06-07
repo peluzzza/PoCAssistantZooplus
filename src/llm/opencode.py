@@ -30,20 +30,9 @@ def _opencode_env(settings: Settings) -> dict[str, str]:
 
 
 def _parse_opencode_json(raw: str) -> str:
-    text_parts: list[str] = []
-    for line in raw.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if event.get("type") == "text":
-            part = event.get("part", {})
-            if isinstance(part, dict) and part.get("text"):
-                text_parts.append(str(part["text"]))
-    return "".join(text_parts).strip() or raw.strip()
+    from src.llm.answer_sanitize import extract_opencode_stdout
+
+    return extract_opencode_stdout(raw)
 
 
 def _build_prompt(
@@ -63,8 +52,11 @@ def _build_prompt(
         }
         for p in products
     ]
+    from src.llm.language_context import current_reply_language_instruction
+
     catalog = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     ctx = f"{extra_context}\n" if extra_context else ""
+    lang_line = current_reply_language_instruction(query, site_id=site_id)
     return (
         "You are the zooplus Assistant — a friendly, professional pet-shop advisor.\n"
         "Style: natural ask-and-answer conversation (not a bullet dump). Be polite and helpful.\n"
@@ -79,7 +71,7 @@ def _build_prompt(
         "- Do NOT output a numbered or bulleted product list — the UI shows product cards separately.\n"
         "- Mention at most two product names in prose; prices live in the cards.\n"
         "- Vary wording each turn; avoid rigid template openings.\n"
-        "- Match the customer's language when clear; default to English if unsure.\n"
+        f"- {lang_line}\n"
         "- End with one short follow-up question when appropriate.\n"
         "- Reply in plain text only — never wrap the answer in JSON or markdown code fences.\n"
     )

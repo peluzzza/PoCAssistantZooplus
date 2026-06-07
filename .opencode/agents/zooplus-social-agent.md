@@ -1,9 +1,9 @@
 ---
 description: Sociable conversational replies (greeting, identity, help, decline). No catalog retrieval.
 mode: subagent
-model: opencode/mimo-v2.5-free
+model: opencode-go/deepseek-v4-flash
 temperature: 0.35
-steps: 3
+steps: 1
 permission:
   edit: deny
   bash: deny

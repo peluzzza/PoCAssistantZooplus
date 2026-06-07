@@ -6,7 +6,8 @@
 
 Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **Agentic UX (v0.1.3):** `py -3 scripts/patch_interview_pptx_agentic_ux.py`
 
-**Changelog since last PPT (v0.1.2):** [`CHANGELOG_v0.1.2_to_v0.1.3.md`](CHANGELOG_v0.1.2_to_v0.1.3.md)
+**Changelog since last PPT (v0.1.2):** [`CHANGELOG_v0.1.2_to_v0.1.3.md`](CHANGELOG_v0.1.2_to_v0.1.3.md)  
+**Interview Q&A:** [`QA_FOR_POC.md`](QA_FOR_POC.md)
 
 ---
 

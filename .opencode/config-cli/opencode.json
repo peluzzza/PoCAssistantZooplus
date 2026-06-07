@@ -2,13 +2,19 @@
   "$schema": "https://opencode.ai/config.json",
   "mcp": {},
   "tools": {
-    "zooplus_*": false
+    "zooplus_*": false,
+    "glob": false,
+    "grep": false,
+    "read": false,
+    "write": false,
+    "edit": false,
+    "bash": false
   },
   "agent": {
     "zooplus-conductor": {
       "mode": "primary",
-      "description": "Fast shop orchestrator (intent → social | catalog)",
-      "model": "opencode/mimo-v2.5-free",
+      "description": "Go #3 minimax-m2.5 — orchestrator",
+      "model": "opencode-go/minimax-m2.5",
       "permission": {
         "task": {
           "*": "deny",
@@ -23,33 +29,33 @@
     },
     "zooplus-intent-agent": {
       "mode": "subagent",
-      "description": "Intent router — default deny",
-      "model": "opencode-go/deepseek-v4-flash"
+      "description": "Go #2 mimo-v2.5 — JSON intent router",
+      "model": "opencode-go/mimo-v2.5"
     },
     "zooplus-social-agent": {
       "mode": "subagent",
-      "description": "Social replies — no catalog",
-      "model": "opencode/mimo-v2.5-free"
+      "description": "Go #1 deepseek-v4-flash — lowest latency social",
+      "model": "opencode-go/deepseek-v4-flash"
     },
     "zooplus-topic-guard": {
       "mode": "subagent",
-      "description": "Topic / quality guard",
-      "model": "opencode-go/minimax-m2.5"
+      "description": "Go #4 qwen3.7-plus — scope guard",
+      "model": "opencode-go/qwen3.7-plus"
     },
     "zooplus-rag-worker": {
       "mode": "subagent",
-      "description": "Site-scoped retrieval worker",
-      "model": "opencode-go/deepseek-v4-flash"
+      "description": "Go #5 deepseek-v4-pro — retrieval worker",
+      "model": "opencode-go/deepseek-v4-pro"
     },
     "zooplus-logic-worker": {
       "mode": "subagent",
-      "description": "Rank and cap recommendations",
-      "model": "opencode-go/qwen3.6-plus"
+      "description": "Go #6 minimax-m2.7 — rank + cap fallback",
+      "model": "opencode-go/minimax-m2.7"
     },
     "zooplus-synthesis": {
       "mode": "subagent",
-      "description": "Grounded catalog answer",
-      "model": "opencode/deepseek-v4-flash-free"
+      "description": "Go #7 qwen3.6-plus — grounded catalog prose",
+      "model": "opencode-go/qwen3.6-plus"
     }
   }
 }

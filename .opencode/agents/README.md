@@ -1,22 +1,41 @@
 # OpenCode agents — zooplus PoC
 
-**Source of truth:** `docs/instructions/AGENT_BUNDLE.md` (read first).
+**Source of truth:** `docs/instructions/AGENT_BUNDLE.md`
 
-Per-agent LLMs follow the [OpenCode agents docs](https://opencode.ai/docs/agents/): set `model` in `opencode.json` and/or agent markdown frontmatter.
+All live agents use **`opencode-go/*`** only. Model order follows the **official OpenCode Go speed/cost ladder** ([opencode.ai/docs/go](https://opencode.ai/docs/go/) — requests per 5h). Fastest agents get the highest rank.
 
-| Agent | Role | Default model |
-|-------|------|----------------|
-| `zooplus-conductor` | Primary orchestrator (fast) | `opencode/mimo-v2.5-free` |
-| `zooplus-intent-agent` | Intent routing | `opencode-go/deepseek-v4-flash` |
-| `zooplus-social-agent` | Greeting, identity, decline | `opencode/mimo-v2.5-free` |
-| `zooplus-topic-guard` | Topic / quality guard | `opencode-go/minimax-m2.5` |
-| `zooplus-rag-worker` | Site-scoped retrieval | `opencode-go/deepseek-v4-flash` |
-| `zooplus-logic-worker` | Rank + cap 4 | `opencode-go/qwen3.6-plus` |
-| `zooplus-synthesis` | Natural grounded answer | `opencode/deepseek-v4-flash-free` |
-| `zooplus-rag-pipeline` | Offline ingest only | (no live `/chat`) |
+## OpenCode Go — official speed rank (14 models)
 
-Runtime config: `.opencode/config-cli/opencode.json` (see `ZOOPLUS_OPENCODE_CONFIG_DIR`).
+| Rank | Model | req / 5h (official) | $/1M in/out |
+|------|-------|---------------------|-------------|
+| 1 | `deepseek-v4-flash` | **31,650** | $0.14 / $0.28 |
+| 2 | `mimo-v2.5` | **30,100** | $0.14 / $0.28 |
+| 3 | `minimax-m2.5` | 6,300 | $0.30 / $1.20 |
+| 4 | `qwen3.7-plus` | 4,300 | $0.40 / $1.60 |
+| 5 | `deepseek-v4-pro` | 3,450 | $1.74 / $3.48 |
+| 6 | `minimax-m2.7` | 3,400 | $0.30 / $1.20 |
+| 7 | `qwen3.6-plus` | 3,300 | $0.50 / $3.00 |
+| 8 | `mimo-v2.5-pro` | 3,250 | $1.74 / $3.48 |
+| 9 | `kimi-k2.5` | 1,850 | $0.60 / $3.00 |
+| 10 | `minimax-m3` | 1,400 | $0.60 / $2.40 |
+| 11 | `glm-5` / `kimi-k2.6` | 1,150 | — |
+| 12 | `qwen3.7-max` | 950 | $2.50 / $7.50 |
+| 13 | `glm-5.1` | 880 | $1.40 / $4.40 |
 
-Override per agent via env: `ZOOPLUS_AGENT_MODEL_ZOOPLUS_SOCIAL_AGENT=...` or role env `ZOOPLUS_SOCIAL_MODEL=...`.
+External latency (Singapore, independent benchmark): DeepSeek V4 Flash ~**120 ms TTFT**, **240 tok/s** — fastest measured tier.
 
-Python mirrors intent/social: `src/agents/intent_agent.py`, `src/agents/social_agent.py`, `src/agents/registry.py`.
+## Agent assignment (rank → latency-sensitive role)
+
+| Agent | Go rank | Model |
+|-------|---------|-------|
+| `zooplus-social-agent` | #1 | `opencode-go/deepseek-v4-flash` |
+| `zooplus-intent-agent` | #2 | `opencode-go/mimo-v2.5` |
+| `zooplus-conductor` | #3 | `opencode-go/minimax-m2.5` |
+| `zooplus-topic-guard` | #4 | `opencode-go/qwen3.7-plus` |
+| `zooplus-rag-worker` | #5 | `opencode-go/deepseek-v4-pro` |
+| `zooplus-logic-worker` | #6 | `opencode-go/minimax-m2.7` |
+| `zooplus-synthesis` | #7 | `opencode-go/qwen3.6-plus` |
+
+Runtime: `.opencode/config-cli/opencode.json` (`ZOOPLUS_OPENCODE_CONFIG_DIR`).
+
+Override: `ZOOPLUS_AGENT_MODEL_ZOOPLUS_SOCIAL_AGENT=opencode-go/deepseek-v4-flash`

@@ -12,13 +12,21 @@ from src.llm.opencode import _opencode_env
 logger = logging.getLogger(__name__)
 
 # PoC defaults — fast free / flash models first
+# Sorted by OpenCode Go official req/5h (https://opencode.ai/docs/go/)
 RECOMMENDED_MODEL_IDS: tuple[str, ...] = (
-    "opencode/mimo-v2.5-free",
-    "opencode/deepseek-v4-flash-free",
     "opencode-go/deepseek-v4-flash",
-    "github-copilot/gemini-3.5-flash",
-    "github-copilot/gpt-5.4-mini",
+    "opencode-go/mimo-v2.5",
     "opencode-go/minimax-m2.5",
+    "opencode-go/qwen3.7-plus",
+    "opencode-go/deepseek-v4-pro",
+    "opencode-go/minimax-m2.7",
+    "opencode-go/qwen3.6-plus",
+    "opencode-go/mimo-v2.5-pro",
+    "opencode-go/kimi-k2.5",
+    "opencode-go/minimax-m3",
+    "opencode-go/glm-5",
+    "opencode-go/qwen3.7-max",
+    "opencode-go/glm-5.1",
 )
 
 _CACHE_AT: float = 0.0

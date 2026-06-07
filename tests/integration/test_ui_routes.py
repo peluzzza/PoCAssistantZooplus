@@ -35,5 +35,8 @@ def test_ui_config_endpoint(client: TestClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert data["sites"] == [1, 3, 15]
-    assert data["chat_endpoint"] == "/chat"
+    assert data["site_labels"]["1"] == "Germany (de-DE)"
+    assert data["site_labels"]["3"] == "United Kingdom (en-GB)"
+    assert data["site_labels"]["15"] == "Spain (es-ES)"
+    assert data["chat_endpoint"] == "/chat/stream"
     assert "synthesis_mode" in data
