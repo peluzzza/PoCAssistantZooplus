@@ -8,7 +8,7 @@ Per-agent LLMs follow the [OpenCode agents docs](https://opencode.ai/docs/agents
 |-------|------|----------------|
 | `zooplus-conductor` | Primary orchestrator (fast) | `opencode/mimo-v2.5-free` |
 | `zooplus-intent-agent` | Intent routing | `opencode-go/deepseek-v4-flash` |
-| `zooplus-social-agent` | Greeting, identity, decline | `opencode/mimo-v2.5-free` |
+| `zooplus-social-agent` | Greeting, identity, decline (flash) | `opencode-go/deepseek-v4-flash` |
 | `zooplus-topic-guard` | Topic / quality guard | `opencode-go/minimax-m2.5` |
 | `zooplus-rag-worker` | Site-scoped retrieval | `opencode-go/deepseek-v4-flash` |
 | `zooplus-logic-worker` | Rank + cap 4 | `opencode-go/qwen3.6-plus` |

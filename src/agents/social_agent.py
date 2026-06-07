@@ -26,7 +26,7 @@ from src.llm.opencode import run_opencode_agent
 
 logger = logging.getLogger(__name__)
 
-_SOCIAL_FAST_TIMEOUT = 10
+_SOCIAL_FAST_TIMEOUT = 6
 
 
 def _context_for_kind(kind: SocialKind, query: str, intent: IntentDecision) -> str:

@@ -6,7 +6,7 @@ from __future__ import annotations
 AGENT_MODEL_DEFAULTS: dict[str, str] = {
     "zooplus-conductor": "opencode/mimo-v2.5-free",
     "zooplus-intent-agent": "opencode-go/deepseek-v4-flash",
-    "zooplus-social-agent": "opencode/mimo-v2.5-free",
+    "zooplus-social-agent": "opencode-go/deepseek-v4-flash",
     "zooplus-topic-guard": "opencode-go/minimax-m2.5",
     "zooplus-rag-worker": "opencode-go/deepseek-v4-flash",
     "zooplus-logic-worker": "opencode-go/qwen3.6-plus",

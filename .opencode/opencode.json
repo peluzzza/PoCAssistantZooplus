@@ -49,8 +49,8 @@
     },
     "zooplus-social-agent": {
       "mode": "subagent",
-      "description": "Sociable replies without catalog retrieval",
-      "model": "opencode/mimo-v2.5-free",
+      "description": "Sociable replies without catalog retrieval (flash for low latency)",
+      "model": "opencode-go/deepseek-v4-flash",
       "tools": {
         "zooplus_constraints_get": true
       }

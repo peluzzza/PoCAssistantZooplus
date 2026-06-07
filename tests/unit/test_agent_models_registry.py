@@ -16,7 +16,7 @@ pytestmark = pytest.mark.unit
 def test_catalog_loads_per_agent_models() -> None:
     catalog = load_agent_catalog()
     assert "zooplus-conductor" in catalog
-    assert catalog["zooplus-social-agent"].model == "opencode/mimo-v2.5-free"
+    assert catalog["zooplus-social-agent"].model == "opencode-go/deepseek-v4-flash"
     assert catalog["zooplus-logic-worker"].model == "opencode-go/qwen3.6-plus"
 
 
