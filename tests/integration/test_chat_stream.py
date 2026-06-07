@@ -61,6 +61,20 @@ def _read_ndjson(response) -> list[dict]:
     return [json.loads(ln) for ln in lines]
 
 
+def test_chat_stream_greeting_no_catalog_chunk(client: TestClient) -> None:
+    with client.stream(
+        "POST",
+        "/chat/stream",
+        json={"site_id": 15, "query": "hola que tal", "session_id": "s-hi"},
+    ) as response:
+        assert response.status_code == 200
+        events = _read_ndjson(response)
+    chunks = [e for e in events if e["type"] == "chunk"]
+    assert not chunks
+    done = next(e for e in events if e["type"] == "done")
+    assert done.get("answer")
+
+
 def test_chat_stream_decline_emits_topic_and_done(client: TestClient) -> None:
     with client.stream(
         "POST",
@@ -122,7 +136,8 @@ def test_chat_stream_catalog_conductor_mode(
         calls.append(state.tick_index)
         return steps[min(state.tick_index, len(steps) - 1)]
 
-    monkeypatch.setattr("src.lanes.stream.conductor_next_step", _fake_step)
+    monkeypatch.setenv("ZOOPLUS_CONDUCTOR_FAST_STATUS", "0")
+    monkeypatch.setattr("src.lanes.stream.conductor_tick", _fake_step)
 
     with client.stream(
         "POST",

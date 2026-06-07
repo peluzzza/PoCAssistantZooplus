@@ -12,6 +12,13 @@ from src.agents.agent_body import wrap_prompt_with_agent
 from src.agents.agent_cascade import run_agent_cascade
 from src.agents.prompts import CONDUCTOR_ORCHESTRATOR_SYSTEM
 from src.agents.registry import agent_chain_for_role, cli_model_arg
+from src.agents.stream_voice_registry import (
+    chunk_is_redundant,
+    dedupe_answer_against_chunks,
+    format_opening_line,
+    progress_phrase,
+    stream_context_for_synthesis,
+)
 from src.config import Settings, apply_settings
 from src.llm.opencode import run_opencode_agent
 
@@ -32,16 +39,10 @@ _ACTION_ALIASES: dict[str, ConductorAction] = {
     "done": "complete",
 }
 
-_PROGRESS_BRIEFS_ES = (
-    "Sigue buscando en el catálogo, un momento más…",
-    "Estoy afinando opciones dentro de tu rango de precio…",
-    "Ya casi — preparo las mejores opciones para ti…",
-)
-_PROGRESS_BRIEFS_EN = (
-    "Still searching the catalog — just a moment…",
-    "Narrowing options to your price range…",
-    "Almost ready — putting the best picks together…",
-)
+
+def conductor_opening_line(query: str, site_id: int) -> str:
+    """Protocol-aware instant ack — templates from conductor_playbook.md."""
+    return format_opening_line(query, site_id)
 
 
 @dataclass(frozen=True)
@@ -63,6 +64,13 @@ class ConductorState:
     catalog_running: bool
     catalog_done: bool
     shopper_status: str | None = None
+
+
+def conductor_status_text(state: ConductorState) -> str:
+    """Instant shopper-facing status (registry templates + progress pool)."""
+    if state.tick_index == 0:
+        return conductor_opening_line(state.query, state.site_id)
+    return progress_phrase(state.query, state.tick_index, site_id=state.site_id)
 
 
 def _parse_step_json(raw: str) -> ConductorStep | None:
@@ -145,12 +153,10 @@ def _heuristic_step(state: ConductorState) -> ConductorStep:
         )
     if state.catalog_done:
         return ConductorStep(action="complete")
-    es = bool(re.search(r"[áéíóúñ¿¡]", state.query)) or "gato" in state.query.lower()
-    pool = _PROGRESS_BRIEFS_ES if es else _PROGRESS_BRIEFS_EN
-    idx = min(state.tick_index - 1, len(pool) - 1)
+    pool_line = progress_phrase(state.query, state.tick_index)
     return ConductorStep(
         action="emit_message",
-        message_brief=pool[idx],
+        message_brief=pool_line,
         wait_seconds=5,
         reason="progress_heuristic",
     )
@@ -194,3 +200,30 @@ def conductor_next_step(
 
     logger.info("conductor orchestrator using heuristic tick=%s", state.tick_index)
     return _heuristic_step(state)
+
+
+def conductor_tick(
+    state: ConductorState,
+    *,
+    settings: Settings | None = None,
+    fast: bool | None = None,
+) -> ConductorStep:
+    """One orchestration tick — fast heuristic by default, LLM when fast=False."""
+    cfg = settings or apply_settings()
+    use_fast = cfg.conductor_fast_status if fast is None else fast
+    if use_fast:
+        return _heuristic_step(state)
+    return conductor_next_step(state, settings=cfg)
+
+
+__all__ = [
+    "ConductorState",
+    "ConductorStep",
+    "chunk_is_redundant",
+    "conductor_next_step",
+    "conductor_opening_line",
+    "conductor_status_text",
+    "conductor_tick",
+    "dedupe_answer_against_chunks",
+    "stream_context_for_synthesis",
+]

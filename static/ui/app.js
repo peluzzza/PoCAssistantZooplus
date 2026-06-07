@@ -41,16 +41,18 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function enqueueChunk(text) {
-  chunkInbox.push(text);
+function enqueueChunk(text, chunkIndex) {
+  chunkInbox.push({ text, chunkIndex: chunkIndex ?? 99 });
   chunkPaceChain = chunkPaceChain.then(drainChunkInbox);
 }
 
 async function drainChunkInbox() {
   while (chunkInbox.length > 0) {
-    const text = chunkInbox.shift();
+    const item = chunkInbox.shift();
+    const text = item.text;
+    const typingMs = item.chunkIndex === 0 ? 350 : PACE_TYPING_MS;
     showTypingIndicator();
-    await sleep(PACE_TYPING_MS);
+    await sleep(typingMs);
     hideTypingIndicator();
     appendMessage("bot", text);
     if (chunkInbox.length > 0) await sleep(PACE_GAP_MS);
@@ -302,9 +304,9 @@ async function consumeChatStream(response, signal) {
       if (evt.type === "typing") {
         if (evt.active !== false) showTypingIndicator();
       } else if (evt.type === "chunk" && evt.text) {
-        enqueueChunk(evt.text);
+        enqueueChunk(evt.text, evt.chunk);
       } else if (evt.type === "status" && evt.text) {
-        enqueueChunk(evt.text);
+        enqueueChunk(evt.text, evt.chunk);
       } else if (evt.type === "done") {
         finalAnswer = normalizeAnswer(evt.answer) || "";
         finalProducts = evt.retrieved_products || [];

@@ -9,10 +9,18 @@ from collections.abc import AsyncIterator
 
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
-from src.agents.conductor_orchestrator import ConductorState, conductor_next_step
+from src.agents.conductor_orchestrator import (
+    ConductorState,
+    chunk_is_redundant,
+    conductor_status_text,
+    conductor_tick,
+    dedupe_answer_against_chunks,
+    stream_context_for_synthesis,
+)
 from src.agents.handoff import build_handoff
 from src.agents.registry import resolved_agent_model
 from src.agents.social_agent import social_chunk_reply, social_reply
+from src.agents.stream_voice_registry import format_catalog_opening, probe_instant_lane
 from src.cache.session_turn import bump_session_turn, is_current_turn
 from src.config import Settings, apply_settings
 from src.guardian.engine import load_constraints, max_recommendations
@@ -107,16 +115,21 @@ async def _emit_conductor_chunks(
     session_id: str,
     turn_id: int,
     cfg: Settings,
+    status_chunks: list[str],
+    first_tick: int = 0,
 ) -> AsyncIterator[str]:
-    """Invisible conductor decides each tick; social agent voices messages."""
-    messages: list[str] = []
+    """Conductor emits fast status chunks while catalog agents run in parallel."""
     started = time.monotonic()
     max_ticks = cfg.max_chunk_messages
     interval = cfg.chunk_interval_seconds
-    min_typing = cfg.chunk_min_typing_seconds
+    min_typing = (
+        min(cfg.chunk_min_typing_seconds, 0.6)
+        if cfg.conductor_fast_status
+        else cfg.chunk_min_typing_seconds
+    )
     min_pause = cfg.chunk_min_pause_seconds
 
-    for tick_index in range(max_ticks):
+    for tick_index in range(first_tick, max_ticks):
         if not is_current_turn(session_id, turn_id):
             return
 
@@ -128,39 +141,52 @@ async def _emit_conductor_chunks(
             lane=lane,
             tick_index=tick_index,
             elapsed_seconds=elapsed,
-            messages_sent=tuple(messages),
+            messages_sent=tuple(status_chunks),
             catalog_running=not catalog_task.done(),
             catalog_done=catalog_task.done(),
             shopper_status=shopper_status if tick_index == 0 else None,
         )
-        step = await asyncio.to_thread(conductor_next_step, state, settings=cfg)
+        step = await asyncio.to_thread(conductor_tick, state, settings=cfg)
 
         if step.action == "complete":
             return
 
-        if step.action == "emit_message" and step.message_brief:
-            yield _line(_typing_event(chunk=tick_index))
-            llm_task = asyncio.create_task(
-                asyncio.to_thread(
-                    social_chunk_reply,
-                    request.query,
-                    request.site_id,
-                    chunk_index=tick_index,
-                    elapsed_seconds=elapsed,
-                    previous_chunks=tuple(messages),
-                    catalog_still_running=not catalog_task.done(),
-                    shopper_status=shopper_status if tick_index == 0 else None,
-                    conductor_brief=step.message_brief,
-                    settings=cfg,
+        if step.action == "emit_message":
+            text: str | None = None
+            if cfg.conductor_fast_status:
+                text = conductor_status_text(state)
+            elif step.message_brief:
+                yield _line(_typing_event(chunk=tick_index))
+                llm_task = asyncio.create_task(
+                    asyncio.to_thread(
+                        social_chunk_reply,
+                        request.query,
+                        request.site_id,
+                        chunk_index=tick_index,
+                        elapsed_seconds=elapsed,
+                        previous_chunks=tuple(status_chunks),
+                        catalog_still_running=not catalog_task.done(),
+                        shopper_status=shopper_status if tick_index == 0 else None,
+                        conductor_brief=step.message_brief,
+                        settings=cfg,
+                    )
                 )
-            )
+                if min_typing > 0:
+                    await asyncio.sleep(min_typing)
+                text = await llm_task
+
+            if not text or chunk_is_redundant(text, tuple(status_chunks)):
+                if catalog_task.done():
+                    return
+                continue
+
+            yield _line(_typing_event(chunk=tick_index))
             if min_typing > 0:
                 await asyncio.sleep(min_typing)
-            text = await llm_task
             if not is_current_turn(session_id, turn_id):
                 return
             yield _line(_chunk_event(text, chunk_index=tick_index, elapsed_s=elapsed))
-            messages.append(text)
+            status_chunks.append(text)
 
         if catalog_task.done():
             return
@@ -231,7 +257,23 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
     turn_id = bump_session_turn(session_id)
 
     try:
-        intent = await _classify_intent_bounded(request.query, request.site_id)
+        status_chunks: list[str] = []
+        lane_probe = (
+            probe_instant_lane(request.query, request.site_id)
+            if cfg.stream_mode == "conductor"
+            else "pending"
+        )
+        intent_task = asyncio.create_task(
+            _classify_intent_bounded(request.query, request.site_id)
+        )
+
+        yield _line(_typing_event(chunk=0))
+        if lane_probe == "catalog":
+            opening = format_catalog_opening(request.query, request.site_id)
+            yield _line(_chunk_event(opening, chunk_index=0, elapsed_s=0))
+            status_chunks.append(opening)
+
+        intent = await intent_task
 
         if not is_current_turn(session_id, turn_id):
             return
@@ -250,8 +292,8 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
         )
 
         if intent.lane in ("decline_off_topic", "conversational"):
+            status_chunks.clear()
             if cfg.chunk_min_typing_seconds > 0:
-                yield _line(_typing_event(chunk=0))
                 await asyncio.sleep(cfg.chunk_min_typing_seconds)
             answer, run_meta = await asyncio.to_thread(
                 social_reply,
@@ -278,7 +320,21 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             )
             return
 
-        catalog_task = asyncio.create_task(_run_catalog_pipeline(request, handoff.brief()))
+        if (
+            cfg.stream_mode == "conductor"
+            and not status_chunks
+            and intent.lane == "catalog_search"
+        ):
+            opening = format_catalog_opening(request.query, request.site_id)
+            yield _line(_chunk_event(opening, chunk_index=0, elapsed_s=0))
+            status_chunks.append(opening)
+
+        handoff_brief = handoff.brief()
+        if status_chunks:
+            handoff_brief = (
+                f"{handoff_brief}\n\n{stream_context_for_synthesis(tuple(status_chunks))}"
+            )
+        catalog_task = asyncio.create_task(_run_catalog_pipeline(request, handoff_brief))
         if cfg.stream_mode == "conductor":
             async for line in _emit_conductor_chunks(
                 request=request,
@@ -288,6 +344,8 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
                 session_id=session_id,
                 turn_id=turn_id,
                 cfg=cfg,
+                status_chunks=status_chunks,
+                first_tick=1 if status_chunks else 0,
             ):
                 yield line
         else:
@@ -311,6 +369,8 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             await asyncio.sleep(cfg.chunk_min_typing_seconds)
         products_payload = [p.model_dump() for p in receipt.retrieved_products]
         answer = normalize_shopper_answer(receipt.answer)
+        if status_chunks:
+            answer = dedupe_answer_against_chunks(answer, tuple(status_chunks))
         meta = ChatRuntimeMeta(
             lane="catalog_search",
             intent_source=intent.source,

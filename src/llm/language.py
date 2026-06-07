@@ -8,6 +8,7 @@ _LANGUAGE_LABELS: dict[str, str] = {
     "en": "English",
     "es": "Spanish",
     "de": "German",
+    "fr": "French",
 }
 
 _ACCEPT_LANG = re.compile(
@@ -27,6 +28,11 @@ _DE_MARKERS = re.compile(
 )
 _EN_MARKERS = re.compile(
     r"\b(hello|hi|thanks|please|dog|cat|food|puppy|kitten|between|write|english)\b",
+    re.IGNORECASE,
+)
+_FR_MARKERS = re.compile(
+    r"[àâçéèêëïîôùûü]|"
+    r"\b(bonjour|salut|merci|chat|chien|chercher|alimentation|croquettes|entre|pour)\b",
     re.IGNORECASE,
 )
 
@@ -50,6 +56,8 @@ def parse_accept_language(header: str | None) -> str | None:
                 return "en"
             if code.startswith("de"):
                 return "de"
+            if code.startswith("fr"):
+                return "fr"
     return None
 
 
@@ -83,6 +91,8 @@ def detect_query_language(query: str) -> tuple[str | None, bool]:
         return "de", True
     if _EN_MARKERS.search(text):
         return "en", True
+    if _FR_MARKERS.search(text):
+        return "fr", True
 
     non_ascii = sum(1 for c in text if ord(c) > 127)
     if non_ascii > 0:

@@ -23,7 +23,9 @@ _GREETING = re.compile(
 )
 _GREETING_CASUAL = re.compile(
     r"^(hola\s+que\s+tal|qué\s+tal|que\s+tal|how\s+are\s+you|how'?s\s+it\s+going|"
-    r"hi\s+there|hey\s+there|buenos\s+días|buenas\s+tardes|buenas\s+noches)[!?.\s]*$",
+    r"hi\s+there|hey\s+there|buenos\s+días|buenas\s+tardes|buenas\s+noches|"
+    r"bonjour|salut|bonsoir|ça\s+va|comment\s+ça\s+va|comment\s+allez-vous|"
+    r"guten\s+tag|hallo\s+wie\s+geht|wie\s+geht'?s)[!?.\s]*$",
     re.I,
 )
 _SHORT_SOCIAL_OPENER = re.compile(

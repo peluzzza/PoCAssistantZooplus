@@ -15,6 +15,9 @@ auth.json
 .opencode/*.local.json
 artifacts/index/*
 !artifacts/index/manifest.json
+artifacts/memory/*
+!artifacts/memory/.gitkeep
+!artifacts/memory/conductor_playbook.md
 artifacts/eda/*.html
 artifacts/load/*.json
 .chroma/

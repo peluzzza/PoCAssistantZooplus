@@ -60,6 +60,7 @@ class Settings:
     stream_mode: str = "conductor"
     chunk_min_typing_seconds: float = 1.4
     chunk_min_pause_seconds: float = 0.9
+    conductor_fast_status: bool = True
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -91,6 +92,8 @@ class Settings:
             chunk_min_pause_seconds=_bounded_float(
                 "ZOOPLUS_CHUNK_MIN_PAUSE_SECONDS", 0.9, 0.0, 5.0
             ),
+            conductor_fast_status=os.environ.get("ZOOPLUS_CONDUCTOR_FAST_STATUS", "1").lower()
+            not in ("0", "false", "no"),
         )
 
 

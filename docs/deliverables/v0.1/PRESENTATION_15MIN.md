@@ -6,7 +6,7 @@
 
 Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **v1.4 live loop:** `py -3 scripts/patch_interview_pptx_v14_live_loop.py` · **v2.0 conductor:** `py -3 scripts/patch_interview_pptx_v20_conductor.py`
 
-**Changelog v1.4 → v2.0:** [`CHANGELOG_v1.4_to_v2.0.md`](CHANGELOG_v1.4_to_v2.0.md) · **v1.0 → v1.4:** [`CHANGELOG_v1.0_to_v1.4.md`](CHANGELOG_v1.0_to_v1.4.md)  
+**Changelog v2.0 → v2.1:** [`CHANGELOG_v2.0_to_v2.1.md`](CHANGELOG_v2.0_to_v2.1.md) · **v1.4 → v2.0:** [`CHANGELOG_v1.4_to_v2.0.md`](CHANGELOG_v1.4_to_v2.0.md) · **v1.0 → v1.4:** [`CHANGELOG_v1.0_to_v1.4.md`](CHANGELOG_v1.0_to_v1.4.md)  
 **Interview Q&A:** [`QA_FOR_POC.md`](QA_FOR_POC.md)
 
 ---
@@ -47,25 +47,25 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 6 — RAG strategy end-to-end
 
-> “FR3 is catalog-only RAG — same ingest and hybrid retrieval as v1.0. What changed in v2.0 is *when* we run it: the invisible conductor starts the catalog pipeline in parallel while the social agent keeps the shopper engaged. Grounding rules are unchanged — `retrieved_products[]` from the same `site_id` only, synthesis never invents SKUs, off-topic gets an empty list and a polite decline.”
+> “FR3 is catalog-only RAG — same hybrid ingest as v1.0. v2.1 adds an **internal conductor playbook** (Markdown): species out of scope, opening templates, forbidden repeat phrases. The conductor probes social vs catalog before any ack — a greeting never gets a catalog template. On catalog lane, contextual ack runs in parallel with RAG. Grounding unchanged: same `site_id`, max four products, polite decline off-topic.”
 
 ---
 
-## Slide 7 — Agentic architecture (v2.0 invisible conductor)
+## Slide 7 — Agentic architecture (conductor playbook)
 
-> “v1.4 timed chunks every five seconds. v2.0 replaces the fixed timer with an **invisible conductor** — minimax-m2.7 — that returns JSON each tick: emit a new message brief, wait, or complete. The social agent is the only voice the shopper hears. Anti-repeat: shop scope (dogs and cats only) is stated once; later bubbles are progress only. `ZOOPLUS_STREAM_MODE=conductor` is default; `timed` is the v1.4 fallback.”
+> “The shopper sees one assistant. Behind the scenes the conductor owns `conductor_playbook.md` — it updates silently when dedupe catches a bad repeat. Social turns: one natural bubble via social-agent. Catalog turns: protocol ack parsed from the query (species, EUR band, language), then progress chunks while RAG runs. `ZOOPLUS_STREAM_MODE=conductor` default; `timed` is the v1.4 fallback.”
 
 ---
 
 ## Slide 8 — Agents + per-agent LLMs
 
-> “OpenCode subprocesses per role. **zooplus-conductor** is the invisible stream orchestrator — not shown in the UI. **social-agent** turns conductor briefs into shopper language. intent/topic-guard, RAG, logic, and synthesis run when the catalog lane needs them. Conductor and logic use minimax-m2.7; social and intent use fast flash models. The UI badge still shows the real model from response metadata.”
+> “**zooplus-conductor** maintains the internal playbook and orchestrates the stream — invisible in the UI. **social-agent** handles greetings and social turns without catalog boilerplate. Catalog lane still uses intent, RAG, logic, synthesis. Reply language follows the shopper: Spanish, English, German, or French from query or shop locale. UI badge shows the real model from response metadata.”
 
 ---
 
-## Slide 9 — Guardrails + demo (v2.0 live loop)
+## Slide 9 — Guardrails + demo (v2.1 smart loop)
 
-> “FR4: pet catalog only, default-deny. Demo on 8090: (A) ‘hola’ — fast social; (B) ‘gatos y tortugas 20–50€’ — two or three **different** bubbles, scope disclaimer once, no tortuga loop; (C) weather — decline. Typing dots and paced chunks like v1.4. Pick shop 15 (Spain) before chatting.”
+> “FR4: pet catalog only, default-deny. Demo on 8090, shop 15: (A) ‘hola que tal’ — **one** social reply, no ‘reviso el catálogo’ chunk; (B) hamsters/tortugas/perros hasta 50€ — scoped ack, progress, products; (C) ‘hello’ or ‘bonjour’ — reply in the same language. Hard refresh if you tested an older build.”
 
 ---
 

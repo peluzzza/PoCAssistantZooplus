@@ -24,43 +24,42 @@ SLIDE6_RIGHT_V20 = [
     ("• retrieved_products[] from same site_id hits only.", False),
     ("• Off-topic → empty list + polite decline (FR4).", False),
     ("• Synthesis: per-agent OpenCode LLM — never invent SKUs.", False),
-    ("v2.0 — invisible conductor", True),
-    ("• Strong LLM admin decides each stream tick (JSON actions).", False),
-    ("• social-agent voices briefs; shopper never sees conductor.", False),
-    ("• Anti-repeat: scope disclaimer once, then progress only.", False),
-    ("• Parallel catalog + paced typing/chunks (v1.4 UX kept).", False),
+    ("v2.1 — conductor playbook (internal)", True),
+    ("• conductor_playbook.md — species, templates, forbidden phrases.", False),
+    ("• Fast lane probe: social vs catalog — no rigid catalog ack on hola.", False),
+    ("• Auto-learn: conductor appends repeats to playbook (shopper never sees).", False),
+    ("• Catalog lane: instant contextual ack + parallel RAG (ES/EN/DE/FR).", False),
 ]
 
 SLIDE7_LEFT_V20 = [
-    ("Invisible conductor (v2.0 official)", True),
-    ("• minimax-m2.7 orchestrator — emit_message | wait | complete.", False),
-    ("• Delegates: social · topic-guard · RAG · logic · synthesis.", False),
-    ("• Each tick: new brief only — no repeated tortuga/gato disclaimers.", False),
+    ("Invisible conductor (releases v2.0+)", True),
+    ("• Internal MD playbook — conductor maintains silently.", False),
+    ("• Social turn → one natural bubble (social-agent only).", False),
+    ("• Catalog turn → protocol ack from query (species, price, lang).", False),
+    ("• Anti-repeat + dedupe final answer vs live chunks.", False),
+    ("Stream + agentic core", True),
+    ("• Intent before Chroma · catalog lexicon from ingest.", False),
     ("• ZOOPLUS_STREAM_MODE=conductor (timed = v1.4 fallback).", False),
-    ("Agentic core (unchanged)", True),
-    ("• Conductor-first intent before Chroma.", False),
-    ("• Catalog lexicon from ingest; optional Redis + session turns.", False),
 ]
 
 SLIDE8_LEFT_V20 = [
     ("OpenCode specialists", True),
-    ("• zooplus-conductor → invisible stream orchestrator (v2.0).", False),
-    ("• social-agent → shopper voice from conductor briefs.", False),
+    ("• zooplus-conductor → playbook + stream orchestration (invisible).", False),
+    ("• social-agent → shopper voice; greetings ≠ catalog templates.", False),
     ("• intent / topic-guard → scope filter.", False),
     ("• rag + logic + synthesis → grounded catalog answer.", False),
-    ("Per-agent LLMs (OpenCode Go)", True),
-    ("• Conductor + logic: minimax-m2.7.", False),
-    ("• Social + intent: fast flash models.", False),
-    ("• UI badge shows real model from response meta.", False),
+    ("Per-agent LLMs + language", True),
+    ("• Reply language: query → Accept-Language → shop locale.", False),
+    ("• ES · EN · DE · FR supported on stream ack + synthesis.", False),
 ]
 
 SLIDE9_LEFT_V20 = [
     ("FR4 guardrails + live demo", True),
     ("• Pet catalog only · default-deny off-topic.", False),
-    ("Demo — v2.0 live loop", True),
-    ("• A: hola → fast social.", False),
-    ("• B: gatos/tortugas 20–50€ → 2–3 different bubbles, no repeat.", False),
-    ("• C: weather → decline.", False),
+    ("Demo — v2.1 smart loop", True),
+    ("• A: hola que tal → ONE social reply (no catalog chunk).", False),
+    ("• B: hamsters/tortugas/perros 50€ → scoped ack + progress + products.", False),
+    ("• C: hello / bonjour — same language as shopper.", False),
     ("• http://127.0.0.1:8090/ui/ — shop Spain (15).", False),
 ]
 
@@ -80,7 +79,7 @@ def main() -> None:
     for sh in prs.slides[i7].shapes:
         if sh.has_text_frame and "How each request" in (sh.text or ""):
             sh.text_frame.paragraphs[0].text = (
-                "v2.0 invisible conductor · paced live loop · parallel catalog"
+                "v2.1 conductor playbook · smart social/catalog ack · parallel RAG"
             )
 
     i8 = _find_slide(prs, "Agents")
