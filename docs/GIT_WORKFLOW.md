@@ -27,7 +27,7 @@ releases ◄── main ◄── dev ◄── feature/my-change
 | 2 | Develop + commit on `feature/*` | — |
 | 3 | Merge `feature/*` → `dev` | **F1** `smoke_minimal.ps1` |
 | 4 | Merge `dev` → `main` | **F2** `run_quality_gates.py` |
-| 5 | Merge `main` → `releases` | **F3** `run_release_verify.ps1` |
+| 5 | Merge `main` → `releases` | **F3-fast** `run_release_fast.ps1` (local); F3-full in CI |
 | 6 | Push `dev`, `main`, `releases` | All filters green |
 
 ---
@@ -55,7 +55,8 @@ git checkout -b feature/my-change
 |------|--------|-----------------|
 | **F1** Fast smoke | `.\scripts\smoke_minimal.ps1` (~4 min) | `dev` |
 | **F2** Quality gates | `py -3 scripts/run_quality_gates.py` (~8–12 min; oracle/template, no social matrix) | `main` |
-| **F3** Release verify | `.\scripts\run_release_verify.ps1` (F2 + OpenCode agentic/social, ~15–25 min) | `releases` |
+| **F3-fast** Release smoke | `.\scripts\run_release_fast.ps1` (~3 min, no OpenCode matrix) | `releases` (local) |
+| **F3-full** Release verify | `.\scripts\run_release_verify.ps1` (F2 + OpenCode, CI/nightly only) | optional |
 
 ```powershell
 .\scripts\smoke_minimal.ps1

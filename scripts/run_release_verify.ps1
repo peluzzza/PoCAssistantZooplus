@@ -1,4 +1,4 @@
-# F3 — release verify: F2 fast gates + real OpenCode (agentic + social matrix).
+# F3 - release verify: F2 fast gates + real OpenCode (agentic + social matrix).
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $Root
@@ -21,7 +21,7 @@ if (-not (Test-Path $manifest)) {
     py -3 -m cli ingest
 }
 
-Write-Host "==> F2 quality gates (fast — no OpenCode matrix)"
+Write-Host "==> F2 quality gates (fast - no OpenCode matrix)"
 py -3 scripts/run_quality_gates.py
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

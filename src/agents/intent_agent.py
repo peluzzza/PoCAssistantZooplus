@@ -19,12 +19,12 @@ from src.agents.intent_hints import (
     looks_like_price_filtered_catalog,
     looks_like_product_browse,
 )
-from src.rag.catalog_lexicon import has_catalog_signal
 from src.agents.prompts import INTENT_SYSTEM
 from src.agents.registry import agent_chain_for_role, cli_model_arg
 from src.config import Settings, apply_settings
 from src.guardian.engine import polite_decline_for
 from src.llm.opencode import opencode_auth_present, run_opencode_agent
+from src.rag.catalog_lexicon import has_catalog_signal
 
 logger = logging.getLogger(__name__)
 
@@ -587,7 +587,9 @@ def classify_intent(
             if single is not None:
                 _store_intent_cache(site_id, text, single)
                 return single
-            decision = _fallback_intent_decision(text, site_id=site_id, reason="conductor_led_fallback")
+            decision = _fallback_intent_decision(
+                text, site_id=site_id, reason="conductor_led_fallback"
+            )
             _store_intent_cache(site_id, text, decision)
             return decision
         decision = classify_intent_agentic(text, site_id, settings=cfg)

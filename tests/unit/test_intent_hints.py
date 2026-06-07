@@ -3,16 +3,16 @@
 import pytest
 from fastapi.testclient import TestClient
 from src.agents.intent_agent import (
+    IntentDecision,
     _repair_agentic_misroute,
     fast_intent_enabled,
     try_fast_catalog_intent,
     try_fast_conversational_intent,
-    IntentDecision,
 )
 from src.agents.intent_hints import looks_like_catalog_search
-from src.rag.catalog_lexicon import build_lexicon_from_raw, persist_lexicon, reload_lexicon
 from src.api.app import app
 from src.llm.conversation import classify_conversation
+from src.rag.catalog_lexicon import build_lexicon_from_raw, persist_lexicon, reload_lexicon
 
 pytestmark = pytest.mark.unit
 

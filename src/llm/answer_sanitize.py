@@ -67,9 +67,7 @@ def normalize_shopper_answer(text: str | None) -> str:
     if not raw:
         return ""
 
-    if _TOOL_EVENT.search(raw) or (
-        raw.count('{"type"') > 1 and raw.startswith("{")
-    ):
+    if _TOOL_EVENT.search(raw) or (raw.count('{"type"') > 1 and raw.startswith("{")):
         extracted = extract_opencode_stdout(raw)
         if not extracted:
             return ""
