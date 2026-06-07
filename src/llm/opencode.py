@@ -30,20 +30,9 @@ def _opencode_env(settings: Settings) -> dict[str, str]:
 
 
 def _parse_opencode_json(raw: str) -> str:
-    text_parts: list[str] = []
-    for line in raw.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if event.get("type") == "text":
-            part = event.get("part", {})
-            if isinstance(part, dict) and part.get("text"):
-                text_parts.append(str(part["text"]))
-    return "".join(text_parts).strip() or raw.strip()
+    from src.llm.answer_sanitize import extract_opencode_stdout
+
+    return extract_opencode_stdout(raw)
 
 
 def _build_prompt(

@@ -20,6 +20,7 @@ from src.agents.prompts import (
 from src.agents.registry import agent_chain_for_role, cli_model_arg, resolved_agent_model
 from src.agents.run_meta import AgentRunMeta
 from src.config import Settings, apply_settings
+from src.llm.answer_sanitize import normalize_shopper_answer
 from src.llm.opencode import run_opencode_agent
 
 logger = logging.getLogger(__name__)
@@ -71,8 +72,9 @@ def social_reply(
             timeout_seconds=_SOCIAL_FAST_TIMEOUT,
             model=agent_model,
         )
-        if raw and len(raw.strip()) > 12:
-            return raw.strip(), AgentRunMeta(
+        answer = normalize_shopper_answer(raw)
+        if answer and len(answer) > 12:
+            return answer, AgentRunMeta(
                 lane=intent.lane,
                 intent_source=intent.source,
                 llm_agent=agent_id,
@@ -88,7 +90,7 @@ def social_reply(
     )
 
     def _ok(raw: str) -> str | None:
-        t = raw.strip()
+        t = normalize_shopper_answer(raw)
         return t if len(t) > 15 else None
 
     result = run_agent_cascade("social", prompt, settings=cfg, parse=_ok)

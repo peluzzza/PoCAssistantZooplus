@@ -9,7 +9,13 @@
     }
   },
   "tools": {
-    "zooplus_*": false
+    "zooplus_*": false,
+    "glob": false,
+    "grep": false,
+    "read": false,
+    "write": false,
+    "edit": false,
+    "bash": false
   },
   "agent": {
     "zooplus-conductor": {
