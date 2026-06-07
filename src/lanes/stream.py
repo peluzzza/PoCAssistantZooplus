@@ -1,19 +1,20 @@
-"""NDJSON stream — agentic routing with customer-facing status events."""
+"""NDJSON stream — timed social chunks (Anthropic delta style) + parallel catalog."""
 
 from __future__ import annotations
 
 import asyncio
 import json
+import time
 from collections.abc import AsyncIterator
 
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
 from src.agents.handoff import build_handoff
 from src.agents.registry import resolved_agent_model
-from src.agents.social_agent import social_reply
-from src.config import apply_settings
+from src.agents.social_agent import social_chunk_reply, social_reply
+from src.cache.session_turn import bump_session_turn, is_current_turn
+from src.config import Settings, apply_settings
 from src.guardian.engine import load_constraints, max_recommendations
-from src.lanes.customer_status import MAX_STATUS_MESSAGES, phases_for_lane, status_event
 from src.lanes.orchestrator import _classify_intent_bounded
 from src.lanes.process import run_process_lane
 from src.llm.answer_sanitize import normalize_shopper_answer
@@ -46,49 +47,119 @@ def _topic_event(intent) -> dict:
     }
 
 
+def _typing_event(*, chunk: int, active: bool = True) -> dict:
+    return {"type": "typing", "chunk": chunk, "active": active}
+
+
+def _chunk_event(text: str, *, chunk_index: int, elapsed_s: int) -> dict:
+    return {
+        "type": "chunk",
+        "chunk": chunk_index,
+        "elapsed_s": elapsed_s,
+        "text": text,
+    }
+
+
+async def _run_catalog_pipeline(
+    request: ChatRequest,
+    handoff_brief: str,
+) -> tuple[tuple[dict, ...], object]:
+    cap = max_recommendations()
+    pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
+    hits = tuple(
+        await asyncio.to_thread(
+            search_catalog,
+            request.query,
+            request.site_id,
+            n_results=pool_n,
+        )
+    )
+    constraints = load_constraints()
+    process_cfg = constraints.get("process_lane", {})
+    timeout_seconds = float(process_cfg.get("dispatch_timeout_seconds", 20))
+    envelope = ChatProcessEnvelope(
+        site_id=request.site_id,
+        query=request.query,
+        intent_handoff=handoff_brief,
+        prefetched_hits=hits,
+    )
+    receipt = await dispatch_process(
+        envelope,
+        run_process_lane,
+        timeout_seconds=timeout_seconds,
+    )
+    return hits, receipt
+
+
+async def _emit_timed_chunks(
+    *,
+    request: ChatRequest,
+    catalog_task: asyncio.Task,
+    shopper_status: str | None,
+    session_id: str,
+    turn_id: int,
+    cfg: Settings,
+) -> AsyncIterator[str]:
+    """Emit social LLM chunks every chunk_interval_seconds while catalog runs."""
+    interval = cfg.chunk_interval_seconds
+    max_chunks = cfg.max_chunk_messages
+    prior: list[str] = []
+    started = time.monotonic()
+
+    for chunk_index in range(max_chunks):
+        if not is_current_turn(session_id, turn_id):
+            return
+        elapsed = int(time.monotonic() - started)
+        yield _line(_typing_event(chunk=chunk_index))
+        text = await asyncio.to_thread(
+            social_chunk_reply,
+            request.query,
+            request.site_id,
+            chunk_index=chunk_index,
+            elapsed_seconds=elapsed,
+            previous_chunks=tuple(prior),
+            catalog_still_running=not catalog_task.done(),
+            shopper_status=shopper_status,
+            settings=cfg,
+        )
+        yield _line(_typing_event(chunk=chunk_index, active=False))
+        if not is_current_turn(session_id, turn_id):
+            return
+        yield _line(_chunk_event(text, chunk_index=chunk_index, elapsed_s=elapsed))
+        prior.append(text)
+
+        if catalog_task.done():
+            return
+
+        if chunk_index + 1 >= max_chunks:
+            return
+
+        try:
+            await asyncio.wait_for(asyncio.shield(catalog_task), timeout=interval)
+            return
+        except TimeoutError:
+            continue
+
+
 async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
-    """Yield NDJSON: status* → topic → social|products+answer → done."""
+    """Yield NDJSON: typing/chunk* (timed) → topic → products+done."""
     from src.agents.request_context import request_llm_model
 
     model_token = request_llm_model.set(request.preferred_model)
-    status_count = 0
-
-    shopper_status: str | None = None
-    lane = "catalog_search"
-
-    def _emit_status(
-        phase: str,
-        *,
-        lane_name: str | None = None,
-        hit_count: int | None = None,
-    ) -> str | None:
-        nonlocal status_count
-        if status_count >= MAX_STATUS_MESSAGES:
-            return None
-        status_count += 1
-        return _line(
-            status_event(
-                phase,
-                lane=lane_name or lane,
-                shopper_status=shopper_status,
-                hit_count=hit_count,
-            )
-        )
+    cfg = apply_settings()
+    session_id = (request.session_id or "default").strip() or "default"
+    turn_id = bump_session_turn(session_id)
 
     try:
-        # Instant ack — do not wait for intent LLM (keeps the shopper from feeling blocked).
-        if line := _emit_status("received", lane_name="catalog_search"):
-            yield line
+        yield _line(_typing_event(chunk=0))
 
         intent = await _classify_intent_bounded(request.query, request.site_id)
-        lane = intent.lane
+        yield _line(_typing_event(chunk=0, active=False))
+
+        if not is_current_turn(session_id, turn_id):
+            return
+
         shopper_status = intent.shopper_status
-        lane_phases = set(phases_for_lane(lane))
-
-        if "understood" in lane_phases:
-            if line := _emit_status("understood"):
-                yield line
-
         yield _line(_topic_event(intent))
 
         handoff = build_handoff(
@@ -102,9 +173,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
         )
 
         if intent.lane in ("decline_off_topic", "conversational"):
-            if "composing" in lane_phases:
-                if line := _emit_status("composing"):
-                    yield line
+            yield _line(_typing_event(chunk=0))
             answer, run_meta = await asyncio.to_thread(
                 social_reply,
                 request.query,
@@ -112,6 +181,9 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
                 intent,
                 handoff.brief(),
             )
+            yield _line(_typing_event(chunk=0, active=False))
+            if not is_current_turn(session_id, turn_id):
+                return
             answer = normalize_shopper_answer(answer)
             yield _line(
                 {
@@ -128,51 +200,26 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             )
             return
 
-        if "searching" in lane_phases:
-            if line := _emit_status("searching"):
-                yield line
+        catalog_task = asyncio.create_task(_run_catalog_pipeline(request, handoff.brief()))
+        async for line in _emit_timed_chunks(
+            request=request,
+            catalog_task=catalog_task,
+            shopper_status=shopper_status,
+            session_id=session_id,
+            turn_id=turn_id,
+            cfg=cfg,
+        ):
+            yield line
 
-        cap = max_recommendations()
-        pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
-        prefetched_hits = tuple(
-            await asyncio.to_thread(
-                search_catalog,
-                request.query,
-                request.site_id,
-                n_results=pool_n,
-            )
-        )
+        if not is_current_turn(session_id, turn_id):
+            catalog_task.cancel()
+            return
 
-        if "found" in lane_phases:
-            if line := _emit_status("found", hit_count=len(prefetched_hits)):
-                yield line
-
-        if "narrowing" in lane_phases:
-            if line := _emit_status("narrowing"):
-                yield line
-
-        constraints = load_constraints()
-        process_cfg = constraints.get("process_lane", {})
-        timeout_seconds = float(process_cfg.get("dispatch_timeout_seconds", 20))
-
-        if "composing" in lane_phases:
-            if line := _emit_status("composing"):
-                yield line
-
-        envelope = ChatProcessEnvelope(
-            site_id=request.site_id,
-            query=request.query,
-            intent_handoff=handoff.brief(),
-            prefetched_hits=prefetched_hits,
-        )
-        receipt = await dispatch_process(
-            envelope,
-            run_process_lane,
-            timeout_seconds=timeout_seconds,
-        )
+        _hits, receipt = await catalog_task
+        yield _line(_typing_event(chunk=99))
         products_payload = [p.model_dump() for p in receipt.retrieved_products]
         answer = normalize_shopper_answer(receipt.answer)
-        cfg = apply_settings()
+        yield _line(_typing_event(chunk=99, active=False))
         meta = ChatRuntimeMeta(
             lane="catalog_search",
             intent_source=intent.source,
