@@ -12,6 +12,10 @@ class ChatRequest(BaseModel):
         default=None,
         description="OpenCode model id from UI selector (PoC override)",
     )
+    session_id: str | None = Field(
+        default=None,
+        description="Client session id — new message invalidates in-flight stream",
+    )
 
 
 class RetrievedProduct(BaseModel):

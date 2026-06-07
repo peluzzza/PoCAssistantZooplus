@@ -15,9 +15,9 @@ py -3 -m pytest `
   tests/unit/test_response_variety.py `
   tests/unit/test_intent_hints.py `
   tests/unit/test_agent_cascade.py `
-  tests/unit/test_customer_status.py `
   tests/integration/test_chat_stream.py `
   tests/integration/test_agentic_fallback_routing.py `
+  tests/unit/test_session_turn.py `
   "tests/social/test_use_cases_matrix.py::test_use_case_matrix[UC-017]" `
   -q --tb=short
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

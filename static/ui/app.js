@@ -22,9 +22,15 @@ let uiConfig = {
 
 /** Abort in-flight stream when the shopper sends a new message. */
 let activeChatAbort = null;
-/** Last progress line — skip duplicate consecutive status events. */
-let lastProgressText = "";
 let configReady = false;
+let chatSessionId = localStorage.getItem("zooplus_chat_session") || "";
+if (!chatSessionId) {
+  chatSessionId = crypto.randomUUID();
+  localStorage.setItem("zooplus_chat_session", chatSessionId);
+}
+let typingEl = null;
+let typingTimer = null;
+let typingStep = 0;
 
 function resolvedSiteId() {
   const picked = Number(siteSelect.value);
@@ -55,20 +61,44 @@ function populateSiteSelect() {
   }
 }
 
-function appendProgressMessage(text) {
-  if (!text || text === lastProgressText) return;
-  lastProgressText = text;
-  const wrap = document.createElement("div");
-  wrap.className = "msg bot status-reply status-progress";
-  wrap.setAttribute("role", "status");
-  wrap.setAttribute("aria-live", "polite");
-  wrap.textContent = text;
-  messagesEl.appendChild(wrap);
+function scrollMessagesToEnd() {
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-function resetProgressState() {
-  lastProgressText = "";
+function showTypingIndicator() {
+  if (!typingEl) {
+    typingEl = document.createElement("div");
+    typingEl.className = "msg bot typing-indicator";
+    typingEl.setAttribute("aria-live", "polite");
+    typingEl.setAttribute("aria-label", "Assistant is typing");
+    const dots = document.createElement("span");
+    dots.className = "typing-dots";
+    dots.textContent = ".";
+    typingEl.appendChild(dots);
+    messagesEl.appendChild(typingEl);
+  }
+  scrollMessagesToEnd();
+  if (!typingTimer) {
+    typingStep = 0;
+    typingTimer = setInterval(() => {
+      typingStep = (typingStep + 1) % 3;
+      const patterns = [".", "..", "..."];
+      const span = typingEl?.querySelector(".typing-dots");
+      if (span) span.textContent = patterns[typingStep];
+    }, 450);
+  }
+}
+
+function hideTypingIndicator() {
+  if (typingTimer) {
+    clearInterval(typingTimer);
+    typingTimer = null;
+  }
+  typingStep = 0;
+  if (typingEl) {
+    typingEl.remove();
+    typingEl = null;
+  }
 }
 
 function appendMessage(role, text, products = [], options = {}) {
@@ -90,7 +120,7 @@ function appendMessage(role, text, products = [], options = {}) {
   }
 
   messagesEl.appendChild(wrap);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  scrollMessagesToEnd();
 }
 
 function escapeHtml(s) {
@@ -240,8 +270,15 @@ async function consumeChatStream(response, signal) {
         continue;
       }
 
-      if (evt.type === "status" && evt.text) {
-        appendProgressMessage(evt.text);
+      if (evt.type === "typing") {
+        if (evt.active) showTypingIndicator();
+        else hideTypingIndicator();
+      } else if (evt.type === "chunk" && evt.text) {
+        hideTypingIndicator();
+        appendMessage("bot", evt.text);
+      } else if (evt.type === "status" && evt.text) {
+        hideTypingIndicator();
+        appendMessage("bot", evt.text);
       } else if (evt.type === "done") {
         finalAnswer = normalizeAnswer(evt.answer) || "";
         finalProducts = evt.retrieved_products || [];
@@ -262,8 +299,6 @@ form.addEventListener("submit", async (e) => {
     activeChatAbort.abort();
     activeChatAbort = null;
   }
-  resetProgressState();
-
   const siteId = resolvedSiteId();
   if (!configReady && siteId < 1) {
     appendMessage("bot", "Shop list still loading — wait a moment and try again.", [], { error: true });
@@ -273,13 +308,14 @@ form.addEventListener("submit", async (e) => {
   appendMessage("user", query);
   queryInput.value = "";
   sendBtn.disabled = true;
+  showTypingIndicator();
 
   const controller = new AbortController();
   activeChatAbort = controller;
   const clientTimeout = setTimeout(() => controller.abort(), 50000);
 
   try {
-    const body = { site_id: siteId, query };
+    const body = { site_id: siteId, query, session_id: chatSessionId };
     if (preferredModel && preferredModel.trim()) body.preferred_model = preferredModel.trim();
 
     const endpoint = uiConfig.chat_endpoint || uiConfig.stream_endpoint || "/chat/stream";
@@ -307,6 +343,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     const result = await consumeChatStream(res, controller.signal);
+    hideTypingIndicator();
     if (!result || controller.signal.aborted) return;
 
     const { answer, products, meta } = result;
@@ -316,6 +353,7 @@ form.addEventListener("submit", async (e) => {
     appendMessage("bot", answer || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);
+    hideTypingIndicator();
     if (err.name === "AbortError") {
       if (activeChatAbort === controller) return;
     }
@@ -325,6 +363,7 @@ form.addEventListener("submit", async (e) => {
         : `Network error: ${err.message}`;
     appendMessage("bot", msg, [], { error: true });
   } finally {
+    hideTypingIndicator();
     if (activeChatAbort === controller) activeChatAbort = null;
     sendBtn.disabled = false;
     queryInput.focus();
