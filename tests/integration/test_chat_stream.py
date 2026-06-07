@@ -75,6 +75,41 @@ def test_chat_stream_greeting_no_catalog_chunk(client: TestClient) -> None:
     assert done.get("answer")
 
 
+def test_chat_stream_social_conductor_fast_path(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Social probe replies without blocking on slow conductor intent."""
+    monkeypatch.setenv("ZOOPLUS_STREAM_MODE", "conductor")
+    async def _slow_intent(query: str, site_id: int):
+        await __import__("asyncio").sleep(30)
+        from src.agents.intent_agent import IntentDecision
+
+        return IntentDecision(lane="conversational", social_kind="greeting", source="late")
+
+    monkeypatch.setattr("src.lanes.stream._classify_intent_bounded", _slow_intent)
+    monkeypatch.setattr(
+        "src.lanes.stream.social_reply",
+        lambda q, sid, intent, handoff_brief=None: (
+            "¡Hola! ¿En qué te ayudo?",
+            __import__("src.agents.run_meta", fromlist=["AgentRunMeta"]).AgentRunMeta(
+                lane="conversational", intent_source="conversation_classifier"
+            ),
+        ),
+    )
+
+    with client.stream(
+        "POST",
+        "/chat/stream",
+        json={"site_id": 15, "query": "hola que tal", "session_id": "s-fast"},
+    ) as response:
+        assert response.status_code == 200
+        events = _read_ndjson(response)
+    done = next(e for e in events if e["type"] == "done")
+    assert "Hola" in done["answer"] or "ayudo" in done["answer"]
+    topic = next(e for e in events if e["type"] == "topic")
+    assert topic["decision"] == "ALLOW"
+
+
 def test_chat_stream_decline_emits_topic_and_done(client: TestClient) -> None:
     with client.stream(
         "POST",

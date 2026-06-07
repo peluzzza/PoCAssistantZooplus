@@ -37,10 +37,10 @@ def _per_agent_timeout(settings: Settings, chain_len: int, role: AgentRole) -> i
     if chain_len <= 0:
         return total
     role_caps: dict[AgentRole, int] = {
-        "intent": 10,
-        "social": 10,
+        "intent": 8,
+        "social": 8,
         "synthesis": 14,
-        "conductor": 10,
+        "conductor": 6,
     }
     cap = role_caps.get(role, 12)
     if total > 40:

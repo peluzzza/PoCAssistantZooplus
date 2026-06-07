@@ -7,6 +7,7 @@ from src.agents.intent_agent import (
     IntentDecision,
     classify_intent_conductor_first,
     conductor_intent_enabled,
+    try_fast_policy_intent,
     try_obvious_social_intent,
 )
 from src.lanes.orchestrator import handle_chat
@@ -15,9 +16,28 @@ from src.models.chat import ChatRequest
 pytestmark = pytest.mark.unit
 
 
-def test_conductor_intent_enabled_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_conductor_intent_disabled_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ZOOPLUS_CONDUCTOR_INTENT", raising=False)
+    assert not conductor_intent_enabled()
+
+
+def test_conductor_intent_can_be_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ZOOPLUS_CONDUCTOR_INTENT", "1")
     assert conductor_intent_enabled()
+
+
+def test_fast_policy_declines_weather() -> None:
+    decision = try_fast_policy_intent("what is the weather today?", 3)
+    assert decision is not None
+    assert decision.lane == "decline_off_topic"
+    assert decision.source == "policy_classifier"
+
+
+def test_fast_policy_catalog_signal() -> None:
+    decision = try_fast_policy_intent("best dry food for puppy", 3)
+    assert decision is not None
+    assert decision.lane == "catalog_search"
+    assert decision.source == "probe_catalog"
 
 
 def test_obvious_social_intent_hola_que_tal() -> None:

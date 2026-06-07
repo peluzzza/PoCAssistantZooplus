@@ -191,7 +191,7 @@ def conductor_next_step(
         wrap_prompt_with_agent(agent_id, prompt),
         settings=cfg,
         agent_id=agent_id,
-        timeout_seconds=12,
+        timeout_seconds=6,
         model=cli_model_arg(agent_id, default=cfg.opencode_model),
     )
     parsed = _parse_step_json(raw or "")

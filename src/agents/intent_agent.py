@@ -56,8 +56,8 @@ def fast_intent_enabled() -> bool:
 
 
 def conductor_intent_enabled() -> bool:
-    """Conductor classifies lane first; catalog search only after green light."""
-    return os.environ.get("ZOOPLUS_CONDUCTOR_INTENT", "1").lower() in ("1", "true", "yes")
+    """Optional slow-path fallback — intent-agent is tried first when disabled (default)."""
+    return os.environ.get("ZOOPLUS_CONDUCTOR_INTENT", "0").lower() in ("1", "true", "yes")
 
 
 def intent_repair_enabled() -> bool:
@@ -122,6 +122,30 @@ def try_fast_catalog_intent(query: str) -> IntentDecision | None:
         reason="fast_catalog",
         source="fast_catalog",
     )
+
+
+def try_fast_policy_intent(query: str, site_id: int) -> IntentDecision | None:
+    """Policy probe — off-topic decline or catalog green-light without OpenCode latency."""
+    _ = site_id
+    text = (query or "").strip()
+    if not text:
+        return None
+    if looks_like_off_topic(text):
+        return IntentDecision(
+            lane="decline_off_topic",
+            confidence=0.95,
+            reason="policy_off_topic",
+            source="policy_classifier",
+            decline_message=_decline_copy("off_topic", query=text),
+        )
+    if looks_like_catalog_search(text) or looks_like_price_filtered_catalog(text):
+        return IntentDecision(
+            lane="catalog_search",
+            confidence=0.92,
+            reason="policy_catalog",
+            source="probe_catalog",
+        )
+    return None
 
 
 def _repair_agentic_misroute(query: str, decision: IntentDecision) -> IntentDecision:
@@ -578,20 +602,19 @@ def classify_intent(
             if fast:
                 _store_intent_cache(site_id, text, fast)
                 return fast
+        policy = try_fast_policy_intent(text, site_id)
+        if policy is not None:
+            _store_intent_cache(site_id, text, policy)
+            return policy
+        single = classify_intent_single_agent(text, site_id, settings=cfg)
+        if single is not None:
+            _store_intent_cache(site_id, text, single)
+            return single
         if conductor_intent_enabled():
             led = classify_intent_conductor_first(text, site_id, settings=cfg)
             if led is not None:
                 _store_intent_cache(site_id, text, led)
                 return led
-            single = classify_intent_single_agent(text, site_id, settings=cfg)
-            if single is not None:
-                _store_intent_cache(site_id, text, single)
-                return single
-            decision = _fallback_intent_decision(
-                text, site_id=site_id, reason="conductor_led_fallback"
-            )
-            _store_intent_cache(site_id, text, decision)
-            return decision
         decision = classify_intent_agentic(text, site_id, settings=cfg)
         _store_intent_cache(site_id, text, decision)
         return decision
