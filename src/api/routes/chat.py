@@ -15,9 +15,7 @@ router = APIRouter()
 @router.post("/chat", response_model=ChatResponse)
 async def chat(body: ChatRequest, request: Request) -> ChatResponse:
     accept_language = request.headers.get("accept-language")
-    async with bind_shopper_language_async(
-        body.query, accept_language, site_id=body.site_id
-    ):
+    async with bind_shopper_language_async(body.query, accept_language, site_id=body.site_id):
         return await handle_chat(body)
 
 
@@ -26,9 +24,7 @@ async def chat_stream(body: ChatRequest, request: Request) -> StreamingResponse:
     accept_language = request.headers.get("accept-language")
 
     async def _events():
-        async with bind_shopper_language_async(
-            body.query, accept_language, site_id=body.site_id
-        ):
+        async with bind_shopper_language_async(body.query, accept_language, site_id=body.site_id):
             async for line in stream_chat_events(body):
                 yield line
 

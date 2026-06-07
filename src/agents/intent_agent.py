@@ -587,7 +587,9 @@ def classify_intent(
             if single is not None:
                 _store_intent_cache(site_id, text, single)
                 return single
-            decision = _fallback_intent_decision(text, site_id=site_id, reason="conductor_led_fallback")
+            decision = _fallback_intent_decision(
+                text, site_id=site_id, reason="conductor_led_fallback"
+            )
             _store_intent_cache(site_id, text, decision)
             return decision
         decision = classify_intent_agentic(text, site_id, settings=cfg)
