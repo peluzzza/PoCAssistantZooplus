@@ -32,7 +32,7 @@ SLIDE6_RIGHT_V20 = [
     ("• conductor_playbook.md — species, templates, forbidden phrases.", False),
     ("• Fast lane probe: social vs catalog — no rigid catalog ack on hola.", False),
     ("• Auto-learn: conductor appends repeats to playbook (shopper never sees).", False),
-    ("• Catalog lane: instant contextual ack + parallel RAG (ES/EN/DE/FR).", False),
+    ("• Catalog lane: instant contextual ack + parallel RAG (shopper language).", False),
 ]
 
 SLIDE7_LEFT_V20 = [
@@ -53,8 +53,8 @@ SLIDE8_LEFT_V20 = [
     ("• intent / topic-guard → scope filter.", False),
     ("• rag + logic + synthesis → grounded catalog answer.", False),
     ("Per-agent LLMs + language", True),
-    ("• Reply language: query → Accept-Language → shop locale.", False),
-    ("• ES · EN · DE · FR supported on stream ack + synthesis.", False),
+    ("• Reply language: agent mirrors shopper (query · headers · shop).", False),
+    ("• No fixed locale list — OpenCode agents handle any language.", False),
 ]
 
 SLIDE9_LEFT_V20 = [
@@ -63,7 +63,7 @@ SLIDE9_LEFT_V20 = [
     ("Demo — v2.1 smart loop", True),
     ("• A: hola que tal → ONE social reply (no catalog chunk).", False),
     ("• B: hamsters/tortugas/perros 50€ → scoped ack + progress + products.", False),
-    ("• C: hello / bonjour — same language as shopper.", False),
+    ("• C: any-language greeting — agent replies in kind.", False),
     ("• http://127.0.0.1:8090/ui/ — shop Spain (15).", False),
 ]
 
@@ -78,7 +78,7 @@ PROGRESS_RIGHT = [
     ("Shopper experience — v1.4 → v2.1 (now)", True),
     ("v1.4 — Live loop: timed chunks, parallel catalog, typing pace.", False),
     ("v2.0 — Invisible conductor; brief-driven ticks; anti-repeat scope.", False),
-    ("v2.1 — Playbook MD; social vs catalog probe; ES · EN · DE · FR.", False),
+    ("v2.1 — Playbook MD; social vs catalog probe; agent-multilingual.", False),
 ]
 
 

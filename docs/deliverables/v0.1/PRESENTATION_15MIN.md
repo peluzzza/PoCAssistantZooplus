@@ -60,13 +60,13 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 8 — Agents + per-agent LLMs
 
-> “**zooplus-conductor** maintains the internal playbook and orchestrates the stream — invisible in the UI. **social-agent** handles greetings and social turns without catalog boilerplate. Catalog lane still uses intent, RAG, logic, synthesis. Reply language follows the shopper: Spanish, English, German, or French from query or shop locale. UI badge shows the real model from response metadata.”
+> “**zooplus-conductor** maintains the internal playbook and orchestrates the stream — invisible in the UI. **social-agent** handles greetings and social turns without catalog boilerplate. Catalog lane still uses intent, RAG, logic, synthesis. Reply language is **agent-driven**: the LLM mirrors the shopper from query, headers, or shop context — no fixed locale whitelist. UI badge shows the real model from response metadata.”
 
 ---
 
 ## Slide 9 — Guardrails + demo (v2.1 smart loop)
 
-> “FR4: pet catalog only, default-deny. Demo on 8090, shop 15: (A) ‘hola que tal’ — **one** social reply, no ‘reviso el catálogo’ chunk; (B) hamsters/tortugas/perros hasta 50€ — scoped ack, progress, products; (C) ‘hello’ or ‘bonjour’ — reply in the same language. Hard refresh if you tested an older build.”
+> “FR4: pet catalog only, default-deny. Demo on 8090, shop 15: (A) ‘hola que tal’ — **one** social reply, no ‘reviso el catálogo’ chunk; (B) hamsters/tortugas/perros hasta 50€ — scoped ack, progress, products; (C) greet in any language — agent replies in kind. Hard refresh if you tested an older build.”
 
 ---
 
@@ -92,7 +92,7 @@ Full doc: [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md)
 
 ## Slide 14 — Release progress (v0.1.0 → v2.1) + Q&A
 
-> “We kept the same five FRs from the Coding Task and iterated on `releases`. **v0.1.0** delivered the PoC baseline — hybrid RAG and guardrails. **v0.1.3 / v1.0** added conductor-first routing, streaming status, and per-agent OpenCode models. **v1.4** shipped the live-loop UX shoppers feel today — timed chunks while catalog runs in parallel. **v2.0** introduced the invisible conductor so disclaimers are not repeated. **v2.1**, our current tag, adds the internal playbook, smart social-vs-catalog ack, and four shopper languages. Happy to dive into any milestone or run the demo again.”
+> “We kept the same five FRs from the Coding Task and iterated on `releases`. **v0.1.0** delivered the PoC baseline — hybrid RAG and guardrails. **v0.1.3 / v1.0** added conductor-first routing, streaming status, and per-agent OpenCode models. **v1.4** shipped the live-loop UX shoppers feel today — timed chunks while catalog runs in parallel. **v2.0** introduced the invisible conductor so disclaimers are not repeated. **v2.1**, our current tag, adds the internal playbook, smart social-vs-catalog ack, and agent-driven multilingual replies. Happy to dive into any milestone or run the demo again.”
 
 ---
 

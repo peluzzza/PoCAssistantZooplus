@@ -18,7 +18,7 @@
 | Instant ack | Catalog template on every turn | **Lane probe** — social vs catalog |
 | `hola que tal` | Wrong catalog chunk + repeat greeting | **One** social bubble |
 | Phrase policy | Hardcoded in Python | **`conductor_playbook.md`** + auto-learn |
-| Language | Mostly ES/EN heuristic | **ES · EN · DE · FR** via query + shop |
+| Language | Mostly ES/EN heuristic | **Agent-driven multilingual** — query, headers, shop; no fixed locale list |
 | Final answer | Sometimes repeated scope/hello | Dedupe vs live chunks + synthesis hint |
 
 **Key files:** `src/agents/conductor_playbook.md`, `artifacts/memory/conductor_playbook.md`, `src/agents/stream_voice_registry.py`, `src/lanes/stream.py`
@@ -29,7 +29,7 @@
 
 1. **A:** `hola que tal` → single social reply (Spain shop 15)
 2. **B:** `hamsters tortugas perros hasta 50€` → scoped ack, progress, products
-3. **C:** `hello how are you` or `bonjour` → same language reply
+3. **C:** greet in any language → agent replies in kind
 
 ---
 
