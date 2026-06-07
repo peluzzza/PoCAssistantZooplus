@@ -71,6 +71,8 @@ def _build_prompt(
         "- Do NOT output a numbered or bulleted product list — the UI shows product cards separately.\n"
         "- Mention at most two product names in prose; prices live in the cards.\n"
         "- Vary wording each turn; avoid rigid template openings.\n"
+        "- If extra_context says conversation is in progress or follow-up: "
+        "do NOT greet or re-introduce yourself.\n"
         f"- {lang_line}\n"
         "- End with one short follow-up question when appropriate.\n"
         "- Reply in plain text only — never wrap the answer in JSON or markdown code fences.\n"

@@ -65,6 +65,45 @@ def test_conductor_appends_learned_to_md(playbook) -> None:
     assert "hola, como tu zooplus assistant" in reg["greeting_markers"]
 
 
+def test_dedupe_strips_greeting_after_progress_only_chunks(playbook) -> None:
+    """Progress chunks without hola/claro still mean conversation started."""
+    chunks = ("Sigue buscando en el catálogo, un momento más…",)
+    answer = (
+        "Hola, soy el zooplus Assistant. Lamentablemente no dispongo de productos para iguanas, "
+        "ya que solo puedo ofrecerte artículos del catálogo de perros y gatos."
+    )
+    trimmed = svr.dedupe_answer_against_chunks(answer, chunks)
+    assert "hola" not in trimmed.lower().split(".")[0]
+    assert "zooplus assistant" not in trimmed.lower()[:40]
+    assert "iguanas" in trimmed.lower()
+
+
+def test_dynamic_species_capibara_without_playbook_seed(playbook) -> None:
+    """Species not in seed MD — inferred from 'y para X' and auto-learned."""
+    seed = svr.PLAYBOOK_SEED.read_text(encoding="utf-8")
+    assert "capibara" not in seed.lower()
+    labels = svr.infer_non_catalog_species_labels("y para capibaras tienes?", 15, learn=True)
+    assert "capibaras" in labels
+    body = playbook.read_text(encoding="utf-8")
+    assert "capibara" in body.lower()
+
+
+def test_dynamic_species_iguana(playbook) -> None:
+    labels = svr.infer_non_catalog_species_labels("y para iguanas tienes?", 15, learn=False)
+    assert "iguanas" in labels
+
+
+def test_in_scope_pets_not_flagged(playbook) -> None:
+    assert not svr.mentions_non_catalog_species("y para perros con estomago sensible", 15)
+    assert not svr.mentions_non_catalog_species("best dry food for puppy", 3)
+
+
+def test_is_continuation_query() -> None:
+    assert svr.is_continuation_query("y para iguanas tienes?")
+    assert svr.is_continuation_query("and for dogs under 20€")
+    assert not svr.is_continuation_query("hola que tal")
+
+
 def test_dedupe_learns_into_playbook(playbook) -> None:
     chunks = ("¡Con gusto! Solo tenemos productos para perros y gatos — no tortugas.",)
     answer = (

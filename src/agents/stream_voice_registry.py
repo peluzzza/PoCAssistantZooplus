@@ -294,7 +294,7 @@ def probe_instant_lane(query: str, site_id: int) -> str:
         return "social"
     if (
         looks_like_catalog_search(text)
-        or mentions_non_catalog_species(text)
+        or mentions_non_catalog_species(text, site_id)
         or price_hint(text, lang=resolve_lang(text, site_id))
     ):
         return "catalog"
@@ -306,24 +306,218 @@ def has_catalog_intent_signals(query: str, *, lang: str, site_id: int) -> bool:
 
     if looks_like_catalog_search(query):
         return True
-    if mentions_non_catalog_species(query) or price_hint(query, lang=lang):
+    if mentions_non_catalog_species(query, site_id) or price_hint(query, lang=lang):
         return True
     q = query.lower()
     return bool(re.search(r"perro|gato|dog|cat|food|comida|futter|nourriture|precio|price|€", q))
 
 
-def mentions_non_catalog_species(query: str) -> bool:
-    reg = load_stream_voice_registry()
-    return any(entry.pattern.search(query) for entry in reg["species"])
+_IN_SCOPE_PET_ALIASES = frozenset(
+    {
+        "perro",
+        "perros",
+        "perra",
+        "perras",
+        "gato",
+        "gatos",
+        "gata",
+        "gatas",
+        "dog",
+        "dogs",
+        "cat",
+        "cats",
+        "puppy",
+        "puppies",
+        "kitten",
+        "kittens",
+        "cachorro",
+        "cachorros",
+        "gatito",
+        "gatitos",
+        "hund",
+        "hunde",
+        "hunde",
+        "katze",
+        "katzen",
+        "chat",
+        "chats",
+        "chien",
+        "chiens",
+        "canino",
+        "caninos",
+        "felino",
+        "felinos",
+        "hund",
+        "hund",
+    }
+)
+
+_SPECIES_EXTRACT_SKIP = frozenset(
+    {
+        "los",
+        "las",
+        "mis",
+        "tus",
+        "unos",
+        "unas",
+        "the",
+        "my",
+        "your",
+        "productos",
+        "producto",
+        "products",
+        "product",
+        "opciones",
+        "available",
+        "disponible",
+        "disponibles",
+        "anything",
+        "something",
+        "comida",
+        "food",
+        "algo",
+        "something",
+        "tienes",
+        "tenéis",
+        "have",
+        "sell",
+        "esto",
+        "esa",
+        "ese",
+        "entre",
+        "hasta",
+        "menos",
+        "euros",
+        "eur",
+        "precio",
+        "price",
+        "estomago",
+        "estómago",
+        "sensitive",
+        "stomach",
+        "seco",
+        "dry",
+        "wet",
+        "humedo",
+        "húmedo",
+        "grain",
+        "free",
+        "puppy",
+        "adult",
+        "senior",
+    }
+)
+
+_PET_NOUN_PATTERNS = (
+    re.compile(
+        r"(?:y\s+)?(?:para|for|pour|für)\s+(?:los|las|mis|de|el|la|le|les)?\s*"
+        r"([a-záéíóúñäöüß]{3,})",
+        re.I,
+    ),
+    re.compile(r"(?:what|how)\s+about\s+([a-záéíóúñ]{3,})", re.I),
+    re.compile(r"\b(?:about|acerca\s+de)\s+([a-záéíóúñ]{3,})", re.I),
+    re.compile(
+        r"\b(?:tienes|tenéis)\s+(?:algo\s+)?(?:para\s+)?(?:los|las|el|la)?\s*([a-záéíóúñ]{3,})",
+        re.I,
+    ),
+)
 
 
-def non_catalog_labels(query: str, *, lang: str = "es") -> tuple[str, ...]:
+def _catalog_vocab_tokens(site_id: int) -> frozenset[str]:
+    """Brands + product tokens from ingest — not treated as out-of-scope species."""
+    from src.rag.catalog_lexicon import load_lexicon
+
+    lex = load_lexicon()
+    vocab: set[str] = set()
+    for brand in lex.get("brands", []):
+        for part in re.split(r"[\s\-]+", str(brand).lower()):
+            if len(part) >= 3:
+                vocab.add(part)
+    for tok in lex.get("product_tokens", []):
+        vocab.add(str(tok).lower())
+    for pet in lex.get("pet_types", []):
+        vocab.add(str(pet).lower())
+    return frozenset(vocab)
+
+
+def _normalize_species_token(token: str) -> str:
+    return token.lower().strip().strip("¿?¡!.,;")
+
+
+def _is_in_scope_pet(token: str) -> bool:
+    norm = _normalize_species_token(token)
+    if norm in _IN_SCOPE_PET_ALIASES:
+        return True
+    if norm.endswith("s") and norm[:-1] in _IN_SCOPE_PET_ALIASES:
+        return True
+    return False
+
+
+def _extract_out_of_scope_pet_tokens(query: str, site_id: int) -> tuple[str, ...]:
+    """Infer pet nouns in query that are not dogs/cats — works for species absent from playbook."""
+    text = (query or "").strip()
+    if not text:
+        return ()
+    catalog_vocab = _catalog_vocab_tokens(site_id)
+    found: list[str] = []
+    for pattern in _PET_NOUN_PATTERNS:
+        for match in pattern.finditer(text):
+            raw = _normalize_species_token(match.group(1))
+            if not raw or raw in _SPECIES_EXTRACT_SKIP or raw in catalog_vocab:
+                continue
+            if _is_in_scope_pet(raw):
+                continue
+            if raw not in found:
+                found.append(raw)
+    return tuple(found)
+
+
+def _playbook_species_hits(query: str) -> tuple[SpeciesEntry, ...]:
     reg = load_stream_voice_registry()
+    return tuple(e for e in reg["species"] if e.pattern.search(query))
+
+
+def _learn_discovered_species(token: str) -> None:
+    """Append newly inferred species to learned_species (conductor auto-learn)."""
+    if not learning_enabled():
+        return
+    norm = _normalize_species_token(token)
+    if not norm or _is_in_scope_pet(norm):
+        return
+    reg = load_stream_voice_registry()
+    if any(e.pattern.search(norm) for e in reg["species"]):
+        return
+    stem = norm[:-1] if norm.endswith("s") and len(norm) > 4 else norm
+    match_expr = f"{stem}|{norm}"
+    line = f"- {match_expr} → {norm} | {norm}"
+    _append_playbook_line("learned_species", line)
+
+
+def infer_non_catalog_species_labels(
+    query: str,
+    site_id: int = 3,
+    *,
+    lang: str = "es",
+    learn: bool = True,
+) -> tuple[str, ...]:
+    """Playbook + dynamic inference — handles species never seen before."""
     labels: list[str] = []
-    for entry in reg["species"]:
-        if entry.pattern.search(query):
-            labels.append(entry.label_es if lang in ("es", "fr") else entry.label_en)
+    for entry in _playbook_species_hits(query):
+        labels.append(entry.label_es if lang in ("es", "fr") else entry.label_en)
+    for token in _extract_out_of_scope_pet_tokens(query, site_id):
+        if learn:
+            _learn_discovered_species(token)
+        if token not in labels:
+            labels.append(token)
     return tuple(dict.fromkeys(labels))
+
+
+def mentions_non_catalog_species(query: str, site_id: int = 3) -> bool:
+    return bool(infer_non_catalog_species_labels(query, site_id, learn=True))
+
+
+def non_catalog_labels(query: str, *, lang: str = "es", site_id: int = 3) -> tuple[str, ...]:
+    return infer_non_catalog_species_labels(query, site_id, lang=lang, learn=True)
 
 
 def _join_labels(items: tuple[str, ...] | list[str], *, lang: str) -> str:
@@ -469,12 +663,64 @@ def chunk_is_redundant(text: str, prior: tuple[str, ...]) -> bool:
     return False
 
 
+_INTRO_GREETING_RE = re.compile(
+    r"^(?:¡?\s*)?(?:hola|hello|hi|hey|buenas)\b"
+    r"(?:\s*[,!.])?\s*(?:soy el|soy la|i['']?m the|i am the|i'm)\s+"
+    r"(?:the\s+)?zooplus\s+assistant\b",
+    re.I,
+)
+
+_CONTINUATION_QUERY_RE = re.compile(
+    r"^(?:y\s+|and\s+|also\s+|además\s+|otra\s+cosa[,:]?\s+|"
+    r"what\s+about\s+|how\s+about\s+|para\s+(?:los|las|mis|mis\s+)?)\b",
+    re.I,
+)
+
+
+def is_continuation_query(query: str) -> bool:
+    """Follow-up turn — shopper already spoke; no re-introduction in final answer."""
+    text = (query or "").strip()
+    if not text:
+        return False
+    if _CONTINUATION_QUERY_RE.search(text):
+        return True
+    return text.lower().startswith(("y ", "and ", "also ", "además "))
+
+
+def _sentence_has_greeting(pl: str, g_markers: tuple[str, ...]) -> bool:
+    if pl.startswith("hola") or pl.startswith("hello") or pl.startswith("hi "):
+        return True
+    if _INTRO_GREETING_RE.search(pl):
+        return True
+    return any(m in pl for m in g_markers)
+
+
+def strip_leading_assistant_intro(answer: str) -> str:
+    """Remove redundant zooplus Assistant self-intro from answer start."""
+    text = answer.strip()
+    if not text:
+        return answer
+    m = _INTRO_GREETING_RE.match(text)
+    if m:
+        rest = text[m.end() :].lstrip(" ,.—-")
+        if rest:
+            record_stream_voice_learning(
+                category="greeting_markers",
+                phrase=text[: m.end()].strip(),
+                reason="leading_intro_stripped",
+            )
+            return rest
+    return answer
+
+
 def dedupe_answer_against_chunks(answer: str, chunks: tuple[str, ...]) -> str:
     if not chunks or not answer:
         return answer
     blob = " ".join(chunks).lower()
     scope_said = any(m in blob for m in scope_markers())
-    greeted = any(x in blob for x in greeting_signals())
+    # Any live chunk means the shopper already saw stream messages — no re-greeting.
+    conversation_started = True
+    greeted = conversation_started or any(x in blob for x in greeting_signals())
     g_markers = greeting_markers()
     forbidden = forbidden_phrases()
     species_tokens = non_catalog_tokens()
@@ -493,7 +739,7 @@ def dedupe_answer_against_chunks(answer: str, chunks: tuple[str, ...]) -> str:
             record_stream_voice_learning(
                 category="forbidden_phrases", phrase=part, reason="non_catalog_repeated_in_final"
             )
-        if greeted and (any(m in pl for m in g_markers) or pl.startswith("hola")):
+        if greeted and _sentence_has_greeting(pl, g_markers):
             drop = True
             record_stream_voice_learning(
                 category="greeting_markers", phrase=part, reason="greeting_repeated_in_final"
@@ -506,10 +752,15 @@ def dedupe_answer_against_chunks(answer: str, chunks: tuple[str, ...]) -> str:
         if not drop:
             kept.append(part)
     merged = " ".join(kept).strip()
-    return merged or answer
+    merged = strip_leading_assistant_intro(merged)
+    return merged or strip_leading_assistant_intro(answer)
 
 
-def stream_context_for_synthesis(status_chunks: tuple[str, ...]) -> str:
+def stream_context_for_synthesis(
+    status_chunks: tuple[str, ...],
+    *,
+    query: str | None = None,
+) -> str:
     if not status_chunks:
         return ""
     forbidden = forbidden_phrases()
@@ -517,9 +768,16 @@ def stream_context_for_synthesis(status_chunks: tuple[str, ...]) -> str:
     extra = ""
     if forbidden:
         extra = "\nBanned phrases (conductor playbook): " + "; ".join(forbidden[:10])
+    continuation = ""
+    if query and is_continuation_query(query):
+        continuation = (
+            "\nThis is a FOLLOW-UP turn in an ongoing chat — "
+            "never say Hola/hello or re-introduce yourself as zooplus Assistant."
+        )
     return (
-        "Live stream messages already shown to the shopper:\n"
+        "Live stream messages already shown to the shopper (conversation in progress):\n"
         f"{lines}\n"
-        "Final answer: no greeting, no scope repeat, no ambiguity — products or one clear question."
-        f"{extra}"
+        "Final answer: continue the conversation — no greeting, no self-intro, "
+        "no scope repeat, no ambiguity — products or one clear next step."
+        f"{continuation}{extra}"
     )

@@ -13,6 +13,9 @@
 
 ## non_catalog_species
 
+Seed examples — **not exhaustive**. Runtime also infers pet nouns after `para/for` that are
+not dogs/cats (see `infer_non_catalog_species_labels`) and appends new rows to `learned_species`.
+
 Format: `match_tokens → label_es | label_en`
 
 - hamster → hamsters | hamsters
@@ -22,6 +25,7 @@ Format: `match_tokens → label_es | label_en`
 - pájaro|bird → pájaros | birds
 - pez|fish → peces | fish
 - reptil|reptile → reptiles | reptiles
+- iguana|iguana → iguanas | iguanas
 
 ## scope_markers
 
@@ -59,6 +63,8 @@ Never repeat in final answer after an opening chunk.
 - como tu
 - soy el
 - soy la
+- soy el zooplus
+- lamentablemente no dispongo
 - estaré encantado
 - encantado de ayudarte
 - with pleasure

@@ -438,7 +438,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             handoff_brief = handoff.brief()
             if status_chunks:
                 handoff_brief = (
-                    f"{handoff_brief}\n\n{stream_context_for_synthesis(tuple(status_chunks))}"
+                    f"{handoff_brief}\n\n{stream_context_for_synthesis(tuple(status_chunks), query=request.query)}"
                 )
             catalog_task = asyncio.create_task(
                 _run_catalog_pipeline(request, handoff_brief)
@@ -548,7 +548,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
         handoff_brief = handoff.brief()
         if status_chunks:
             handoff_brief = (
-                f"{handoff_brief}\n\n{stream_context_for_synthesis(tuple(status_chunks))}"
+                f"{handoff_brief}\n\n{stream_context_for_synthesis(tuple(status_chunks), query=request.query)}"
             )
         catalog_task = asyncio.create_task(_run_catalog_pipeline(request, handoff_brief))
         if cfg.stream_mode == "conductor":

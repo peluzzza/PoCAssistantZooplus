@@ -17,11 +17,6 @@ _HELP_ABOUT = re.compile(
     re.I,
 )
 
-_NON_CATALOG_SPECIES = re.compile(
-    r"\b(horse|horses|pony|ponies|bird|birds|fish|reptile|hamster|guinea\s+pig)\b",
-    re.I,
-)
-
 _OFF_TOPIC_HARD = re.compile(
     r"\b(weather|traffic|president|news\s+headline|bitcoin|crypto|"
     r"for\s+humans|human\s+food|search\s+the\s+internet|ignore\s+all\s+previous|"
@@ -46,8 +41,11 @@ def looks_like_help_about_shop(query: str) -> bool:
     return bool(_HELP_ABOUT.search(query.strip()))
 
 
-def looks_like_non_catalog_species(query: str) -> bool:
-    return bool(_NON_CATALOG_SPECIES.search(query.strip()))
+def looks_like_non_catalog_species(query: str, site_id: int = 3) -> bool:
+    """Playbook + dynamic pet-noun inference (not a fixed species list)."""
+    from src.agents.stream_voice_registry import mentions_non_catalog_species
+
+    return mentions_non_catalog_species(query, site_id)
 
 
 def looks_like_product_browse(query: str) -> bool:
