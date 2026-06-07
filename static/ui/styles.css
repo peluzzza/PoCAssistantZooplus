@@ -213,6 +213,32 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.msg.bot.typing-indicator {
+  padding: 0.55rem 1rem;
+  min-width: 3.5rem;
+  color: var(--muted);
+  border-left: 3px solid var(--accent);
+  background: rgba(61, 154, 111, 0.1);
+}
+
+.msg.bot.typing-indicator .typing-dots {
+  display: inline-block;
+  min-width: 1.5rem;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  animation: typingPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes typingPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .msg.bot.status-reply.status-transient {
   font-size: 0.88rem;
   color: var(--muted);

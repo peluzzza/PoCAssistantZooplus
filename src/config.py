@@ -9,6 +9,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _bounded_int(key: str, default: int, lo: int, hi: int) -> int:
+    raw = os.environ.get(key, str(default))
+    try:
+        val = int(raw)
+    except ValueError:
+        return default
+    return max(lo, min(hi, val))
+
+
 def _load_dotenv() -> None:
     """Load repo `.env` into os.environ (file is gitignored)."""
     env_file = ROOT / ".env"
@@ -37,6 +46,8 @@ class Settings:
     opencode_timeout_seconds: int = 25
     opencode_data_dir: str | None = None
     opencode_config_dir: str | None = None
+    chunk_interval_seconds: int = 5
+    max_chunk_messages: int = 5
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -58,6 +69,8 @@ class Settings:
             opencode_timeout_seconds=timeout,
             opencode_data_dir=os.environ.get("ZOOPLUS_OPENCODE_DATA_DIR"),
             opencode_config_dir=os.environ.get("ZOOPLUS_OPENCODE_CONFIG_DIR"),
+            chunk_interval_seconds=_bounded_int("ZOOPLUS_CHUNK_INTERVAL_SECONDS", 5, 2, 30),
+            max_chunk_messages=_bounded_int("ZOOPLUS_MAX_CHUNK_MESSAGES", 5, 1, 8),
         )
 
 
