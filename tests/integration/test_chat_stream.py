@@ -66,9 +66,7 @@ def test_chat_stream_decline_emits_topic_and_done(client: TestClient) -> None:
     assert not [e for e in events if e["type"] == "chunk"]
 
 
-def test_chat_stream_catalog_emits_timed_chunks(
-    client: TestClient, indexed_catalog: dict
-) -> None:
+def test_chat_stream_catalog_emits_timed_chunks(client: TestClient, indexed_catalog: dict) -> None:
     with client.stream(
         "POST",
         "/chat/stream",
