@@ -54,18 +54,30 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
     status_count = 0
 
     shopper_status: str | None = None
+    lane = "catalog_search"
 
-    def _emit_status(phase: str, *, lane: str) -> str | None:
+    def _emit_status(
+        phase: str,
+        *,
+        lane_name: str | None = None,
+        hit_count: int | None = None,
+    ) -> str | None:
         nonlocal status_count
         if status_count >= MAX_STATUS_MESSAGES:
             return None
         status_count += 1
         return _line(
-            status_event(phase, lane=lane, shopper_status=shopper_status)
+            status_event(
+                phase,
+                lane=lane_name or lane,
+                shopper_status=shopper_status,
+                hit_count=hit_count,
+            )
         )
 
     try:
-        if line := _emit_status("reading", lane="catalog_search"):
+        # Instant ack — do not wait for intent LLM (keeps the shopper from feeling blocked).
+        if line := _emit_status("received", lane_name="catalog_search"):
             yield line
 
         intent = await _classify_intent_bounded(request.query, request.site_id)
@@ -74,7 +86,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
         lane_phases = set(phases_for_lane(lane))
 
         if "understood" in lane_phases:
-            if line := _emit_status("understood", lane=lane):
+            if line := _emit_status("understood"):
                 yield line
 
         yield _line(_topic_event(intent))
@@ -91,7 +103,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
 
         if intent.lane in ("decline_off_topic", "conversational"):
             if "composing" in lane_phases:
-                if line := _emit_status("composing", lane=lane):
+                if line := _emit_status("composing"):
                     yield line
             answer, run_meta = await asyncio.to_thread(
                 social_reply,
@@ -117,7 +129,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             return
 
         if "searching" in lane_phases:
-            if line := _emit_status("searching", lane=lane):
+            if line := _emit_status("searching"):
                 yield line
 
         cap = max_recommendations()
@@ -131,8 +143,12 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             )
         )
 
+        if "found" in lane_phases:
+            if line := _emit_status("found", hit_count=len(prefetched_hits)):
+                yield line
+
         if "narrowing" in lane_phases:
-            if line := _emit_status("narrowing", lane=lane):
+            if line := _emit_status("narrowing"):
                 yield line
 
         constraints = load_constraints()
@@ -140,7 +156,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
         timeout_seconds = float(process_cfg.get("dispatch_timeout_seconds", 20))
 
         if "composing" in lane_phases:
-            if line := _emit_status("composing", lane=lane):
+            if line := _emit_status("composing"):
                 yield line
 
         envelope = ChatProcessEnvelope(
