@@ -1,9 +1,9 @@
 ---
 description: User-facing orchestrator — agentic-first. Intent → social OR catalog pipeline.
 mode: primary
-model: opencode/mimo-v2.5-free
+model: opencode-go/minimax-m2.5
 temperature: 0.25
-steps: 6
+steps: 2
 permission:
   edit: deny
 ---
