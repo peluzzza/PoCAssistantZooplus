@@ -8,7 +8,7 @@ $env:ZOOPLUS_SYNTHESIS_MODE = "template"
 $env:ZOOPLUS_SOCIAL_SYNTHESIS = "agentic"
 $env:ZOOPLUS_AGENT_CASCADE = "0"
 
-Write-Host "==> Minimal smoke (unit + integration + 3 matrix cases)"
+Write-Host "==> Minimal smoke (unit + integration + 1 social matrix case; catalog via stream tests)"
 py -3 -m pytest `
   tests/unit/test_synthesis.py `
   tests/unit/test_conversation.py `
@@ -19,8 +19,6 @@ py -3 -m pytest `
   tests/integration/test_chat_stream.py `
   tests/integration/test_agentic_fallback_routing.py `
   "tests/social/test_use_cases_matrix.py::test_use_case_matrix[UC-017]" `
-  "tests/social/test_use_cases_matrix.py::test_use_case_matrix[UC-129]" `
-  "tests/social/test_use_cases_matrix.py::test_use_case_matrix[UC-173]" `
   -q --tb=short
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
