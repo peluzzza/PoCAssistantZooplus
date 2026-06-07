@@ -64,3 +64,15 @@ SOCIAL_DECLINE_CONTEXT = (
     "this shop's pet catalog (no traffic/weather/web). Mention zooplus Assistant once. "
     "Invite dog/cat product question."
 )
+
+# Timed streaming chunks (catalog lane) — like SSE content_block_delta: one short delta per tick.
+SOCIAL_CHUNK_STREAM = (
+    "stream=timed_chunk. You emit ONE short live update while catalog search runs in parallel.\n"
+    "Think Anthropic content_block_delta: each chunk is a new sentence, never repeat prior chunks.\n"
+    "chunk_index={chunk_index}\n"
+    "elapsed_seconds={elapsed_seconds}\n"
+    "catalog_still_running={catalog_still_running}\n"
+    "previous_chunks:\n{previous_chunks}\n"
+    "Progress naturally: acknowledge → searching → narrowing → almost ready.\n"
+    "1-2 sentences only. No SKUs, prices, or tool/status jargon. Sound human."
+)

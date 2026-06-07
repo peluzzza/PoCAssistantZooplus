@@ -31,4 +31,8 @@ async def chat_stream(body: ChatRequest, request: Request) -> StreamingResponse:
     return StreamingResponse(
         _events(),
         media_type="application/x-ndjson",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
     )
