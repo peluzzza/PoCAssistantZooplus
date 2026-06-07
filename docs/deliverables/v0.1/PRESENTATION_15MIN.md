@@ -1,6 +1,6 @@
 # 15-minute presentation — Coding Task.docx
 
-**Deck (pro):** `zooplus-assistant-interview-15min-pro.pptx` — **13 slides**  
+**Deck (pro):** `zooplus-assistant-interview-15min-pro.pptx` — **14 slides**  
 **FR** = Functional Requirement from `Coding Task.docx` — explain on **slide 2**.  
 **Roadmap:** slides **11–13** (3 slides, ~2 min + Q&A).
 
@@ -27,9 +27,10 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 | 10 | FR5 + README | 1:00 |
 | 11 | **Roadmap Phase 1** — trust & quality (P0) | 0:45 |
 | 12 | **Roadmap Phase 2** — scale & fresh catalog (P1) | 0:45 |
-| 13 | **Roadmap Phase 3** — photo, voice, promos + **Q&A** | 1:30 |
+| 13 | **Roadmap Phase 3** — photo, voice, promos | 0:45 |
+| 14 | **Release progress** — v0.1.0 → v2.1 + **Q&A** | 1:00 |
 
-*Total talk ~15 min; Q&A on slide 13.*
+*Total talk ~15 min; Q&A on slide 14.*
 
 ---
 
@@ -81,11 +82,17 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ---
 
-## Slide 13 — Roadmap Phase 3 (P2–P3) + Q&A
+## Slide 13 — Roadmap Phase 3 (P2–P3)
 
 > “Product channels on the **same** `/chat` contract: search by photo grounded in catalog, optional promos during long streams, and later voice. Order: 2→3→8→9→4→5→7→1→6.”
 
 Full doc: [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md)
+
+---
+
+## Slide 14 — Release progress (v0.1.0 → v2.1) + Q&A
+
+> “We kept the same five FRs from the Coding Task and iterated on `releases`. **v0.1.0** delivered the PoC baseline — hybrid RAG and guardrails. **v0.1.3 / v1.0** added conductor-first routing, streaming status, and per-agent OpenCode models. **v1.4** shipped the live-loop UX shoppers feel today — timed chunks while catalog runs in parallel. **v2.0** introduced the invisible conductor so disclaimers are not repeated. **v2.1**, our current tag, adds the internal playbook, smart social-vs-catalog ack, and four shopper languages. Happy to dive into any milestone or run the demo again.”
 
 ---
 

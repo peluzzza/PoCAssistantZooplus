@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
-"""Update slides 6–9 — v2.0 invisible conductor orchestrator."""
+"""Update slides 6–9 (v2.1 conductor) and append release-progress closing slide."""
 
 from __future__ import annotations
 
 import shutil
 from pathlib import Path
 
+from patch_interview_pptx_rag_slides import (  # type: ignore[import-not-found]
+    PANEL_BG,
+    draw_pro_chrome,
+    renumber_footer,
+)
+from patch_interview_pptx_rag_slides import _bullets as _rag_bullets  # type: ignore[import-not-found]
+from patch_interview_pptx_rag_slides import _rgb as _rgb_panel  # type: ignore[import-not-found]
 from patch_interview_pptx_v14_live_loop import (  # type: ignore[import-not-found]
     DECK,
-    SLIDE6_RIGHT,
-    SLIDE7_LEFT,
-    SLIDE8_LEFT,
-    SLIDE9_LEFT,
     _fill,
     _find_slide,
     _fix_left_column,
     _right_column_bullets,
 )
 from pptx import Presentation
+from pptx.util import Inches
 
 SLIDE6_RIGHT_V20 = [
     ("Grounding & answer", True),
@@ -63,6 +67,88 @@ SLIDE9_LEFT_V20 = [
     ("• http://127.0.0.1:8090/ui/ — shop Spain (15).", False),
 ]
 
+PROGRESS_LEFT = [
+    ("Foundation — v0.1.0 → v1.0", True),
+    ("v0.1.0 — Coding Task PoC: FR1–5, hybrid RAG, FR4 guardrails.", False),
+    ("v0.1.3 — Conductor-first routing; /chat/stream; per-agent OpenCode.", False),
+    ("v1.0 — Stable tag: catalog lexicon at ingest, cache, multilingual.", False),
+]
+
+PROGRESS_RIGHT = [
+    ("Shopper experience — v1.4 → v2.1 (now)", True),
+    ("v1.4 — Live loop: timed chunks, parallel catalog, typing pace.", False),
+    ("v2.0 — Invisible conductor; brief-driven ticks; anti-repeat scope.", False),
+    ("v2.1 — Playbook MD; social vs catalog probe; ES · EN · DE · FR.", False),
+]
+
+
+def _find_progress_slide(prs: Presentation) -> int | None:
+    for i, slide in enumerate(prs.slides):
+        for sh in slide.shapes:
+            if sh.has_text_frame and (sh.text or "").strip().startswith("Release progress"):
+                return i
+    return None
+
+
+def _append_blank_slide(prs: Presentation):
+    layout = prs.slide_layouts[6]
+    return prs.slides.add_slide(layout)
+
+
+def _set_progress_footer(slide) -> None:
+    footer = "zooplus Assistant — releases v2.1 · progress since v0.1.0"
+    for sh in slide.shapes:
+        if not sh.has_text_frame:
+            continue
+        text = (sh.text or "").strip()
+        if "zooplus Assistant" in text and sh.top and sh.top > Inches(6.8):
+            sh.text_frame.paragraphs[0].text = footer
+
+
+def build_release_progress_slide(slide, *, page: int) -> None:
+    draw_pro_chrome(
+        slide,
+        title="Release progress — v0.1.0 → v2.1",
+        subtitle="Same five FRs · stronger agentic orchestration and live shopper UX",
+        badge="Progress · releases",
+        page=page,
+    )
+    panel = slide.shapes.add_shape(1, Inches(0.64), Inches(1.38), Inches(12.0), Inches(5.45))
+    _rgb_panel(panel, PANEL_BG)
+    _rag_bullets(
+        slide,
+        Inches(0.82),
+        Inches(1.55),
+        Inches(5.85),
+        Inches(5.1),
+        PROGRESS_LEFT,
+        size=15,
+    )
+    _rag_bullets(
+        slide,
+        Inches(6.7),
+        Inches(1.55),
+        Inches(5.75),
+        Inches(5.1),
+        PROGRESS_RIGHT,
+        size=15,
+    )
+    _set_progress_footer(slide)
+
+
+def ensure_release_progress_slide(prs: Presentation) -> None:
+    idx = _find_progress_slide(prs)
+    if idx is None:
+        slide = _append_blank_slide(prs)
+        build_release_progress_slide(slide, page=len(prs.slides))
+    else:
+        slide = prs.slides[idx]
+        for sh in list(slide.shapes):
+            el = sh._element
+            el.getparent().remove(el)
+        build_release_progress_slide(slide, page=idx + 1)
+    renumber_footer(prs)
+
 
 def main() -> None:
     if not DECK.is_file():
@@ -88,12 +174,14 @@ def main() -> None:
     i9 = _find_slide(prs, "Guardrails", "FR4 guardrails")
     _fix_left_column(prs.slides[i9], SLIDE9_LEFT_V20, size=14)
 
+    ensure_release_progress_slide(prs)
+
     tmp = DECK.with_name(f"{DECK.stem}_v20{DECK.suffix}")
     prs.save(str(tmp))
     try:
         shutil.copy2(tmp, DECK)
         tmp.unlink(missing_ok=True)
-        print(f"Updated v2.0 conductor content in {DECK}")
+        print(f"Updated v2.1 conductor + release progress slide in {DECK} ({len(prs.slides)} slides)")
     except PermissionError:
         print(f"PPT is open — saved to {tmp}")
 
