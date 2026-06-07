@@ -20,8 +20,8 @@
   "agent": {
     "zooplus-conductor": {
       "mode": "primary",
-      "description": "Agentic-first shop orchestrator (intent → social | catalog pipeline)",
-      "model": "opencode-go/minimax-m2.5",
+      "description": "Invisible v2.0 orchestrator (strong LLM — decides stream ticks)",
+      "model": "opencode-go/minimax-m2.7",
       "tools": {
         "zooplus_topic_check": true,
         "zooplus_constraints_get": true

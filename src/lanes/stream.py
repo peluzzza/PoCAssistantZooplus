@@ -11,6 +11,7 @@ from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
 from src.agents.handoff import build_handoff
 from src.agents.registry import resolved_agent_model
+from src.agents.conductor_orchestrator import ConductorState, conductor_next_step
 from src.agents.social_agent import social_chunk_reply, social_reply
 from src.cache.session_turn import bump_session_turn, is_current_turn
 from src.config import Settings, apply_settings
@@ -89,6 +90,74 @@ async def _run_catalog_pipeline(
         timeout_seconds=timeout_seconds,
     )
     return hits, receipt
+
+
+async def _emit_conductor_chunks(
+    *,
+    request: ChatRequest,
+    catalog_task: asyncio.Task,
+    lane: str,
+    shopper_status: str | None,
+    session_id: str,
+    turn_id: int,
+    cfg: Settings,
+) -> AsyncIterator[str]:
+    """Invisible conductor decides each tick; social agent voices messages."""
+    messages: list[str] = []
+    started = time.monotonic()
+    max_ticks = cfg.max_chunk_messages
+
+    for tick_index in range(max_ticks):
+        if not is_current_turn(session_id, turn_id):
+            return
+
+        elapsed = int(time.monotonic() - started)
+        state = ConductorState(
+            query=request.query,
+            site_id=request.site_id,
+            lane=lane,
+            tick_index=tick_index,
+            elapsed_seconds=elapsed,
+            messages_sent=tuple(messages),
+            catalog_running=not catalog_task.done(),
+            catalog_done=catalog_task.done(),
+            shopper_status=shopper_status if tick_index == 0 else None,
+        )
+        step = await asyncio.to_thread(conductor_next_step, state, settings=cfg)
+
+        if step.action == "complete":
+            return
+
+        if step.action == "emit_message" and step.message_brief:
+            yield _line(_typing_event(chunk=tick_index))
+            text = await asyncio.to_thread(
+                social_chunk_reply,
+                request.query,
+                request.site_id,
+                chunk_index=tick_index,
+                elapsed_seconds=elapsed,
+                previous_chunks=tuple(messages),
+                catalog_still_running=not catalog_task.done(),
+                shopper_status=shopper_status if tick_index == 0 else None,
+                conductor_brief=step.message_brief,
+                settings=cfg,
+            )
+            yield _line(_typing_event(chunk=tick_index, active=False))
+            if not is_current_turn(session_id, turn_id):
+                return
+            yield _line(_chunk_event(text, chunk_index=tick_index, elapsed_s=elapsed))
+            messages.append(text)
+
+        if catalog_task.done():
+            return
+
+        wait_s = step.wait_seconds if step.action == "wait" else cfg.chunk_interval_seconds
+        if tick_index + 1 < max_ticks and wait_s > 0:
+            try:
+                await asyncio.wait_for(asyncio.shield(catalog_task), timeout=wait_s)
+                return
+            except TimeoutError:
+                continue
 
 
 async def _emit_timed_chunks(
@@ -201,15 +270,27 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             return
 
         catalog_task = asyncio.create_task(_run_catalog_pipeline(request, handoff.brief()))
-        async for line in _emit_timed_chunks(
-            request=request,
-            catalog_task=catalog_task,
-            shopper_status=shopper_status,
-            session_id=session_id,
-            turn_id=turn_id,
-            cfg=cfg,
-        ):
-            yield line
+        if cfg.stream_mode == "conductor":
+            async for line in _emit_conductor_chunks(
+                request=request,
+                catalog_task=catalog_task,
+                lane=intent.lane,
+                shopper_status=shopper_status,
+                session_id=session_id,
+                turn_id=turn_id,
+                cfg=cfg,
+            ):
+                yield line
+        else:
+            async for line in _emit_timed_chunks(
+                request=request,
+                catalog_task=catalog_task,
+                shopper_status=shopper_status,
+                session_id=session_id,
+                turn_id=turn_id,
+                cfg=cfg,
+            ):
+                yield line
 
         if not is_current_turn(session_id, turn_id):
             catalog_task.cancel()

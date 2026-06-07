@@ -13,8 +13,8 @@
   "agent": {
     "zooplus-conductor": {
       "mode": "primary",
-      "description": "Go #3 minimax-m2.5 — orchestrator",
-      "model": "opencode-go/minimax-m2.5",
+      "description": "Go #6 minimax-m2.7 — invisible v2.0 orchestrator",
+      "model": "opencode-go/minimax-m2.7",
       "permission": {
         "task": {
           "*": "deny",

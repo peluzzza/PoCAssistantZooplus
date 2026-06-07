@@ -17,6 +17,11 @@ def client() -> TestClient:
 
 
 @pytest.fixture(autouse=True)
+def _conductor_stream_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ZOOPLUS_STREAM_MODE", "timed")
+
+
+@pytest.fixture(autouse=True)
 def _mock_social_chunks(monkeypatch: pytest.MonkeyPatch) -> None:
     def _fake_chunk(
         query: str,

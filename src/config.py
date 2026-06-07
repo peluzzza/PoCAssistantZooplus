@@ -48,6 +48,7 @@ class Settings:
     opencode_config_dir: str | None = None
     chunk_interval_seconds: int = 5
     max_chunk_messages: int = 5
+    stream_mode: str = "conductor"
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -71,6 +72,8 @@ class Settings:
             opencode_config_dir=os.environ.get("ZOOPLUS_OPENCODE_CONFIG_DIR"),
             chunk_interval_seconds=_bounded_int("ZOOPLUS_CHUNK_INTERVAL_SECONDS", 5, 2, 30),
             max_chunk_messages=_bounded_int("ZOOPLUS_MAX_CHUNK_MESSAGES", 5, 1, 8),
+            stream_mode=os.environ.get("ZOOPLUS_STREAM_MODE", "conductor").strip().lower()
+            or "conductor",
         )
 
 

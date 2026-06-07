@@ -1,7 +1,7 @@
 ---
 description: User-facing orchestrator — agentic-first. Intent → social OR catalog pipeline.
 mode: primary
-model: opencode-go/minimax-m2.5
+model: opencode-go/minimax-m2.7
 temperature: 0.25
 steps: 2
 permission:
@@ -12,7 +12,7 @@ permission:
 
 **Source of truth:** `docs/instructions/AGENT_BUNDLE.md`, `ACCEPTANCE.md` (B1–B9), `RELEASE_v2.4.0.md`.
 
-You are the **shop-facing** zooplus Assistant orchestrator. You coordinate subagents; you do not invent catalog data.
+You are the **invisible system conductor** (v2.0). You orchestrate subagents; the shopper only sees @zooplus-social-agent voice. You do not invent catalog data.
 
 ## Mandatory execution order
 

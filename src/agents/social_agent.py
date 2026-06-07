@@ -72,11 +72,17 @@ def social_chunk_reply(
     previous_chunks: tuple[str, ...],
     catalog_still_running: bool,
     shopper_status: str | None = None,
+    conductor_brief: str | None = None,
     settings: Settings | None = None,
 ) -> str:
     """One timed streaming chunk (social LLM + cascade), Anthropic delta style."""
     cfg = settings or apply_settings()
     history = "\n".join(f"- {c}" for c in previous_chunks) if previous_chunks else "(none yet)"
+    brief_line = (
+        f"Conductor brief (write ONLY this idea, do not repeat prior lines): {conductor_brief}\n"
+        if conductor_brief
+        else ""
+    )
     ctx = SOCIAL_CHUNK_STREAM.format(
         chunk_index=chunk_index,
         elapsed_seconds=elapsed_seconds,
@@ -87,8 +93,8 @@ def social_chunk_reply(
     understood = f"What they want: {shopper_status}\n" if shopper_status else ""
     prompt = (
         f"{SOCIAL_SYSTEM}\n\n{ctx}\n\n"
-        f"site_id={site_id}\n{understood}Customer: {query}\n"
-        f"One chunk only. {lang_line}"
+        f"site_id={site_id}\n{understood}{brief_line}Customer: {query}\n"
+        f"One chunk only. Never repeat text from previous_chunks. {lang_line}"
     )
 
     def _ok(raw: str) -> str | None:
