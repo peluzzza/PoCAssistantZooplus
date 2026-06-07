@@ -21,6 +21,7 @@ from src.agents.registry import agent_chain_for_role, cli_model_arg, resolved_ag
 from src.agents.run_meta import AgentRunMeta
 from src.config import Settings, apply_settings
 from src.llm.answer_sanitize import normalize_shopper_answer
+from src.llm.language_context import current_reply_language_instruction
 from src.llm.opencode import run_opencode_agent
 
 logger = logging.getLogger(__name__)
@@ -60,10 +61,11 @@ def social_reply(
         agent_id = chain[0] if chain else "zooplus-social-agent"
         agent_model = cli_model_arg(agent_id, default=cfg.opencode_model)
         display_model = resolved_agent_model(agent_id, default=cfg.opencode_model)
+        lang_line = current_reply_language_instruction(query, site_id=site_id)
         fast_prompt = (
             f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}\n\n"
             f"site_id={site_id}\nCustomer: {query}\n"
-            "Reply as zooplus Assistant in 2-3 short sentences. Match the customer's language."
+            f"Reply as zooplus Assistant in 2-3 short sentences. {lang_line}"
         )
         raw = run_opencode_agent(
             wrap_prompt_with_agent(agent_id, fast_prompt),
@@ -84,9 +86,10 @@ def social_reply(
     skill = instructions_skill_context(site_id=site_id)
     handoff = f"{handoff_brief}\n\n" if handoff_brief else ""
     ctx = f"{skill}\n\n{SOCIAL_SYSTEM}\n\n{handoff}{_context_for_kind(kind, query, intent)}"
+    lang_line = current_reply_language_instruction(query, site_id=site_id)
     prompt = (
         f"{ctx}\n\nsite_id={site_id}\nCustomer: {query}\n"
-        "Reply as zooplus Assistant (2-5 sentences). Match the customer's language when clear."
+        f"Reply as zooplus Assistant (2-5 sentences). {lang_line}"
     )
 
     def _ok(raw: str) -> str | None:

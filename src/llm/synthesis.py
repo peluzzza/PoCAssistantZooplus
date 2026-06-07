@@ -27,15 +27,16 @@ def synthesize_answer(
 
         return synthesize_template(query, products)
 
+    from src.llm.language_context import current_reply_language_instruction
     from src.llm.opencode import _build_prompt, synthesize_opencode, synthesize_opencode_with_agents
 
+    lang_line = current_reply_language_instruction(query, site_id=site_id)
     extra = "\n".join(
         p
         for p in (
             instructions_skill_context(site_id=site_id),
             handoff_context or "",
-            "Write as zooplus Assistant. Match the customer's language when clear. "
-            "No numbered product list (UI shows cards).",
+            f"Write as zooplus Assistant. {lang_line} No numbered product list (UI shows cards).",
         )
         if p
     )
