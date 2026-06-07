@@ -9,6 +9,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _bounded_float(key: str, default: float, lo: float, hi: float) -> float:
+    raw = os.environ.get(key, str(default))
+    try:
+        val = float(raw)
+    except ValueError:
+        return default
+    return max(lo, min(hi, val))
+
+
 def _bounded_int(key: str, default: int, lo: int, hi: int) -> int:
     raw = os.environ.get(key, str(default))
     try:
@@ -49,6 +58,8 @@ class Settings:
     chunk_interval_seconds: int = 5
     max_chunk_messages: int = 5
     stream_mode: str = "conductor"
+    chunk_min_typing_seconds: float = 1.4
+    chunk_min_pause_seconds: float = 0.9
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -74,6 +85,12 @@ class Settings:
             max_chunk_messages=_bounded_int("ZOOPLUS_MAX_CHUNK_MESSAGES", 5, 1, 8),
             stream_mode=os.environ.get("ZOOPLUS_STREAM_MODE", "conductor").strip().lower()
             or "conductor",
+            chunk_min_typing_seconds=_bounded_float(
+                "ZOOPLUS_CHUNK_MIN_TYPING_SECONDS", 1.4, 0.0, 5.0
+            ),
+            chunk_min_pause_seconds=_bounded_float(
+                "ZOOPLUS_CHUNK_MIN_PAUSE_SECONDS", 0.9, 0.0, 5.0
+            ),
         )
 
 

@@ -31,6 +31,35 @@ if (!chatSessionId) {
 let typingEl = null;
 let typingTimer = null;
 let typingStep = 0;
+const PACE_TYPING_MS = 1400;
+const PACE_GAP_MS = 900;
+const PACE_FINAL_MS = 1100;
+let chunkInbox = [];
+let chunkPaceChain = Promise.resolve();
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function enqueueChunk(text) {
+  chunkInbox.push(text);
+  chunkPaceChain = chunkPaceChain.then(drainChunkInbox);
+}
+
+async function drainChunkInbox() {
+  while (chunkInbox.length > 0) {
+    const text = chunkInbox.shift();
+    showTypingIndicator();
+    await sleep(PACE_TYPING_MS);
+    hideTypingIndicator();
+    appendMessage("bot", text);
+    if (chunkInbox.length > 0) await sleep(PACE_GAP_MS);
+  }
+}
+
+async function waitForChunkPacing() {
+  await chunkPaceChain;
+}
 
 function resolvedSiteId() {
   const picked = Number(siteSelect.value);
@@ -271,14 +300,11 @@ async function consumeChatStream(response, signal) {
       }
 
       if (evt.type === "typing") {
-        if (evt.active) showTypingIndicator();
-        else hideTypingIndicator();
+        if (evt.active !== false) showTypingIndicator();
       } else if (evt.type === "chunk" && evt.text) {
-        hideTypingIndicator();
-        appendMessage("bot", evt.text);
+        enqueueChunk(evt.text);
       } else if (evt.type === "status" && evt.text) {
-        hideTypingIndicator();
-        appendMessage("bot", evt.text);
+        enqueueChunk(evt.text);
       } else if (evt.type === "done") {
         finalAnswer = normalizeAnswer(evt.answer) || "";
         finalProducts = evt.retrieved_products || [];
@@ -343,13 +369,16 @@ form.addEventListener("submit", async (e) => {
     }
 
     const result = await consumeChatStream(res, controller.signal);
-    hideTypingIndicator();
+    await waitForChunkPacing();
     if (!result || controller.signal.aborted) return;
 
     const { answer, products, meta } = result;
     if (meta) setModeBadge(meta);
     const decline =
       products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(answer || "");
+    showTypingIndicator();
+    await sleep(PACE_FINAL_MS);
+    hideTypingIndicator();
     appendMessage("bot", answer || "(empty)", products, { decline });
   } catch (err) {
     clearTimeout(clientTimeout);

@@ -8,12 +8,12 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
+from src.agents.agent_body import wrap_prompt_with_agent
 from src.agents.agent_cascade import run_agent_cascade
 from src.agents.prompts import CONDUCTOR_ORCHESTRATOR_SYSTEM
 from src.agents.registry import agent_chain_for_role, cli_model_arg
 from src.config import Settings, apply_settings
 from src.llm.opencode import run_opencode_agent
-from src.agents.agent_body import wrap_prompt_with_agent
 
 logger = logging.getLogger(__name__)
 
@@ -128,12 +128,21 @@ def _heuristic_step(state: ConductorState) -> ConductorStep:
     if state.lane != "catalog_search":
         return ConductorStep(action="complete", reason="non_catalog_lane")
     if state.tick_index == 0:
-        brief = state.shopper_status if state.shopper_status and len(state.shopper_status) > 10 else (
-            "Warm ack — confirm you will help; ONE line on dog/cat scope only if non-catalog species asked."
-        )
+        status = state.shopper_status
+        if status and len(status) > 10:
+            brief = status
+        else:
+            brief = (
+                "Warm ack — confirm you will help; "
+                "ONE line on dog/cat scope only if non-catalog species asked."
+            )
         return ConductorStep(action="emit_message", message_brief=brief, wait_seconds=5)
     if not state.catalog_running and state.tick_index == 1:
-        return ConductorStep(action="start_catalog", wait_seconds=0, reason="start_catalog_heuristic")
+        return ConductorStep(
+            action="start_catalog",
+            wait_seconds=0,
+            reason="start_catalog_heuristic",
+        )
     if state.catalog_done:
         return ConductorStep(action="complete")
     es = bool(re.search(r"[áéíóúñ¿¡]", state.query)) or "gato" in state.query.lower()

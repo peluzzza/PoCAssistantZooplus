@@ -9,9 +9,9 @@ from collections.abc import AsyncIterator
 
 from src.acp.dispatcher import dispatch_process
 from src.acp.envelopes import ChatProcessEnvelope
+from src.agents.conductor_orchestrator import ConductorState, conductor_next_step
 from src.agents.handoff import build_handoff
 from src.agents.registry import resolved_agent_model
-from src.agents.conductor_orchestrator import ConductorState, conductor_next_step
 from src.agents.social_agent import social_chunk_reply, social_reply
 from src.cache.session_turn import bump_session_turn, is_current_turn
 from src.config import Settings, apply_settings
@@ -61,6 +61,12 @@ def _chunk_event(text: str, *, chunk_index: int, elapsed_s: int) -> dict:
     }
 
 
+async def _sleep_until(deadline: float) -> None:
+    wait = deadline - time.monotonic()
+    if wait > 0:
+        await asyncio.sleep(wait)
+
+
 async def _run_catalog_pipeline(
     request: ChatRequest,
     handoff_brief: str,
@@ -106,11 +112,15 @@ async def _emit_conductor_chunks(
     messages: list[str] = []
     started = time.monotonic()
     max_ticks = cfg.max_chunk_messages
+    interval = cfg.chunk_interval_seconds
+    min_typing = cfg.chunk_min_typing_seconds
+    min_pause = cfg.chunk_min_pause_seconds
 
     for tick_index in range(max_ticks):
         if not is_current_turn(session_id, turn_id):
             return
 
+        await _sleep_until(started + tick_index * interval)
         elapsed = int(time.monotonic() - started)
         state = ConductorState(
             query=request.query,
@@ -130,19 +140,23 @@ async def _emit_conductor_chunks(
 
         if step.action == "emit_message" and step.message_brief:
             yield _line(_typing_event(chunk=tick_index))
-            text = await asyncio.to_thread(
-                social_chunk_reply,
-                request.query,
-                request.site_id,
-                chunk_index=tick_index,
-                elapsed_seconds=elapsed,
-                previous_chunks=tuple(messages),
-                catalog_still_running=not catalog_task.done(),
-                shopper_status=shopper_status if tick_index == 0 else None,
-                conductor_brief=step.message_brief,
-                settings=cfg,
+            llm_task = asyncio.create_task(
+                asyncio.to_thread(
+                    social_chunk_reply,
+                    request.query,
+                    request.site_id,
+                    chunk_index=tick_index,
+                    elapsed_seconds=elapsed,
+                    previous_chunks=tuple(messages),
+                    catalog_still_running=not catalog_task.done(),
+                    shopper_status=shopper_status if tick_index == 0 else None,
+                    conductor_brief=step.message_brief,
+                    settings=cfg,
+                )
             )
-            yield _line(_typing_event(chunk=tick_index, active=False))
+            if min_typing > 0:
+                await asyncio.sleep(min_typing)
+            text = await llm_task
             if not is_current_turn(session_id, turn_id):
                 return
             yield _line(_chunk_event(text, chunk_index=tick_index, elapsed_s=elapsed))
@@ -150,14 +164,10 @@ async def _emit_conductor_chunks(
 
         if catalog_task.done():
             return
-
-        wait_s = step.wait_seconds if step.action == "wait" else cfg.chunk_interval_seconds
-        if tick_index + 1 < max_ticks and wait_s > 0:
-            try:
-                await asyncio.wait_for(asyncio.shield(catalog_task), timeout=wait_s)
-                return
-            except TimeoutError:
-                continue
+        if tick_index + 1 >= max_ticks:
+            return
+        if min_pause > 0:
+            await asyncio.sleep(min_pause)
 
 
 async def _emit_timed_chunks(
@@ -169,45 +179,46 @@ async def _emit_timed_chunks(
     turn_id: int,
     cfg: Settings,
 ) -> AsyncIterator[str]:
-    """Emit social LLM chunks every chunk_interval_seconds while catalog runs."""
+    """Emit one social chunk per time slot; typing visible before each message."""
     interval = cfg.chunk_interval_seconds
     max_chunks = cfg.max_chunk_messages
+    min_typing = cfg.chunk_min_typing_seconds
+    min_pause = cfg.chunk_min_pause_seconds
     prior: list[str] = []
     started = time.monotonic()
 
     for chunk_index in range(max_chunks):
         if not is_current_turn(session_id, turn_id):
             return
-        elapsed = int(time.monotonic() - started)
+        await _sleep_until(started + chunk_index * interval)
         yield _line(_typing_event(chunk=chunk_index))
-        text = await asyncio.to_thread(
-            social_chunk_reply,
-            request.query,
-            request.site_id,
-            chunk_index=chunk_index,
-            elapsed_seconds=elapsed,
-            previous_chunks=tuple(prior),
-            catalog_still_running=not catalog_task.done(),
-            shopper_status=shopper_status,
-            settings=cfg,
+        llm_task = asyncio.create_task(
+            asyncio.to_thread(
+                social_chunk_reply,
+                request.query,
+                request.site_id,
+                chunk_index=chunk_index,
+                elapsed_seconds=int(time.monotonic() - started),
+                previous_chunks=tuple(prior),
+                catalog_still_running=not catalog_task.done(),
+                shopper_status=shopper_status,
+                settings=cfg,
+            )
         )
-        yield _line(_typing_event(chunk=chunk_index, active=False))
+        if min_typing > 0:
+            await asyncio.sleep(min_typing)
+        text = await llm_task
         if not is_current_turn(session_id, turn_id):
             return
-        yield _line(_chunk_event(text, chunk_index=chunk_index, elapsed_s=elapsed))
+        elapsed_s = int(time.monotonic() - started)
+        yield _line(_chunk_event(text, chunk_index=chunk_index, elapsed_s=elapsed_s))
         prior.append(text)
-
         if catalog_task.done():
             return
-
         if chunk_index + 1 >= max_chunks:
             return
-
-        try:
-            await asyncio.wait_for(asyncio.shield(catalog_task), timeout=interval)
-            return
-        except TimeoutError:
-            continue
+        if min_pause > 0:
+            await asyncio.sleep(min_pause)
 
 
 async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
@@ -220,10 +231,7 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
     turn_id = bump_session_turn(session_id)
 
     try:
-        yield _line(_typing_event(chunk=0))
-
         intent = await _classify_intent_bounded(request.query, request.site_id)
-        yield _line(_typing_event(chunk=0, active=False))
 
         if not is_current_turn(session_id, turn_id):
             return
@@ -242,7 +250,9 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
         )
 
         if intent.lane in ("decline_off_topic", "conversational"):
-            yield _line(_typing_event(chunk=0))
+            if cfg.chunk_min_typing_seconds > 0:
+                yield _line(_typing_event(chunk=0))
+                await asyncio.sleep(cfg.chunk_min_typing_seconds)
             answer, run_meta = await asyncio.to_thread(
                 social_reply,
                 request.query,
@@ -250,7 +260,6 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
                 intent,
                 handoff.brief(),
             )
-            yield _line(_typing_event(chunk=0, active=False))
             if not is_current_turn(session_id, turn_id):
                 return
             answer = normalize_shopper_answer(answer)
@@ -297,10 +306,11 @@ async def stream_chat_events(request: ChatRequest) -> AsyncIterator[str]:
             return
 
         _hits, receipt = await catalog_task
-        yield _line(_typing_event(chunk=99))
+        if cfg.chunk_min_typing_seconds > 0:
+            yield _line(_typing_event(chunk=99))
+            await asyncio.sleep(cfg.chunk_min_typing_seconds)
         products_payload = [p.model_dump() for p in receipt.retrieved_products]
         answer = normalize_shopper_answer(receipt.answer)
-        yield _line(_typing_event(chunk=99, active=False))
         meta = ChatRuntimeMeta(
             lane="catalog_search",
             intent_source=intent.source,

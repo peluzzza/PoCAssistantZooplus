@@ -65,7 +65,11 @@ def test_conductor_next_step_uses_heuristic_when_llm_disabled(
         return type("R", (), {"value": None, "raw": None})()
 
     monkeypatch.setattr("src.agents.conductor_orchestrator.run_agent_cascade", _fail)
-    monkeypatch.setattr("src.agents.conductor_orchestrator.run_opencode_agent", lambda *_a, **_k: "")
+
+    def _noop(*_a, **_k):
+        return ""
+
+    monkeypatch.setattr("src.agents.conductor_orchestrator.run_opencode_agent", _noop)
 
     step = conductor_next_step(state)
     assert step.action in ("emit_message", "start_catalog", "complete", "wait")

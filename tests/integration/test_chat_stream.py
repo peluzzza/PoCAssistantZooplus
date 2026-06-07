@@ -17,8 +17,9 @@ def client() -> TestClient:
 
 
 @pytest.fixture(autouse=True)
-def _conductor_stream_mode(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("ZOOPLUS_STREAM_MODE", "timed")
+def _fast_chunk_pacing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ZOOPLUS_CHUNK_MIN_TYPING_SECONDS", "0")
+    monkeypatch.setenv("ZOOPLUS_CHUNK_MIN_PAUSE_SECONDS", "0")
 
 
 @pytest.fixture(autouse=True)
@@ -32,6 +33,7 @@ def _mock_social_chunks(monkeypatch: pytest.MonkeyPatch) -> None:
         previous_chunks: tuple[str, ...],
         catalog_still_running: bool,
         shopper_status: str | None = None,
+        conductor_brief: str | None = None,
         settings=None,
     ) -> str:
         _ = (
@@ -41,11 +43,17 @@ def _mock_social_chunks(monkeypatch: pytest.MonkeyPatch) -> None:
             previous_chunks,
             catalog_still_running,
             shopper_status,
+            conductor_brief,
             settings,
         )
         return f"Timed chunk {chunk_index}: keeping you in the loop."
 
     monkeypatch.setattr("src.lanes.stream.social_chunk_reply", _fake_chunk)
+
+
+@pytest.fixture(autouse=True)
+def _timed_stream_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ZOOPLUS_STREAM_MODE", "timed")
 
 
 def _read_ndjson(response) -> list[dict]:
@@ -94,3 +102,37 @@ def test_chat_stream_catalog_emits_timed_chunks(client: TestClient, indexed_cata
     done = next(e for e in events if e["type"] == "done")
     assert done.get("answer")
     assert len(done.get("retrieved_products", [])) >= 1
+
+
+def test_chat_stream_catalog_conductor_mode(
+    client: TestClient, indexed_catalog: dict, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from src.agents.conductor_orchestrator import ConductorStep
+
+    monkeypatch.setenv("ZOOPLUS_STREAM_MODE", "conductor")
+    steps = [
+        ConductorStep(action="emit_message", message_brief="Ack only once"),
+        ConductorStep(action="emit_message", message_brief="Searching catalog now"),
+        ConductorStep(action="complete"),
+    ]
+    calls: list[int] = []
+
+    def _fake_step(state, *, settings=None):
+        _ = settings
+        calls.append(state.tick_index)
+        return steps[min(state.tick_index, len(steps) - 1)]
+
+    monkeypatch.setattr("src.lanes.stream.conductor_next_step", _fake_step)
+
+    with client.stream(
+        "POST",
+        "/chat/stream",
+        json={"site_id": 3, "query": "best dry food for puppy", "session_id": "s-con"},
+    ) as response:
+        assert response.status_code == 200
+        events = _read_ndjson(response)
+    chunks = [e for e in events if e["type"] == "chunk"]
+    assert len(chunks) >= 2
+    assert calls
+    done = next(e for e in events if e["type"] == "done")
+    assert done.get("answer")

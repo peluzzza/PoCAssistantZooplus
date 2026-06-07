@@ -39,5 +39,5 @@ def test_resolved_agent_model_for_meta() -> None:
 
 def test_agent_models_map_has_all_workers() -> None:
     models = agent_models_map()
-    assert models["zooplus-conductor"] == "opencode-go/minimax-m2.5"
+    assert models["zooplus-conductor"] == "opencode-go/minimax-m2.7"
     assert models["zooplus-synthesis"] == "opencode-go/qwen3.6-plus"

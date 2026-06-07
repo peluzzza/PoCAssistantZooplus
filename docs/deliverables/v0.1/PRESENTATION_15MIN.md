@@ -4,9 +4,9 @@
 **FR** = Functional Requirement from `Coding Task.docx` — explain on **slide 2**.  
 **Roadmap:** slides **11–13** (3 slides, ~2 min + Q&A).
 
-Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **Agentic UX (v0.1.3):** `py -3 scripts/patch_interview_pptx_agentic_ux.py`
+Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **v1.4 live loop:** `py -3 scripts/patch_interview_pptx_v14_live_loop.py` · **v2.0 conductor:** `py -3 scripts/patch_interview_pptx_v20_conductor.py`
 
-**Changelog since last PPT (v0.1.2):** [`CHANGELOG_v0.1.2_to_v0.1.3.md`](CHANGELOG_v0.1.2_to_v0.1.3.md)  
+**Changelog v1.4 → v2.0:** [`CHANGELOG_v1.4_to_v2.0.md`](CHANGELOG_v1.4_to_v2.0.md) · **v1.0 → v1.4:** [`CHANGELOG_v1.0_to_v1.4.md`](CHANGELOG_v1.0_to_v1.4.md)  
 **Interview Q&A:** [`QA_FOR_POC.md`](QA_FOR_POC.md)
 
 ---
@@ -47,25 +47,25 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 6 — RAG strategy end-to-end
 
-> “FR3 is catalog-only RAG. Offline: the instructions JSON is normalized — HTML stripped — one embedding per variant, with `site_id` and commerce metadata in Chroma; ingest also builds `routing_lexicon.json` for agentic prompts. Online: after the conductor allows catalog lane, we search with hybrid retrieval, optional EUR price-band filter, cap at four products, and return grounded `retrieved_products`. The UI uses `/chat/stream`: real status phases, then products and answer. Off-topic never hits the index. Optional Redis mirrors lexicon and caches for scale-out.”
+> “FR3 is catalog-only RAG — same ingest and hybrid retrieval as v1.0. What changed in v2.0 is *when* we run it: the invisible conductor starts the catalog pipeline in parallel while the social agent keeps the shopper engaged. Grounding rules are unchanged — `retrieved_products[]` from the same `site_id` only, synthesis never invents SKUs, off-topic gets an empty list and a polite decline.”
 
 ---
 
-## Slide 7 — Agentic architecture (v0.1.3)
+## Slide 7 — Agentic architecture (v2.0 invisible conductor)
 
-> “Not a separate FR — this is how we made the PoC fast and shopper-friendly. Conductor-first routing classifies topic before any Chroma call, so greetings do not trigger RAG. The orchestrator prefetches catalog hits only on catalog lane. Vocabulary in prompts comes from the indexed catalog, not hardcoded dog/cat lists. TTL caches and optional Redis cut repeat latency. The shopper still sees one assistant and one `/chat` contract.”
+> “v1.4 timed chunks every five seconds. v2.0 replaces the fixed timer with an **invisible conductor** — minimax-m2.7 — that returns JSON each tick: emit a new message brief, wait, or complete. The social agent is the only voice the shopper hears. Anti-repeat: shop scope (dogs and cats only) is stated once; later bubbles are progress only. `ZOOPLUS_STREAM_MODE=conductor` is default; `timed` is the v1.4 fallback.”
 
 ---
 
 ## Slide 8 — Agents + per-agent LLMs
 
-> “OpenCode subprocesses per role. Conductor returns lane plus a short `shopper_status` for the UI bubble. Social agent answers in the shopper’s language while static UI copy stays English. Each agent has its own model in `opencode.json` — fast models for routing and social, stronger models for synthesis. The UI badge shows the real model from response metadata, not a hardcoded label.”
+> “OpenCode subprocesses per role. **zooplus-conductor** is the invisible stream orchestrator — not shown in the UI. **social-agent** turns conductor briefs into shopper language. intent/topic-guard, RAG, logic, and synthesis run when the catalog lane needs them. Conductor and logic use minimax-m2.7; social and intent use fast flash models. The UI badge still shows the real model from response metadata.”
 
 ---
 
-## Slide 9 — Guardrails + demo
+## Slide 9 — Guardrails + demo (v2.0 live loop)
 
-> “FR4: pet catalog only, default-deny. Live demo on port 8090: ‘hola que tal’ — social in seconds; Spanish cat food with a EUR band — stream status, then product cards; weather — polite decline. Enter sends, one transient status line, abort if the user types again. Pick shop 1, 3, or 15 before chatting.”
+> “FR4: pet catalog only, default-deny. Demo on 8090: (A) ‘hola’ — fast social; (B) ‘gatos y tortugas 20–50€’ — two or three **different** bubbles, scope disclaimer once, no tortuga loop; (C) weather — decline. Typing dots and paced chunks like v1.4. Pick shop 15 (Spain) before chatting.”
 
 ---
 
