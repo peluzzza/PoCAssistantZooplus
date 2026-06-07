@@ -116,7 +116,7 @@ Returns `application/x-ndjson` — one JSON object per line:
 
 | Event type | When |
 |------------|------|
-| `status` | Backend-driven phases (`reading`, `understood`, `searching`, …) with optional `shopper_status` from the conductor |
+| `status` | Backend-driven phases (`received`, `understood`, `searching`, `found`, …) — each shown as a real bot message; `shopper_status` from intent when available |
 | `topic` | Lane decision (`ALLOW` / `DECLINE` + `reason_code`) |
 | `products` | Catalog hits (catalog lane only) |
 | `done` | Final `answer`, `retrieved_products`, and `meta` |

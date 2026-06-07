@@ -57,7 +57,7 @@ def looks_like_product_browse(query: str) -> bool:
         return False
     if re.search(
         r"\b(what\s+products?|products?\s+(do\s+you\s+)?(have|sell|carry|stock)|"
-        r"what\s+do\s+you\s+sell|what'?s?\s+available|show\s+me\s+(something|anything)|"
+        r"what\s+do\s+you\s+sell|what'?s?\s+available|show\s+me\s+(something|anything|about)|"
         r"browse\s+(the\s+)?(shop|catalog)|anything\s+in\s+stock)\b",
         text,
         re.I,

@@ -11,8 +11,9 @@ from src.lanes.customer_status import (
 
 def test_phases_for_catalog_lane() -> None:
     phases = phases_for_lane("catalog_search")
-    assert phases[0] == "reading"
+    assert phases[0] == "received"
     assert "searching" in phases
+    assert "found" in phases
     assert len(phases) <= MAX_STATUS_MESSAGES
 
 
@@ -26,14 +27,24 @@ def test_understood_uses_agent_shopper_status() -> None:
     assert "gato" not in text.lower()
 
 
-def test_understood_without_agent_status_falls_back_to_phase_copy() -> None:
+def test_understood_without_agent_status_falls_back_to_catalog_copy() -> None:
     text = status_message("understood", lane="catalog_search", shopper_status=None)
-    assert text == "Got your request…"
+    assert "catalog" in text.lower()
+
+
+def test_found_with_hits() -> None:
+    text = status_message("found", lane="catalog_search", hit_count=5)
+    assert "found" in text.lower()
+
+
+def test_found_without_hits() -> None:
+    text = status_message("found", lane="catalog_search", hit_count=0)
+    assert "perfect match" in text.lower()
 
 
 def test_social_lane_short_phases() -> None:
     phases = phases_for_lane("conversational")
-    assert phases == ["reading", "composing"]
+    assert phases == ["received", "composing"]
     assert "searching" not in phases
 
 
