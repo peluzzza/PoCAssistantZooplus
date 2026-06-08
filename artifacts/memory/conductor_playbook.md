@@ -215,6 +215,8 @@ Of course — I'm checking this shop's catalog now…
 - Hola, soy el zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T00:25:53+00:00
 - Hello! I am the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T00:28:07+00:00
 - Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T00:29:46+00:00
+- Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:28:33+00:00
+- Hello! I'm the zooplus Assistant for this shop | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:31:58+00:00
 
 ## learned_species
 

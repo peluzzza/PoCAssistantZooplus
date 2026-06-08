@@ -123,6 +123,13 @@ def social_chunk_reply(
     return _chunk_fallback(chunk_index, query, shopper_status=shopper_status)
 
 
+def _finalize_social_answer(raw: str, *, kind: SocialKind) -> str:
+    text = normalize_shopper_answer(raw) or ""
+    if kind == "greeting":
+        return text.strip()
+    return strip_leading_assistant_intro(text)
+
+
 def _context_for_kind(kind: SocialKind, query: str, intent: IntentDecision) -> str:
     if intent.lane == "decline_off_topic":
         return SOCIAL_DECLINE_CONTEXT
@@ -161,10 +168,11 @@ def social_reply(
             if kind == "help"
             else ""
         )
+        greet_hint = " Open with a warm hello." if kind == "greeting" else ""
         fast_prompt = (
             f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}\n\n"
             f"site_id={site_id}\nCustomer: {query}\n"
-            f"Reply as zooplus Assistant in 2-3 short sentences.{no_intro} {lang_line}"
+            f"Reply as zooplus Assistant in 2-3 short sentences.{greet_hint}{no_intro} {lang_line}"
         )
         raw = run_opencode_agent(
             wrap_prompt_with_agent(agent_id, fast_prompt),
@@ -173,7 +181,7 @@ def social_reply(
             timeout_seconds=_SOCIAL_FAST_TIMEOUT,
             model=agent_model,
         )
-        answer = strip_leading_assistant_intro(normalize_shopper_answer(raw) or "")
+        answer = _finalize_social_answer(raw, kind=kind)
         if answer and len(answer) > 12:
             return answer, AgentRunMeta(
                 lane=intent.lane,
@@ -197,7 +205,7 @@ def social_reply(
 
     result = run_agent_cascade("social", prompt, settings=cfg, parse=_ok)
     if result.value:
-        answer = strip_leading_assistant_intro(str(result.value).strip())
+        answer = _finalize_social_answer(str(result.value), kind=kind)
         return answer, AgentRunMeta(
             lane=intent.lane,
             intent_source=intent.source,

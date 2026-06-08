@@ -718,9 +718,19 @@ def chunk_is_redundant(text: str, prior: tuple[str, ...]) -> bool:
 _INTRO_GREETING_RE = re.compile(
     r"^(?:¡?\s*)?(?:hola|hello|hi|hey|buenas)\b"
     r"(?:\s*[,!.])?\s*(?:soy el|soy la|i['']?m the|i am the|i'm)\s+"
-    r"(?:the\s+)?zooplus\s+assistant\b",
+    r"(?:the\s+)?zooplus\s+assistant\b"
+    r"(?:\s+for\s+(?:this\s+shop|shop\s+\d+|esta\s+tienda))?\s*",
     re.I,
 )
+
+_INTRO_ASSISTANT_ONLY_RE = re.compile(
+    r"^(?:i['']?m the|i am the|soy el|soy la)\s+"
+    r"(?:the\s+)?zooplus\s+assistant\b"
+    r"(?:\s+for\s+(?:this\s+shop|shop\s+\d+|esta\s+tienda))?\s*",
+    re.I,
+)
+
+_SHOP_ORPHAN_RE = re.compile(r"^for\s+this\s+shop\s*[,.]?\s*", re.I)
 
 _CONTINUATION_QUERY_RE = re.compile(
     r"^(?:y\s+|and\s+|also\s+|además\s+|otra\s+cosa[,:]?\s+|"
@@ -747,20 +757,34 @@ def _sentence_has_greeting(pl: str, g_markers: tuple[str, ...]) -> bool:
     return any(m in pl for m in g_markers)
 
 
+def _strip_intro_match(text: str, m: re.Match[str]) -> str:
+    rest = text[m.end() :].lstrip(" ,.—-")
+    if not rest:
+        return text
+    record_stream_voice_learning(
+        category="greeting_markers",
+        phrase=text[: m.end()].strip(),
+        reason="leading_intro_stripped",
+    )
+    orphan = _SHOP_ORPHAN_RE.match(rest)
+    if orphan:
+        rest = rest[orphan.end() :].lstrip(" ,.—-")
+    return rest or text
+
+
 def strip_leading_assistant_intro(answer: str) -> str:
     """Remove redundant zooplus Assistant self-intro from answer start."""
     text = answer.strip()
     if not text:
         return answer
-    m = _INTRO_GREETING_RE.match(text)
-    if m:
-        rest = text[m.end() :].lstrip(" ,.—-")
+    for pattern in (_INTRO_GREETING_RE, _INTRO_ASSISTANT_ONLY_RE):
+        m = pattern.match(text)
+        if m:
+            return _strip_intro_match(text, m)
+    orphan = _SHOP_ORPHAN_RE.match(text)
+    if orphan:
+        rest = text[orphan.end() :].lstrip(" ,.—-")
         if rest:
-            record_stream_voice_learning(
-                category="greeting_markers",
-                phrase=text[: m.end()].strip(),
-                reason="leading_intro_stripped",
-            )
             return rest
     return answer
 
@@ -805,7 +829,15 @@ def dedupe_answer_against_chunks(answer: str, chunks: tuple[str, ...]) -> str:
             kept.append(part)
     merged = " ".join(kept).strip()
     merged = strip_leading_assistant_intro(merged)
-    return merged or strip_leading_assistant_intro(answer)
+    if merged:
+        return merged
+    fallback = strip_leading_assistant_intro(answer)
+    if _SHOP_ORPHAN_RE.match(fallback):
+        for part in parts:
+            if part.strip() and not _sentence_has_greeting(part.lower(), g_markers):
+                return part.strip()
+        return answer
+    return fallback or answer
 
 
 def stream_context_for_synthesis(

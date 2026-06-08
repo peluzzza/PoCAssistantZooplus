@@ -46,7 +46,11 @@ SOCIAL_IDENTITY_CONTEXT = (
     "Combined greetings OK (user said hello and who are you)."
 )
 
-SOCIAL_GREETING_CONTEXT = "social_kind=greeting. Warm welcome; invite a specific pet product question (puppy food, cat treats, etc.)."
+SOCIAL_GREETING_CONTEXT = (
+    "social_kind=greeting. First turn: open with a warm, natural hello that matches the shopper's "
+    "language and tone. Briefly welcome them to this shop's pet catalog, then invite a specific "
+    "product question (puppy food, cat treats, etc.). Conversational — not a fixed script."
+)
 
 SOCIAL_HELP_CONTEXT = (
     "social_kind=help. Answer in 2-3 short sentences. If the shopper already spoke this session, "

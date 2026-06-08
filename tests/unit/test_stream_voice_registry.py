@@ -111,6 +111,34 @@ def test_in_scope_pets_not_flagged(playbook) -> None:
     assert not svr.mentions_non_catalog_species("best dry food for puppy", 3)
 
 
+def test_strip_intro_removes_shop_tail_not_orphan() -> None:
+    raw = (
+        "Hello! I'm the zooplus Assistant for this shop. "
+        "I'm here to help you find dog and cat products. What are you looking for?"
+    )
+    trimmed = svr.strip_leading_assistant_intro(raw)
+    assert not trimmed.lower().startswith("for this shop")
+    assert "help you find" in trimmed.lower()
+
+
+def test_strip_intro_orphan_shop_fragment() -> None:
+    orphan = "for this shop. I'm here to help you find the best dog and cat products."
+    trimmed = svr.strip_leading_assistant_intro(orphan)
+    assert not trimmed.lower().startswith("for this shop")
+    assert trimmed.lower().startswith("i'm here")
+
+
+def test_dedupe_fallback_not_shop_orphan(playbook) -> None:
+    chunks = ("Still searching the catalog, one moment…",)
+    answer = (
+        "Hello! I'm the zooplus Assistant for this shop. "
+        "Here are some great dry food options for puppies."
+    )
+    trimmed = svr.dedupe_answer_against_chunks(answer, chunks)
+    assert not trimmed.lower().startswith("for this shop")
+    assert "dry food" in trimmed.lower() or "puppies" in trimmed.lower()
+
+
 def test_is_continuation_query() -> None:
     assert svr.is_continuation_query("y para iguanas tienes?")
     assert svr.is_continuation_query("and for dogs under 20€")
