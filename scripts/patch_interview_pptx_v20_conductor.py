@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Update slides 6–9 (v2.1.6 conductor) and release-progress closing slide."""
+"""Update slides 5–9 diagrams (v2.1.6) and release-progress closing slide."""
 
 from __future__ import annotations
 
@@ -23,6 +23,29 @@ from patch_interview_pptx_v14_live_loop import (  # type: ignore[import-not-foun
 from pptx import Presentation
 from pptx.util import Inches
 
+SLIDE5_RIGHT_V20 = [
+    ("Query path (hybrid default)", True),
+    ("1. Hard filter site_id in Chroma metadata", False),
+    ("2. Pull candidates — pool scales with price band / requested count", False),
+    ("3. Score BM25 + business signals on candidate pool", False),
+    ("4. Rerank → default 4 picks; shopper can ask up to 20", False),
+    ("Stream delivery (v2.1.6)", True),
+    ("• product_batch NDJSON — UI reveals product cards in chunks of 4", False),
+    ("• A/B vector-only: ZOOPLUS_RETRIEVAL_MODE=vector", False),
+]
+
+SLIDE6_LEFT_V20 = [
+    ("Ingest (offline)", True),
+    ("• Source JSON → data/raw (300 variants) · strip HTML.", False),
+    ("• Chroma per article_id · routing_lexicon.json at ingest.", False),
+    ("Online path (catalog lane)", True),
+    ("• probe_instant_lane: phrase index + playbook → social | catalog.", False),
+    ("• Hybrid retrieve → EUR price filter → resolve count from query.", False),
+    ("NDJSON stream (/chat/stream)", True),
+    ("• typing → chunk* → product_batch* → done (+ meta).", False),
+    ("• Social/help: no catalog progress; dedupe final vs live chunks.", False),
+]
+
 SLIDE6_RIGHT_V20 = [
     ("Grounding & answer", True),
     ("• retrieved_products[] from same site_id hits only.", False),
@@ -34,6 +57,11 @@ SLIDE6_RIGHT_V20 = [
     ("• social_phrases.yaml index + playbook auto-learn (help/greeting).", False),
     ("• Dynamic species inference (iguana, capibara…) — not a fixed list.", False),
 ]
+
+SLIDE7_FLOW_V20 = (
+    "Request flow: UI → probe (phrase index) → intent-agent → "
+    "social-agent | catalog prefetch → chunks + product_batch → done"
+)
 
 SLIDE7_LEFT_V20 = [
     ("Invisible conductor (releases v2.0+)", True),
@@ -156,7 +184,13 @@ def main() -> None:
         raise SystemExit(f"Missing deck: {DECK}")
     prs = Presentation(str(DECK))
 
+    i5 = _find_slide(prs, "Why hybrid")
+    right5 = _right_column_bullets(prs.slides[i5])
+    if right5 is not None:
+        _fill(right5, SLIDE5_RIGHT_V20, size=14)
+
     i6 = _find_slide(prs, "RAG strategy")
+    _fix_left_column(prs.slides[i6], SLIDE6_LEFT_V20, size=14)
     right6 = _right_column_bullets(prs.slides[i6])
     if right6 is not None:
         _fill(right6, SLIDE6_RIGHT_V20, size=14)
@@ -164,9 +198,14 @@ def main() -> None:
     i7 = _find_slide(prs, "Agentic architecture", "Agentic routing", "Live loop")
     _fix_left_column(prs.slides[i7], SLIDE7_LEFT_V20, size=14)
     for sh in prs.slides[i7].shapes:
-        if sh.has_text_frame and "How each request" in (sh.text or ""):
+        if not sh.has_text_frame:
+            continue
+        text = sh.text or ""
+        if "How each request" in text:
+            sh.text_frame.paragraphs[0].text = SLIDE7_FLOW_V20
+        elif "Conductor-first" in text or "catalog lexicon · stream status" in text:
             sh.text_frame.paragraphs[0].text = (
-                "v2.1.6 · phrase index · dynamic picks · product_batch stream"
+                "v2.1.6 · phrase-index probe · fast intent · product_batch stream"
             )
 
     i8 = _find_slide(prs, "Agents")

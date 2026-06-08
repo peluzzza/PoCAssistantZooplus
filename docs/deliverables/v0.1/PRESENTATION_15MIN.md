@@ -42,7 +42,7 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 5 — Why hybrid retrieval?
 
-> “We did not rely on vector search alone. Chroma gives semantic recall on product text, but shoppers also use exact tokens — brands, ‘grain-free’, SKUs. BM25 on the same candidate pool adds lexical precision without a second database. We fuse vector, keyword, and business signals — rating, sales, stock — then return the top four. For the PoC that means zero extra infra: local Chroma plus in-memory BM25. You can still A/B vector-only with `ZOOPLUS_RETRIEVAL_MODE=vector`.”
+> “We did not rely on vector search alone. Chroma gives semantic recall on product text, but shoppers also use exact tokens — brands, ‘grain-free’, SKUs. BM25 on the same candidate pool adds lexical precision without a second database. We fuse vector, keyword, and business signals — default **four** picks, or up to **twenty** when the shopper asks. The stream sends **product_batch** events so the UI reveals cards in chunks of four. Zero extra infra for the PoC; A/B vector-only with `ZOOPLUS_RETRIEVAL_MODE=vector`.”
 
 ---
 

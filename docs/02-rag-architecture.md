@@ -69,6 +69,33 @@ Expected: 300 records ingested; retrieval returns only matching `site_id`.
 
 ---
 
+## 6. Online request flow (v2.1.6)
+
+Catalog lane only — social/help turns skip retrieval.
+
+```mermaid
+flowchart LR
+  Q[Shopper query] --> PROBE[probe_instant_lane]
+  PROBE --> IDX[social_phrases.yaml + playbook]
+  PROBE -->|social| SOC[social-agent]
+  PROBE -->|catalog| INT[intent-agent]
+  INT --> HYB[hybrid_search_catalog]
+  HYB --> PRICE[EUR price filter]
+  PRICE --> CAP[resolve_recommendation_count]
+  CAP --> SYN[synthesis]
+  SYN --> BATCH[product_batch stream]
+  BATCH --> UI[Chat UI cards]
+```
+
+| Step | Module | Notes |
+|------|--------|-------|
+| Social probe | `phrase_index.py`, `stream_voice_registry.py` | Help/greeting before catalog ack |
+| Retrieval pool | `recommendation_count.py` | Default 4; pool scales when shopper asks for more |
+| Cap | `guardian/engine.py` | `absolute_max_recommendations: 20` |
+| Stream | `lanes/stream.py` | `product_batch` NDJSON when count > 4 |
+
+---
+
 ## Trace
 
 - Step log: [`trace/T2-rag-index.md`](trace/T2-rag-index.md)

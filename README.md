@@ -40,40 +40,47 @@ flowchart TB
     NORM --> LEX[routing_lexicon.json]
   end
 
-  subgraph online [Online request]
+  subgraph online [Online request v2.1.6]
     U[User / Chat UI] --> API["POST /chat · POST /chat/stream"]
-    API --> ORCH[Orchestrator]
-    ORCH --> COND[Conductor-first intent OpenCode]
-    COND -->|decline_off_topic| SOC[Social agent — no RAG]
-    COND -->|conversational| SOC
-    COND -->|catalog_search| HYB[Hybrid retrieval prefetch]
+    API --> PROBE[probe_instant_lane]
+    PROBE --> PHRASE[social_phrases.yaml + playbook]
+    PROBE -->|social| SOC[Social agent — no RAG]
+    PROBE -->|catalog| HYB[Hybrid retrieval prefetch]
+    API --> INT[intent-agent + policy fast path]
+    INT -->|decline_off_topic| SOC
+    INT -->|conversational| SOC
+    INT -->|catalog_search| HYB
     HYB --> CHROMA
     HYB --> ACP[ACP process lane]
     ACP --> SYN[Synthesis OpenCode or template]
-    SYN --> RESP["answer + retrieved_products + meta"]
+    SYN --> BATCH[product_batch NDJSON chunks]
+    BATCH --> RESP["done: answer + products + meta"]
     SOC --> RESP
   end
 
-  LEX -.-> COND
+  LEX -.-> INT
+  PHRASE -.-> PROBE
   API --> MCP[MCP topic_check · catalog_search]
 ```
 
-**Request flow (v0.1.3):**
+**Request flow (v2.1.6):**
 
-1. **Conductor-first intent** (`zooplus-conductor`) classifies the turn into `conversational`, `decline_off_topic`, or `catalog_search` **before** Chroma is queried on greetings and off-topic traffic.
-2. **Social lane** handles greetings and declines via `zooplus-social-agent` — `retrieved_products` stays empty; the index is not searched.
-3. **Catalog lane** prefetches **hybrid retrieval** (Chroma vector candidates + in-memory BM25 + business-signal fusion), optional EUR price-band filter, then **grounded synthesis** (max 4 products).
-4. **Catalog lexicon** built at ingest (`routing_lexicon.json`) feeds agent prompts — no hardcoded dog/cat word lists.
-5. **Blocking work** (Chroma, OpenCode) runs in `asyncio.to_thread` inside async FastAPI handlers (FR1).
-6. **Optional Redis** (`ZOOPLUS_CACHE_BACKEND=redis`) mirrors TTL caches and lexicon for multi-replica setups.
+1. **Fast probe** (`probe_instant_lane`) uses the **phrase index** + playbook to route obvious social/help turns before catalog progress chunks appear.
+2. **Intent** (`zooplus-intent-agent` + policy probes) classifies into `conversational`, `decline_off_topic`, or `catalog_search`. Conductor intent is **opt-in** (`ZOOPLUS_CONDUCTOR_INTENT=0` default) for lower latency.
+3. **Social lane** — greetings, help (`me puedes ayudar`), thanks — via `zooplus-social-agent`; no RAG; dedupe strips repeated intros.
+4. **Catalog lane** — hybrid retrieval, optional EUR price filter, **`resolve_recommendation_count()`** (default **4**, shopper can ask up to **20**), grounded synthesis.
+5. **Stream** (`/chat/stream`) — `typing` → `chunk*` → `product_batch*` (cards in batches of 4) → `done`.
+6. **Playbook** (`conductor_playbook.md`) auto-learns species, help phrases, and forbidden repeats — invisible to shoppers.
+7. Blocking work runs in `asyncio.to_thread` (FR1). Optional Redis mirrors TTL caches.
 
 | Knob | Purpose |
 |------|---------|
 | `ZOOPLUS_RETRIEVAL_MODE=vector` | Vector-only retrieval for A/B |
 | `ZOOPLUS_SYNTHESIS_MODE=template` | Deterministic answers without OpenCode (CI) |
-| `ZOOPLUS_CONDUCTOR_INTENT=1` | Conductor classifies before RAG (default on `releases`) |
+| `ZOOPLUS_CONDUCTOR_INTENT=1` | Opt-in conductor intent before RAG |
+| `ZOOPLUS_STREAM_MODE=conductor` | Conductor progress chunks (default) |
 
-- **Constraints** in `src/guardian/constraints.yaml`: default-deny scope, max 4 recommendations, `must_ground_in_retrieval`.
+- **Constraints** in `src/guardian/constraints.yaml`: default-deny scope, **4 default / 20 max** recommendations, `must_ground_in_retrieval`.
 - **MCP tools** on the same host: `topic_check`, `catalog_search`.
 - **Deep dive:** [`docs/02-rag-architecture.md`](docs/02-rag-architecture.md)
 
@@ -116,12 +123,14 @@ Returns `application/x-ndjson` — one JSON object per line:
 
 | Event type | When |
 |------------|------|
-| `status` | Backend-driven phases (`received`, `understood`, `searching`, `found`, …) — each shown as a real bot message; `shopper_status` from intent when available |
-| `topic` | Lane decision (`ALLOW` / `DECLINE` + `reason_code`) |
-| `products` | Catalog hits (catalog lane only) |
+| `typing` | Typing indicator between chunks |
+| `chunk` / `status` | Progress bubbles while intent/RAG runs (conductor or timed mode) |
+| `topic` | Lane decision metadata |
+| `product_batch` | Catalog hits in batches of 4 when count > 4 (v2.1.6) |
+| `products` | All catalog hits at once (≤4 picks path) |
 | `done` | Final `answer`, `retrieved_products`, and `meta` |
 
-The UI shows a **single transient status bubble** that updates from `status` events and clears on `done`.
+The UI paces **chunk** messages and reveals **product_batch** cards gradually before the final answer.
 
 ### Behavior
 
@@ -129,7 +138,7 @@ The UI shows a **single transient status bubble** that updates from `status` eve
 |------|-----|----------------------|
 | `conversational` | No | `[]` — greetings, thanks, help |
 | `decline_off_topic` | No | `[]` — weather, news, non-pet, competitors |
-| `catalog_search` | Yes | Up to 4 products from the same `site_id` only |
+| `catalog_search` | Yes | Default 4 products; up to 20 if shopper asks (same `site_id`) |
 
 Multilingual shopper replies; static UI copy stays English. Reply language: **detected from the shopper message** when clear; if ambiguous or odd characters, falls back to the browser **`Accept-Language`** header (then shop locale). Pick a shop (**Germany**, **UK**, or **Spain**) before sending (UI blocks Send until config loads).
 
@@ -180,7 +189,7 @@ If OpenCode fails or times out, the API **falls back to template synthesis** or 
 - **Conductor-first agentic routing:** multilingual and fast on social turns; adds OpenCode latency on catalog path vs pure rules.
 - **Hybrid retrieval on a small catalog:** BM25 over Chroma candidates works at 300 rows; at millions of SKUs you would add metadata-first filters and a dedicated sparse index (see [`QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md)).
 - **Template synthesis fallback:** reproducible without keys; wizard option 2 enables per-agent OpenCode models for richer replies.
-- **Max 4 recommendations:** clear UX and constraint-compliant, may omit longer-tail candidates.
+- **Default 4 / max 20 recommendations:** clear UX by default; shopper can request more; `product_batch` stream reveals cards in chunks.
 - **In-process TTL cache (optional Redis):** cuts repeat latency; not shared until Redis is enabled.
 
 ## Roadmap
