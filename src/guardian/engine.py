@@ -185,13 +185,51 @@ def load_constraints() -> dict[str, Any]:
     }
 
 
-def max_recommendations() -> int:
+def default_recommendations() -> int:
     policy = load_constraints().get("response_policy", {})
-    value = policy.get("max_recommendations", 4)
+    value = policy.get("default_recommendations", policy.get("max_recommendations", 4))
     try:
-        return min(max(int(value), 1), 4)
+        return max(int(value), 1)
     except (TypeError, ValueError):
         return 4
+
+
+def absolute_max_recommendations() -> int:
+    policy = load_constraints().get("response_policy", {})
+    value = policy.get("absolute_max_recommendations", 20)
+    try:
+        return max(int(value), default_recommendations())
+    except (TypeError, ValueError):
+        return 20
+
+
+def product_batch_size() -> int:
+    policy = load_constraints().get("response_policy", {})
+    value = policy.get("product_batch_size", default_recommendations())
+    try:
+        return max(int(value), 1)
+    except (TypeError, ValueError):
+        return default_recommendations()
+
+
+def max_recommendations() -> int:
+    """System default count when the shopper does not ask for a specific number."""
+    return default_recommendations()
+
+
+def resolve_recommendation_count(query: str, *, explicit: int | None = None) -> int:
+    """Default 4; honour shopper request (e.g. 10 opciones) up to absolute_max."""
+    from src.rag.recommendation_count import parse_requested_product_count
+
+    ceiling = absolute_max_recommendations()
+    base = default_recommendations()
+    requested = explicit if explicit is not None else parse_requested_product_count(query)
+    if requested is None:
+        return base
+    try:
+        return min(max(int(requested), 1), ceiling)
+    except (TypeError, ValueError):
+        return base
 
 
 def empty_retrieval_message() -> str:

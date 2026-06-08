@@ -40,6 +40,19 @@ def test_greeting_probe_not_catalog(playbook) -> None:
     assert svr.probe_instant_lane("hola", 15) == "social"
 
 
+def test_probe_social_help_not_catalog(playbook) -> None:
+    assert svr.probe_instant_lane("me puedes ayudar", 15) == "social"
+    assert svr.probe_instant_lane("can you help me", 3) == "social"
+
+
+def test_social_help_auto_learn(playbook) -> None:
+    novel = "me echas una mano con la tienda"
+    assert not svr.matches_playbook_social_help(novel)
+    svr.learn_social_help_phrase(novel)
+    assert svr.matches_playbook_social_help(novel)
+    assert "## learned_social_help" in playbook.read_text(encoding="utf-8")
+
+
 def test_format_opening_multi_species(playbook) -> None:
     text = svr.format_opening_line(
         "precios hamsters tortugas caballos perros y gatos hasta 50€",

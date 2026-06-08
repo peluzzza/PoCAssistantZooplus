@@ -132,6 +132,20 @@ function hideTypingIndicator() {
   }
 }
 
+function buildProductCard(p) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `<strong>${escapeHtml(p.product_name)}</strong>
+    <span class="meta">${escapeHtml(p.brands)} · ${p.pet_type} · EUR ${Number(p.price).toFixed(2)} · #${p.article_id}</span>`;
+  return card;
+}
+
+function appendProductCards(listEl, products) {
+  for (const p of products) {
+    listEl.appendChild(buildProductCard(p));
+  }
+}
+
 function appendMessage(role, text, products = [], options = {}) {
   const wrap = document.createElement("div");
   wrap.className = `msg ${role}${options.decline ? " decline" : ""}${options.error ? " error" : ""}`;
@@ -140,18 +154,40 @@ function appendMessage(role, text, products = [], options = {}) {
   if (products.length > 0) {
     const list = document.createElement("div");
     list.className = "products";
-    for (const p of products) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `<strong>${escapeHtml(p.product_name)}</strong>
-        <span class="meta">${escapeHtml(p.brands)} · ${p.pet_type} · EUR ${Number(p.price).toFixed(2)} · #${p.article_id}</span>`;
-      list.appendChild(card);
-    }
+    appendProductCards(list, products);
     wrap.appendChild(list);
   }
 
   messagesEl.appendChild(wrap);
   scrollMessagesToEnd();
+  return wrap;
+}
+
+/** Live stream: product cards arrive in batches before the final answer. */
+let streamingProductWrap = null;
+let streamingProductList = null;
+
+function resetStreamingProducts() {
+  streamingProductWrap = null;
+  streamingProductList = null;
+}
+
+function enqueueProductBatch(products, batchIndex) {
+  if (!products || products.length === 0) return;
+  const delay = batchIndex === 0 ? 200 : PACE_GAP_MS;
+  chunkPaceChain = chunkPaceChain.then(async () => {
+    await sleep(delay);
+    if (!streamingProductWrap) {
+      streamingProductWrap = document.createElement("div");
+      streamingProductWrap.className = "msg bot";
+      streamingProductList = document.createElement("div");
+      streamingProductList.className = "products";
+      streamingProductWrap.appendChild(streamingProductList);
+      messagesEl.appendChild(streamingProductWrap);
+    }
+    appendProductCards(streamingProductList, products);
+    scrollMessagesToEnd();
+  });
 }
 
 function escapeHtml(s) {
@@ -278,6 +314,8 @@ async function consumeChatStream(response, signal) {
   let finalAnswer = "";
   let finalProducts = [];
   let finalMeta = null;
+  let streamedProductCount = 0;
+  resetStreamingProducts();
 
   while (true) {
     if (signal.aborted) return null;
@@ -307,6 +345,12 @@ async function consumeChatStream(response, signal) {
         enqueueChunk(evt.text, evt.chunk);
       } else if (evt.type === "status" && evt.text) {
         enqueueChunk(evt.text, evt.chunk);
+      } else if (evt.type === "product_batch" && evt.retrieved_products) {
+        streamedProductCount += evt.retrieved_products.length;
+        enqueueProductBatch(evt.retrieved_products, evt.batch ?? 0);
+      } else if (evt.type === "products" && evt.retrieved_products) {
+        streamedProductCount += evt.retrieved_products.length;
+        enqueueProductBatch(evt.retrieved_products, 0);
       } else if (evt.type === "done") {
         finalAnswer = normalizeAnswer(evt.answer) || "";
         finalProducts = evt.retrieved_products || [];
@@ -315,7 +359,12 @@ async function consumeChatStream(response, signal) {
     }
   }
 
-  return { answer: finalAnswer, products: finalProducts, meta: finalMeta };
+  return {
+    answer: finalAnswer,
+    products: finalProducts,
+    meta: finalMeta,
+    streamedProductCount,
+  };
 }
 
 form.addEventListener("submit", async (e) => {
@@ -374,14 +423,26 @@ form.addEventListener("submit", async (e) => {
     await waitForChunkPacing();
     if (!result || controller.signal.aborted) return;
 
-    const { answer, products, meta } = result;
+    const { answer, products, meta, streamedProductCount } = result;
     if (meta) setModeBadge(meta);
     const decline =
       products.length === 0 && /can't help|couldn't find|zooplus Assistant/i.test(answer || "");
     showTypingIndicator();
     await sleep(PACE_FINAL_MS);
     hideTypingIndicator();
-    appendMessage("bot", answer || "(empty)", products, { decline });
+    const productsAlreadyStreamed = streamedProductCount > 0;
+    if (productsAlreadyStreamed && streamingProductWrap && answer) {
+      const answerEl = document.createElement("div");
+      answerEl.className = "stream-answer";
+      answerEl.textContent = answer || "(empty)";
+      streamingProductWrap.insertBefore(answerEl, streamingProductWrap.firstChild);
+      if (decline) streamingProductWrap.classList.add("decline");
+      scrollMessagesToEnd();
+      resetStreamingProducts();
+    } else {
+      appendMessage("bot", answer || "(empty)", products, { decline });
+      resetStreamingProducts();
+    }
   } catch (err) {
     clearTimeout(clientTimeout);
     hideTypingIndicator();

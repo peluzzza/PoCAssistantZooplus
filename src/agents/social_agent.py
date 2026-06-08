@@ -21,6 +21,7 @@ from src.agents.prompts import (
 )
 from src.agents.registry import agent_chain_for_role, cli_model_arg, resolved_agent_model
 from src.agents.run_meta import AgentRunMeta
+from src.agents.stream_voice_registry import strip_leading_assistant_intro
 from src.config import Settings, apply_settings
 from src.llm.answer_sanitize import normalize_shopper_answer
 from src.llm.language_context import current_reply_language_instruction
@@ -155,10 +156,15 @@ def social_reply(
         agent_model = cli_model_arg(agent_id, default=cfg.opencode_model)
         display_model = resolved_agent_model(agent_id, default=cfg.opencode_model)
         lang_line = current_reply_language_instruction(query, site_id=site_id)
+        no_intro = (
+            " Mid-conversation: no Hola/hello, no 'Soy el zooplus Assistant' intro."
+            if kind == "help"
+            else ""
+        )
         fast_prompt = (
             f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}\n\n"
             f"site_id={site_id}\nCustomer: {query}\n"
-            f"Reply as zooplus Assistant in 2-3 short sentences. {lang_line}"
+            f"Reply as zooplus Assistant in 2-3 short sentences.{no_intro} {lang_line}"
         )
         raw = run_opencode_agent(
             wrap_prompt_with_agent(agent_id, fast_prompt),
@@ -167,7 +173,7 @@ def social_reply(
             timeout_seconds=_SOCIAL_FAST_TIMEOUT,
             model=agent_model,
         )
-        answer = normalize_shopper_answer(raw)
+        answer = strip_leading_assistant_intro(normalize_shopper_answer(raw) or "")
         if answer and len(answer) > 12:
             return answer, AgentRunMeta(
                 lane=intent.lane,
@@ -191,7 +197,7 @@ def social_reply(
 
     result = run_agent_cascade("social", prompt, settings=cfg, parse=_ok)
     if result.value:
-        answer = str(result.value).strip()
+        answer = strip_leading_assistant_intro(str(result.value).strip())
         return answer, AgentRunMeta(
             lane=intent.lane,
             intent_source=intent.source,

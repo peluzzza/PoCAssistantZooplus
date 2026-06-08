@@ -9,7 +9,10 @@ from src.models.chat import RetrievedProduct
 def synthesize_template(query: str, products: list[RetrievedProduct]) -> str:
     if not products:
         return empty_retrieval_message()
-    names = ", ".join(f"{p.product_name} ({p.brands})" for p in products[:4])
+    preview = products[: min(len(products), 6)]
+    names = ", ".join(f"{p.product_name} ({p.brands})" for p in preview)
+    if len(products) > len(preview):
+        names += f", and {len(products) - len(preview)} more"
     return (
         "I'd be happy to help! Based on what you asked, I found options in this shop — "
         f"see the product cards below: {names}. "

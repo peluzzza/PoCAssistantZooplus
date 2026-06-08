@@ -48,6 +48,14 @@ def test_obvious_social_intent_hola_que_tal() -> None:
     assert decision.source == "conversation_classifier"
 
 
+def test_obvious_social_intent_help_request() -> None:
+    decision = try_obvious_social_intent("me puedes ayudar")
+    assert decision is not None
+    assert decision.lane == "conversational"
+    assert decision.social_kind == "help"
+    assert decision.reason == "obvious_help"
+
+
 def test_conductor_intent_can_be_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZOOPLUS_CONDUCTOR_INTENT", "0")
     assert not conductor_intent_enabled()

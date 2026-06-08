@@ -64,6 +64,23 @@ Never repeat in final answer after an opening chunk.
 - with pleasure
 - i'm the zooplus
 
+## social_help_signals
+
+Capabilities / help asks — route to social lane, never catalog search.
+
+- me puedes ayudar
+- puedes ayudarme
+- me ayudas
+- ayúdame
+- necesito ayuda
+- can you help
+- can you help me
+- help me
+- how can you help
+- what can you do
+- kannst du mir helfen
+- pouvez-vous m'aider
+
 ## progress_es
 
 - Sigue buscando en el catálogo, un momento más…
@@ -194,7 +211,16 @@ Of course — I'm checking this shop's catalog now…
 <!-- conductor auto-append -->
 - Hola, soy el zooplus Assistant. | greeting_repeated_in_final | ×1 | conductor_dedupe | 2026-06-07T15:38:14+00:00
 - Hola, como tu zooplus Assistant, estaré encantado de ayudarte. | greeting_repeated_in_final | ×1 | conductor_dedupe | 2026-06-07T15:38:14+00:00
+- Por favor, ten en cuenta que en zooplus Assistant solo disponemos de productos para perros y gatos, por lo que no tenemos comida ni accesorios para serpientes de mascotas. | greeting_repeated_in_final | ×1 | conductor_dedupe | 2026-06-08T00:24:59+00:00
+- Hola, soy el zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T00:25:53+00:00
+- Hello! I am the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T00:28:07+00:00
+- Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T00:29:46+00:00
 
 ## learned_species
 
 <!-- conductor auto-append: match → label_es | label_en -->
+- serpiente|serpientes → serpientes | serpientes
+
+## learned_social_help
+
+<!-- conductor auto-append: phrase | reason | count -->

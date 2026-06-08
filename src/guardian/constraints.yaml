@@ -23,7 +23,10 @@ decline_intents:
 
 response_policy:
   tone: polite
+  default_recommendations: 4
+  absolute_max_recommendations: 20
   max_recommendations: 4
+  product_batch_size: 4
   must_ground_in_retrieval: true
   empty_retrieval_message: >
     I couldn't find matching products in this shop. Could you rephrase

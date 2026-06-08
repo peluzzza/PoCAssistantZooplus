@@ -1,0 +1,108 @@
+# Curated social-intent phrases (Rasa NLU / Ada / multilingual chatbot patterns).
+# Loaded by phrase_index.py — fast in-memory match; playbook learned_* merges at runtime.
+# Sources: Rasa greet/purpose/bot_challenge, CustomGPT multilingual openers, zooplus PoC.
+
+greeting:
+  - hola
+  - hola que tal
+  - qué tal
+  - que tal
+  - buenos días
+  - buenas tardes
+  - buenas noches
+  - buenas
+  - hey
+  - hi
+  - hello
+  - hello there
+  - hi there
+  - hey there
+  - good morning
+  - good afternoon
+  - good evening
+  - how are you
+  - how's it going
+  - hallo
+  - guten tag
+  - guten morgen
+  - guten abend
+  - moin
+  - wie geht's
+  - bonjour
+  - bonsoir
+  - salut
+  - ça va
+  - comment allez-vous
+
+thanks:
+  - gracias
+  - muchas gracias
+  - thank you
+  - thanks
+  - thanks a lot
+  - danke
+  - vielen dank
+  - merci
+  - merci beaucoup
+
+bye:
+  - adiós
+  - adios
+  - hasta luego
+  - bye
+  - goodbye
+  - see you
+  - see you later
+  - auf wiedersehen
+  - tschüss
+  - au revoir
+  - à bientôt
+
+help:
+  - me puedes ayudar
+  - puedes ayudarme
+  - me ayudas
+  - ayúdame
+  - ayudame
+  - necesito ayuda
+  - en qué puedes ayudarme
+  - cómo puedes ayudarme
+  - como puedes ayudarme
+  - qué puedes hacer
+  - que puedes hacer
+  - para qué sirves
+  - can you help
+  - can you help me
+  - could you help
+  - help me
+  - how can you help
+  - how can you help me
+  - what can you do
+  - what can you do for me
+  - what are your capabilities
+  - what services do you provide
+  - tell me about yourself
+  - how do you work
+  - kannst du mir helfen
+  - können sie mir helfen
+  - wie können sie mir helfen
+  - was können sie tun
+  - pouvez-vous m'aider
+  - peux-tu m'aider
+  - comment pouvez-vous m'aider
+  - que pouvez-vous faire
+
+identity:
+  - quién eres
+  - quien eres
+  - qué eres
+  - que eres
+  - who are you
+  - what are you
+  - are you a bot
+  - are you a human
+  - am i talking to a bot
+  - wer bist du
+  - bist du ein bot
+  - qui êtes-vous
+  - es-tu un robot

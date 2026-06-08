@@ -49,8 +49,10 @@ SOCIAL_IDENTITY_CONTEXT = (
 SOCIAL_GREETING_CONTEXT = "social_kind=greeting. Warm welcome; invite a specific pet product question (puppy food, cat treats, etc.)."
 
 SOCIAL_HELP_CONTEXT = (
-    "social_kind=help. Explain natural-language catalog search, max 4 picks, sites 1/3/15, "
-    "polite decline for off-topic."
+    "social_kind=help. Answer in 2-3 short sentences. If the shopper already spoke this session, "
+    "do NOT say Hola/hello or re-introduce yourself as zooplus Assistant. "
+    "Briefly: natural-language catalog search, 4 picks by default (more if they ask), "
+    "polite decline off-topic."
 )
 
 SOCIAL_THANKS_CONTEXT = "social_kind=thanks. Thank warmly; offer to narrow by pet type, brand, or budget if they continue."

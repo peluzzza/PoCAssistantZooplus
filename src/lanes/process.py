@@ -6,7 +6,8 @@ import asyncio
 import logging
 
 from src.acp.envelopes import ChatProcessEnvelope, ProcessLaneReceipt
-from src.guardian.engine import load_constraints, max_recommendations
+from src.guardian.engine import load_constraints, resolve_recommendation_count
+from src.rag.recommendation_count import retrieval_pool_size
 from src.llm.synthesis import synthesize_answer
 from src.llm.template import synthesize_template
 from src.models.chat import RetrievedProduct
@@ -42,8 +43,9 @@ def _to_retrieved_product(hit: dict) -> RetrievedProduct:
 
 
 async def run_process_lane(envelope: ChatProcessEnvelope) -> ProcessLaneReceipt:
-    cap = max_recommendations()
-    pool_n = max(cap * 6, 24) if parse_eur_price_range(envelope.query) else cap
+    cap = envelope.recommendation_count or resolve_recommendation_count(envelope.query)
+    price_band = parse_eur_price_range(envelope.query)
+    pool_n = retrieval_pool_size(cap, has_price_band=bool(price_band))
     if envelope.prefetched_hits is not None:
         hits = list(envelope.prefetched_hits)
     else:

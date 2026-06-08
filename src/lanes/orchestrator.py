@@ -16,7 +16,8 @@ from src.agents.registry import resolved_agent_model
 from src.agents.social_agent import social_reply
 from src.cache.ttl_cache import cache_enabled, chat_cache
 from src.config import apply_settings
-from src.guardian.engine import load_constraints, max_recommendations
+from src.guardian.engine import load_constraints, resolve_recommendation_count
+from src.rag.recommendation_count import retrieval_pool_size
 from src.lanes.process import run_process_lane
 from src.llm.answer_sanitize import normalize_shopper_answer
 from src.models.chat import ChatRequest, ChatResponse, ChatRuntimeMeta
@@ -74,9 +75,11 @@ async def _handle_chat_inner(request: ChatRequest) -> ChatResponse:
     intent = await _classify_intent_bounded(request.query, request.site_id)
 
     prefetched_hits: tuple[dict, ...] | None = None
+    recommendation_count: int | None = None
     if intent.lane == "catalog_search":
-        cap = max_recommendations()
-        pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
+        recommendation_count = resolve_recommendation_count(request.query)
+        price_band = parse_eur_price_range(request.query)
+        pool_n = retrieval_pool_size(recommendation_count, has_price_band=bool(price_band))
         prefetched_hits = tuple(
             await asyncio.to_thread(
                 search_catalog,
@@ -151,6 +154,7 @@ async def _handle_chat_inner(request: ChatRequest) -> ChatResponse:
         query=request.query,
         intent_handoff=handoff.brief(),
         prefetched_hits=prefetched_hits,
+        recommendation_count=recommendation_count,
     )
     process_task = asyncio.create_task(
         dispatch_process(envelope, run_process_lane, timeout_seconds=timeout_seconds)

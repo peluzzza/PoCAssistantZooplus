@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
-from src.guardian.engine import max_recommendations, topic_check
+from src.guardian.engine import absolute_max_recommendations, default_recommendations, topic_check
 from src.rag.retrieve import search_catalog
 
 
@@ -24,7 +24,8 @@ async def tool_catalog_search(
     n_results: int | None = None,
     pet_type: str | None = None,
 ) -> dict:
-    limit = min(n_results or max_recommendations(), max_recommendations())
+    ceiling = absolute_max_recommendations()
+    limit = min(n_results or default_recommendations(), ceiling)
     hits = await asyncio.to_thread(
         search_catalog,
         query_text,

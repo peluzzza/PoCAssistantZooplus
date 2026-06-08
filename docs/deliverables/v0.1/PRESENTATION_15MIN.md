@@ -28,7 +28,7 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 | 11 | **Roadmap Phase 1** — trust & quality (P0) | 0:45 |
 | 12 | **Roadmap Phase 2** — scale & fresh catalog (P1) | 0:45 |
 | 13 | **Roadmap Phase 3** — photo, voice, promos | 0:45 |
-| 14 | **Release progress** — v0.1.0 → v2.1 + **Q&A** | 1:00 |
+| 14 | **Release progress** — v0.1.0 → v2.1.6 + **Q&A** | 1:00 |
 
 *Total talk ~15 min; Q&A on slide 14.*
 
@@ -48,25 +48,25 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 6 — RAG strategy end-to-end
 
-> “FR3 is catalog-only RAG — same hybrid ingest as v1.0. v2.1 adds an **internal conductor playbook** (Markdown): species out of scope, opening templates, forbidden repeat phrases. The conductor probes social vs catalog before any ack — a greeting never gets a catalog template. On catalog lane, contextual ack runs in parallel with RAG. Grounding unchanged: same `site_id`, max four products, polite decline off-topic.”
+> “FR3 is catalog-only RAG — same hybrid ingest as v1.0. **v2.1.6** adds an internal playbook plus a **social phrase index** (~90 curated ES/EN/DE/FR utterances, fast in-memory match; playbook auto-learns novel help/greeting lines). Social vs catalog probe before any ack — ‘me puedes ayudar’ never gets a catalog progress chunk. **Four picks by default**, but the shopper can ask for more (e.g. ten options, cap twenty); the stream emits **product_batch** events so cards appear in the UI in chunks of four. Dynamic species inference handles iguanas and unseen pets without a fixed list. Grounding unchanged: same `site_id`, polite decline off-topic.”
 
 ---
 
 ## Slide 7 — Agentic architecture (conductor playbook)
 
-> “The shopper sees one assistant. Behind the scenes the conductor owns `conductor_playbook.md` — it updates silently when dedupe catches a bad repeat. Social turns: one natural bubble via social-agent. Catalog turns: protocol ack parsed from the query (species, EUR band, language), then progress chunks while RAG runs. `ZOOPLUS_STREAM_MODE=conductor` default; `timed` is the v1.4 fallback.”
+> “The shopper sees one assistant. The conductor owns `conductor_playbook.md` and updates it silently on repeats. **v2.1.3+** runs intent-agent and policy probes first for lower latency; conductor intent is opt-in. Social turns: one bubble, no re-intro mid-session. Catalog turns: ack from species, price, language, and requested count; progress chunks while RAG runs; final answer deduped against live chunks. `ZOOPLUS_STREAM_MODE=conductor` default.”
 
 ---
 
 ## Slide 8 — Agents + per-agent LLMs
 
-> “**zooplus-conductor** maintains the internal playbook and orchestrates the stream — invisible in the UI. **social-agent** handles greetings and social turns without catalog boilerplate. Catalog lane still uses intent, RAG, logic, synthesis. Reply language is **agent-driven**: the LLM mirrors the shopper from query, headers, or shop context — no fixed locale whitelist. UI badge shows the real model from response metadata.”
+> “**zooplus-conductor** maintains the playbook and stream — invisible in the UI. **social-agent** handles help and greetings without catalog boilerplate or redundant ‘Soy el zooplus Assistant’ intros. **phrase_index** matches help/greeting/thanks in milliseconds; learned rows merge at runtime. Catalog lane: intent, RAG, logic, synthesis. Reply language is agent-driven — no fixed locale whitelist.”
 
 ---
 
-## Slide 9 — Guardrails + demo (v2.1 smart loop)
+## Slide 9 — Guardrails + demo (v2.1.6 smart loop)
 
-> “FR4: pet catalog only, default-deny. Demo on 8090, shop 15: (A) ‘hola que tal’ — **one** social reply, no ‘reviso el catálogo’ chunk; (B) hamsters/tortugas/perros hasta 50€ — scoped ack, progress, products; (C) greet in any language — agent replies in kind. Hard refresh if you tested an older build.”
+> “FR4: pet catalog only, default-deny. Demo on 8090, shop 15: (A) ‘me puedes ayudar’ — social help, **no** ‘Still searching the catalog’ chunk; (B) ‘y para iguanas’ — scope reply without duplicate Hola intro; (C) ‘dame 10 opciones de comida para perros’ — up to ten product cards arriving in batches. Hard refresh if you tested an older build.”
 
 ---
 
@@ -90,9 +90,9 @@ Full doc: [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md)
 
 ---
 
-## Slide 14 — Release progress (v0.1.0 → v2.1) + Q&A
+## Slide 14 — Release progress (v0.1.0 → v2.1.6) + Q&A
 
-> “We kept the same five FRs from the Coding Task and iterated on `releases`. **v0.1.0** delivered the PoC baseline — hybrid RAG and guardrails. **v0.1.3 / v1.0** added conductor-first routing, streaming status, and per-agent OpenCode models. **v1.4** shipped the live-loop UX shoppers feel today — timed chunks while catalog runs in parallel. **v2.0** introduced the invisible conductor so disclaimers are not repeated. **v2.1**, our current tag, adds the internal playbook, smart social-vs-catalog ack, and agent-driven multilingual replies. Happy to dive into any milestone or run the demo again.”
+> “Same five FRs, iterated on `releases`. **v0.1.0–v1.4**: hybrid RAG, streaming, live-loop UX. **v2.0–v2.1**: invisible conductor, playbook MD, social/catalog probe, agent-multilingual. **v2.1.3**: fast intent-first stream. **v2.1.4–5**: dynamic species, help/saludo detection, greeting dedupe. **v2.1.6** (current): four picks by default but shopper can ask for more, `product_batch` chunked cards, and the social phrase index. Happy to dive into any milestone or run the demo.”
 
 ---
 

@@ -27,6 +27,7 @@ _LEARNED_SECTIONS = frozenset(
         "learned_forbidden",
         "learned_scope_markers",
         "learned_greeting_markers",
+        "learned_social_help",
         "learned_species",
     }
 )
@@ -35,6 +36,7 @@ _CATEGORY_TO_SECTION = {
     "scope_markers": "learned_scope_markers",
     "greeting_markers": "learned_greeting_markers",
     "greeting_signals": "learned_greeting_markers",
+    "social_help_signals": "learned_social_help",
     "non_catalog_species": "learned_species",
 }
 
@@ -157,6 +159,12 @@ def _parse_playbook(text: str) -> dict[str, Any]:
         if x.startswith("- ")
     )
     learned_greeting = _parse_learned_phrases(sec.get("learned_greeting_markers", []))
+    social_help = tuple(
+        x[2:].strip().lower()
+        for x in sec.get("social_help_signals", [])
+        if x.startswith("- ")
+    )
+    learned_social_help = _parse_learned_phrases(sec.get("learned_social_help", []))
     forbidden = _parse_learned_phrases(sec.get("learned_forbidden", []))
     hints = tuple(
         x[2:].strip().lower()
@@ -169,6 +177,7 @@ def _parse_playbook(text: str) -> dict[str, Any]:
         "scope_markers": tuple(dict.fromkeys([*scope, *learned_scope])),
         "greeting_signals": greeting_sig,
         "greeting_markers": tuple(dict.fromkeys([*greeting, *learned_greeting])),
+        "social_help_signals": tuple(dict.fromkeys([*social_help, *learned_social_help])),
         "forbidden_phrases": forbidden,
         "spanish_hints": hints,
         "catalog_scope": _parse_kv_bullets(sec.get("catalog_scope", [])),
@@ -276,6 +285,49 @@ def resolve_lang(query: str, site_id: int) -> str:
 
 def is_spanish_query(query: str) -> bool:
     return resolve_lang(query, 15) == "es"
+
+
+def social_help_phrases() -> tuple[str, ...]:
+    return load_stream_voice_registry()["social_help_signals"]
+
+
+def matches_playbook_social_help(query: str) -> bool:
+    """Playbook + phrase index + learned social-help — capabilities ask, not catalog."""
+    from src.agents.phrase_index import match_social_help
+
+    if match_social_help(query):
+        return True
+    text = (query or "").strip().lower()
+    if not text:
+        return False
+    for phrase in social_help_phrases():
+        if not phrase:
+            continue
+        if phrase in text or text == phrase:
+            return True
+    return False
+
+
+def learn_social_help_phrase(query: str) -> None:
+    """Auto-learn novel help/capabilities phrasing into learned_social_help."""
+    text = (query or "").strip()
+    if not text or not learning_enabled():
+        return
+    norm = text.lower()[:200]
+    if matches_playbook_social_help(text):
+        return
+    record_stream_voice_learning(
+        category="social_help_signals",
+        phrase=norm,
+        reason="social_help_detected",
+        source="intent_hints",
+    )
+    try:
+        from src.agents.phrase_index import reload_phrase_index
+
+        reload_phrase_index()
+    except Exception:
+        pass
 
 
 def probe_instant_lane(query: str, site_id: int) -> str:

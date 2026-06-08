@@ -28,7 +28,12 @@ from src.agents.stream_voice_registry import (
 )
 from src.cache.session_turn import bump_session_turn, is_current_turn
 from src.config import Settings, apply_settings
-from src.guardian.engine import load_constraints, max_recommendations
+from src.guardian.engine import (
+    load_constraints,
+    product_batch_size,
+    resolve_recommendation_count,
+)
+from src.rag.recommendation_count import retrieval_pool_size
 from src.lanes.orchestrator import _classify_intent_bounded
 from src.lanes.process import run_process_lane
 from src.llm.answer_sanitize import normalize_shopper_answer
@@ -84,8 +89,9 @@ async def _run_catalog_pipeline(
     request: ChatRequest,
     handoff_brief: str,
 ) -> tuple[tuple[dict, ...], object]:
-    cap = max_recommendations()
-    pool_n = max(cap * 6, 24) if parse_eur_price_range(request.query) else cap
+    cap = resolve_recommendation_count(request.query)
+    price_band = parse_eur_price_range(request.query)
+    pool_n = retrieval_pool_size(cap, has_price_band=bool(price_band))
     hits = tuple(
         await asyncio.to_thread(
             search_catalog,
@@ -102,6 +108,7 @@ async def _run_catalog_pipeline(
         query=request.query,
         intent_handoff=handoff_brief,
         prefetched_hits=hits,
+        recommendation_count=cap,
     )
     receipt = await dispatch_process(
         envelope,
@@ -369,7 +376,23 @@ async def _yield_catalog_finish(
         llm_agent="zooplus-synthesis",
         llm_model=resolved_agent_model("zooplus-synthesis", default=cfg.opencode_model),
     )
-    yield _line({"type": "products", "retrieved_products": products_payload})
+    batch_n = product_batch_size()
+    if len(products_payload) > batch_n:
+        for batch_idx in range(0, len(products_payload), batch_n):
+            if not is_current_turn(session_id, turn_id):
+                return
+            batch = products_payload[batch_idx : batch_idx + batch_n]
+            yield _line(
+                {
+                    "type": "product_batch",
+                    "batch": batch_idx // batch_n,
+                    "retrieved_products": batch,
+                }
+            )
+            if batch_idx + batch_n < len(products_payload) and cfg.chunk_min_pause_seconds > 0:
+                await asyncio.sleep(min(cfg.chunk_min_pause_seconds, 1.2))
+    else:
+        yield _line({"type": "products", "retrieved_products": products_payload})
     yield _line(
         {
             "type": "done",

@@ -17,6 +17,18 @@ _HELP_ABOUT = re.compile(
     re.I,
 )
 
+_SOCIAL_HELP = re.compile(
+    r"(?:^|\b)("
+    r"me\s+puedes\s+ayudar|puedes\s+ayudarme|me\s+ayudas|podr[ií]as\s+ayudarme|"
+    r"ay[uú]dame|necesito\s+ayuda|"
+    r"can\s+you\s+help(?:\s+me)?|could\s+you\s+help|help\s+me|"
+    r"how\s+can\s+you\s+help|what\s+can\s+you\s+do|"
+    r"kannst\s+du\s+mir\s+helfen|k[öo]nnen\s+sie\s+mir\s+helfen|"
+    r"pouvez[- ]vous\s+m[''']aider|peux[- ]tu\s+m[''']aider"
+    r")(?:\s|$|[?.!])",
+    re.I,
+)
+
 _OFF_TOPIC_HARD = re.compile(
     r"\b(weather|traffic|president|news\s+headline|bitcoin|crypto|"
     r"for\s+humans|human\s+food|search\s+the\s+internet|ignore\s+all\s+previous|"
@@ -37,8 +49,27 @@ def looks_like_off_topic(query: str) -> bool:
     return False
 
 
+def looks_like_social_help_request(query: str) -> bool:
+    """Help / capabilities ask — social lane, never catalog."""
+    text = (query or "").strip()
+    if not text:
+        return False
+    from src.agents.phrase_index import match_social_help
+    from src.agents.stream_voice_registry import learn_social_help_phrase, matches_playbook_social_help
+
+    if (
+        match_social_help(text)
+        or _SOCIAL_HELP.search(text)
+        or _HELP_ABOUT.search(text)
+        or matches_playbook_social_help(text)
+    ):
+        learn_social_help_phrase(text)
+        return True
+    return False
+
+
 def looks_like_help_about_shop(query: str) -> bool:
-    return bool(_HELP_ABOUT.search(query.strip()))
+    return looks_like_social_help_request(query)
 
 
 def looks_like_non_catalog_species(query: str, site_id: int = 3) -> bool:

@@ -38,7 +38,12 @@ _PET_SHOP_WORD = re.compile(
 )
 _THANKS = re.compile(r"^(thanks|thank\s+you|gracias|muchas\s+gracias|danke)[!?.\s]*$", re.I)
 _BYE = re.compile(r"^(bye|goodbye|see\s+you|adios|hasta\s+luego)[!?.\s]*$", re.I)
-_HELP = re.compile(r"^(help|\?|what\s+can\s+you\s+do|how\s+can\s+you\s+help)[!?.\s]*$", re.I)
+_HELP = re.compile(
+    r"^(help|\?|what\s+can\s+you\s+do|how\s+can\s+you\s+help|"
+    r"me\s+puedes\s+ayudar|puedes\s+ayudarme|me\s+ayudas|ay[uú]dame|"
+    r"can\s+you\s+help\s+me|help\s+me)[!?.\s]*$",
+    re.I,
+)
 _HELP_PHRASES = re.compile(
     r"(what\s+can\s+you\s+tell\s+me\s+about\s+(your\s+)?services|"
     r"what\s+services\s+do\s+you\s+provide|hello,?\s+what\s+services)",
@@ -48,6 +53,17 @@ _HELP_PHRASES = re.compile(
 
 def classify_conversation(query: str) -> ConvoKind:
     text = query.strip()
+    from src.agents.phrase_index import classify_social_kind
+
+    indexed = classify_social_kind(text)
+    if indexed == "help":
+        return ConvoKind.HELP
+    if indexed == "thanks":
+        return ConvoKind.THANKS
+    if indexed == "bye":
+        return ConvoKind.BYE
+    if indexed in ("greeting", "identity"):
+        return ConvoKind.GREETING
     if _GREETING.match(text) or _GREETING_CASUAL.match(text):
         return ConvoKind.GREETING
     if (
@@ -61,6 +77,10 @@ def classify_conversation(query: str) -> ConvoKind:
     if _BYE.match(text):
         return ConvoKind.BYE
     if _HELP.match(text) or _HELP_PHRASES.search(text):
+        return ConvoKind.HELP
+    from src.agents.intent_hints import looks_like_social_help_request
+
+    if looks_like_social_help_request(text):
         return ConvoKind.HELP
     return ConvoKind.PRODUCT
 
@@ -85,7 +105,7 @@ def _template_reply(kind: ConvoKind, site_id: int) -> str:
         return "Goodbye! Come back anytime you need help choosing pet products for your shop."
     if kind == ConvoKind.HELP:
         return (
-            "I can search this shop's catalog and recommend up to four products. "
+            "I can search this shop's catalog — four picks by default, or more if you ask. "
             'Ask in natural language — e.g. "best dry food for a sensitive puppy" or '
             '"popular cat treats in stock". Off-topic questions (weather, news, etc.) '
             "I'll politely decline."

@@ -70,6 +70,23 @@ Never repeat in final answer after an opening chunk.
 - with pleasure
 - i'm the zooplus
 
+## social_help_signals
+
+Capabilities / help asks — route to social lane, never catalog search.
+
+- me puedes ayudar
+- puedes ayudarme
+- me ayudas
+- ayúdame
+- necesito ayuda
+- can you help
+- can you help me
+- help me
+- how can you help
+- what can you do
+- kannst du mir helfen
+- pouvez-vous m'aider
+
 ## progress_es
 
 - Sigue buscando en el catálogo, un momento más…
@@ -199,3 +216,7 @@ Of course — I'm checking this shop's catalog now…
 ## learned_species
 
 <!-- conductor auto-append: match → label_es | label_en -->
+
+## learned_social_help
+
+<!-- conductor auto-append: phrase | reason | count -->

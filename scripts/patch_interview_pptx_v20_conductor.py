@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Update slides 6–9 (v2.1 conductor) and append release-progress closing slide."""
+"""Update slides 6–9 (v2.1.6 conductor) and release-progress closing slide."""
 
 from __future__ import annotations
 
@@ -28,42 +28,42 @@ SLIDE6_RIGHT_V20 = [
     ("• retrieved_products[] from same site_id hits only.", False),
     ("• Off-topic → empty list + polite decline (FR4).", False),
     ("• Synthesis: per-agent OpenCode LLM — never invent SKUs.", False),
-    ("v2.1 — conductor playbook (internal)", True),
-    ("• conductor_playbook.md — species, templates, forbidden phrases.", False),
-    ("• Fast lane probe: social vs catalog — no rigid catalog ack on hola.", False),
-    ("• Auto-learn: conductor appends repeats to playbook (shopper never sees).", False),
-    ("• Catalog lane: instant contextual ack + parallel RAG (shopper language).", False),
+    ("v2.1.6 — playbook + smart limits", True),
+    ("• 4 picks default · shopper can ask for more (e.g. 10 opciones, cap 20).", False),
+    ("• product_batch stream — cards arrive in chunks of 4 in the UI.", False),
+    ("• social_phrases.yaml index + playbook auto-learn (help/greeting).", False),
+    ("• Dynamic species inference (iguana, capibara…) — not a fixed list.", False),
 ]
 
 SLIDE7_LEFT_V20 = [
     ("Invisible conductor (releases v2.0+)", True),
     ("• Internal MD playbook — conductor maintains silently.", False),
-    ("• Social turn → one natural bubble (social-agent only).", False),
-    ("• Catalog turn → protocol ack from query (species, price, lang).", False),
-    ("• Anti-repeat + dedupe final answer vs live chunks.", False),
-    ("Stream + agentic core", True),
-    ("• Intent before Chroma · catalog lexicon from ingest.", False),
-    ("• ZOOPLUS_STREAM_MODE=conductor (timed = v1.4 fallback).", False),
+    ("• Social turn → one bubble; help asks never hit catalog progress.", False),
+    ("• Catalog turn → ack from query (species, price, lang, count).", False),
+    ("• Dedupe: no re-greeting / no repeated scope in final answer.", False),
+    ("Stream + fast intent (v2.1.3+)", True),
+    ("• Policy + intent-agent first; conductor opt-in (lower latency).", False),
+    ("• Parallel social/catalog · ZOOPLUS_STREAM_MODE=conductor.", False),
 ]
 
 SLIDE8_LEFT_V20 = [
     ("OpenCode specialists", True),
     ("• zooplus-conductor → playbook + stream orchestration (invisible).", False),
-    ("• social-agent → shopper voice; greetings ≠ catalog templates.", False),
+    ("• social-agent → shopper voice; mid-session help without re-intro.", False),
     ("• intent / topic-guard → scope filter.", False),
     ("• rag + logic + synthesis → grounded catalog answer.", False),
-    ("Per-agent LLMs + language", True),
-    ("• Reply language: agent mirrors shopper (query · headers · shop).", False),
-    ("• No fixed locale list — OpenCode agents handle any language.", False),
+    ("Phrase index + language", True),
+    ("• ~90 curated social phrases (ES/EN/DE/FR) — fast in-memory match.", False),
+    ("• Agent mirrors shopper language; playbook learns novel phrases.", False),
 ]
 
 SLIDE9_LEFT_V20 = [
     ("FR4 guardrails + live demo", True),
     ("• Pet catalog only · default-deny off-topic.", False),
-    ("Demo — v2.1 smart loop", True),
-    ("• A: hola que tal → ONE social reply (no catalog chunk).", False),
-    ("• B: hamsters/tortugas/perros 50€ → scoped ack + progress + products.", False),
-    ("• C: any-language greeting — agent replies in kind.", False),
+    ("Demo — v2.1.6 smart loop", True),
+    ("• A: me puedes ayudar → social help, no catalog progress.", False),
+    ("• B: y para iguanas → scope reply, no duplicate Hola intro.", False),
+    ("• C: dame 10 opciones perros → up to 10 cards in batches.", False),
     ("• http://127.0.0.1:8090/ui/ — shop Spain (15).", False),
 ]
 
@@ -75,10 +75,11 @@ PROGRESS_LEFT = [
 ]
 
 PROGRESS_RIGHT = [
-    ("Shopper experience — v1.4 → v2.1 (now)", True),
-    ("v1.4 — Live loop: timed chunks, parallel catalog, typing pace.", False),
-    ("v2.0 — Invisible conductor; brief-driven ticks; anti-repeat scope.", False),
-    ("v2.1 — Playbook MD; social vs catalog probe; agent-multilingual.", False),
+    ("Shopper experience — v1.4 → v2.1.6 (now)", True),
+    ("v2.1 — Playbook MD; social/catalog probe; agent-multilingual.", False),
+    ("v2.1.3 — Fast intent-first stream; conductor intent opt-in.", False),
+    ("v2.1.4–5 — Species inference; help/saludo detect + dedupe.", False),
+    ("v2.1.6 — Dynamic count (4→20); phrase index; product_batch UI.", False),
 ]
 
 
@@ -96,7 +97,7 @@ def _append_blank_slide(prs: Presentation):
 
 
 def _set_progress_footer(slide) -> None:
-    footer = "zooplus Assistant — releases v2.1 · progress since v0.1.0"
+    footer = "zooplus Assistant — releases v2.1.6 · progress since v0.1.0"
     for sh in slide.shapes:
         if not sh.has_text_frame:
             continue
@@ -108,8 +109,8 @@ def _set_progress_footer(slide) -> None:
 def build_release_progress_slide(slide, *, page: int) -> None:
     draw_pro_chrome(
         slide,
-        title="Release progress — v0.1.0 → v2.1",
-        subtitle="Same five FRs · stronger agentic orchestration and live shopper UX",
+        title="Release progress — v0.1.0 → v2.1.6",
+        subtitle="Same five FRs · smarter social routing, flexible picks, chunked UX",
         badge="Progress · releases",
         page=page,
     )
@@ -165,7 +166,7 @@ def main() -> None:
     for sh in prs.slides[i7].shapes:
         if sh.has_text_frame and "How each request" in (sh.text or ""):
             sh.text_frame.paragraphs[0].text = (
-                "v2.1 conductor playbook · smart social/catalog ack · parallel RAG"
+                "v2.1.6 · phrase index · dynamic picks · product_batch stream"
             )
 
     i8 = _find_slide(prs, "Agents")
@@ -181,7 +182,7 @@ def main() -> None:
     try:
         shutil.copy2(tmp, DECK)
         tmp.unlink(missing_ok=True)
-        print(f"Updated v2.1 conductor + release progress slide in {DECK} ({len(prs.slides)} slides)")
+        print(f"Updated v2.1.6 conductor + release progress slide in {DECK} ({len(prs.slides)} slides)")
     except PermissionError:
         print(f"PPT is open — saved to {tmp}")
 
