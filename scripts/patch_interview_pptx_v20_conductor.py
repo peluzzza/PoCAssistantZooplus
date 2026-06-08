@@ -165,6 +165,17 @@ def build_release_progress_slide(slide, *, page: int) -> None:
     _set_progress_footer(slide)
 
 
+def _remove_stale_rag_middle_column(slide) -> None:
+    """Drop legacy centre column on slide 6 (v1.4 status* stream text)."""
+    for sh in list(slide.shapes):
+        if not sh.has_text_frame:
+            continue
+        text = sh.text or ""
+        if sh.left and 700_000 < sh.left < 2_000_000 and "status* → products" in text:
+            el = sh._element
+            el.getparent().remove(el)
+
+
 def ensure_release_progress_slide(prs: Presentation) -> None:
     idx = _find_progress_slide(prs)
     if idx is None:
