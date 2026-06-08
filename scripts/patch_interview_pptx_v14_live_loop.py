@@ -136,8 +136,8 @@ SLIDE9_LEFT = [
     ("• Pet catalog only · default-deny off-topic.", False),
     ("• constraints.yaml + agentic intent + social decline.", False),
     ("Demo — show the live loop (v1.4)", True),
-    ("• A: hola que tal → fast social (no RAG).", False),
-    ("• B: opciones perros/gatos <20€ → typing … bubbles … picks.", False),
+    ("• A: hi how are you → fast social (no RAG).", False),
+    ("• B: options for dogs/cats <20€ → typing … bubbles … picks.", False),
     ("• C: weather → polite decline.", False),
     ("• Shop Spain (15) or UK (3); Enter to send.", False),
 ]

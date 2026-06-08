@@ -64,7 +64,7 @@ SLIDE6_RIGHT_V20 = [
     ("• Off-topic → empty list + polite decline (FR4).", False),
     ("• Synthesis: per-agent OpenCode LLM — never invent SKUs.", False),
     ("v2.1.6 — playbook + smart limits", True),
-    ("• 4 picks default · shopper can ask for more (e.g. 10 opciones, cap 20).", False),
+    ("• 4 picks default · shopper can ask for more (e.g. 10 options, cap 20).", False),
     ("• product_batch stream — cards arrive in chunks of 4 in the UI.", False),
     ("• social_phrases.yaml index + playbook auto-learn (help/greeting).", False),
     ("• Dynamic species inference (iguana, capibara…) — not a fixed list.", False),
@@ -101,9 +101,9 @@ SLIDE9_LEFT_V20 = [
     ("FR4 guardrails + live demo", True),
     ("• Pet catalog only · default-deny off-topic.", False),
     ("Demo — v2.1.6 smart loop", True),
-    ("• A: me puedes ayudar → social help, no catalog progress.", False),
-    ("• B: y para iguanas → scope reply, no duplicate Hola intro.", False),
-    ("• C: dame 10 opciones perros → up to 10 cards in batches.", False),
+    ("• A: can you help me → social help, no catalog progress.", False),
+    ("• B: and what about iguanas → scope reply, no duplicate greeting intro.", False),
+    ("• C: give me 10 dog food options → up to 10 cards in batches.", False),
     ("• http://127.0.0.1:8090/ui/ — shop Spain (15).", False),
 ]
 
@@ -118,7 +118,7 @@ PROGRESS_RIGHT = [
     ("Shopper experience — v1.4 → v2.1.6 (now)", True),
     ("v2.1 — Playbook MD; social/catalog probe; agent-multilingual.", False),
     ("v2.1.3 — Fast intent-first stream; conductor intent opt-in.", False),
-    ("v2.1.4–5 — Species inference; help/saludo detect + dedupe.", False),
+    ("v2.1.4–5 — Species inference; help/greeting detect + dedupe.", False),
     ("v2.1.6 — Dynamic count (4→20); phrase index; product_batch UI.", False),
 ]
 
@@ -228,6 +228,40 @@ def _rebuild_two_columns(
     )
 
 
+SPANISH_TO_ENGLISH: tuple[tuple[str, str], ...] = (
+    ("me puedes ayudar", "can you help me"),
+    ("y para iguanas", "and what about iguanas"),
+    ("no duplicate Hola intro", "no duplicate greeting intro"),
+    ("dame 10 opciones perros", "give me 10 dog food options"),
+    ("10 opciones", "10 options"),
+    ("help/saludo detect", "help/greeting detect"),
+    ("hola que tal", "hi how are you"),
+    ("opciones perros/gatos", "options for dogs/cats"),
+)
+
+
+def _replace_in_text_frame(text_frame, replacements: tuple[tuple[str, str], ...]) -> bool:
+    changed = False
+    for p in text_frame.paragraphs:
+        original = p.text
+        updated = original
+        for src, dst in replacements:
+            if src in updated:
+                updated = updated.replace(src, dst)
+        if updated != original:
+            p.text = updated
+            changed = True
+    return changed
+
+
+def apply_english_throughout(prs: Presentation) -> None:
+    """Replace any leftover Spanish demo phrases anywhere in the deck."""
+    for slide in prs.slides:
+        for sh in slide.shapes:
+            if sh.has_text_frame:
+                _replace_in_text_frame(sh.text_frame, SPANISH_TO_ENGLISH)
+
+
 def ensure_release_progress_slide(prs: Presentation) -> None:
     idx = _find_progress_slide(prs)
     if idx is None:
@@ -283,6 +317,11 @@ def main() -> None:
     _fix_left_column(prs.slides[i9], SLIDE9_LEFT_V20, size=14)
 
     ensure_release_progress_slide(prs)
+
+    from patch_interview_pptx_fr_code_panels import apply_all_fr_code_panels  # noqa: E402
+
+    apply_all_fr_code_panels(prs)
+    apply_english_throughout(prs)
 
     tmp = DECK.with_name(f"{DECK.stem}_v20{DECK.suffix}")
     prs.save(str(tmp))

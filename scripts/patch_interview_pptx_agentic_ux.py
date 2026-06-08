@@ -117,7 +117,7 @@ SLIDE7_LEFT = [
     ("Latency & cache", True),
     ("• TTL cache: intent · chat · retrieval.", False),
     ("• Optional Redis: shared cache + lexicon.", False),
-    ("• Fast social: hola que tal in seconds, not 30s+.", False),
+    ("• Fast social: hi how are you in seconds, not 30s+.", False),
 ]
 
 SLIDE8_LEFT = [
@@ -140,7 +140,7 @@ SLIDE9_LEFT = [
     ("• Pet catalog only · default-deny off-topic.", False),
     ("• constraints.yaml + agentic intent + social decline.", False),
     ("Demo (http://127.0.0.1:8090/ui/)", True),
-    ("• A: hola que tal → fast social (no RAG).", False),
+    ("• A: hi how are you → fast social (no RAG).", False),
     ("• B: cat food 40–60 EUR → stream status → products.", False),
     ("• C: weather / news → polite decline.", False),
     ("• Pick shop 1, 3, or 15 before sending.", False),

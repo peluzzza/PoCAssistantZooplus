@@ -4,7 +4,7 @@
 **FR** = Functional Requirement from `Coding Task.docx` — explain on **slide 2**.  
 **Roadmap:** slides **11–13** (3 slides, ~2 min + Q&A).
 
-Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **v1.4 live loop:** `py -3 scripts/patch_interview_pptx_v14_live_loop.py` · **v2.0 conductor:** `py -3 scripts/patch_interview_pptx_v20_conductor.py`
+Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **v2.0 conductor + FR code panels:** `py -3 scripts/patch_interview_pptx_v20_conductor.py` (includes slides 5–9 + FR2–FR5 code evidence) · optional: `py -3 scripts/patch_interview_pptx_fr_code_panels.py`
 
 **Changelog v2.0 → v2.1:** [`CHANGELOG_v2.0_to_v2.1.md`](CHANGELOG_v2.0_to_v2.1.md) · **v1.4 → v2.0:** [`CHANGELOG_v1.4_to_v2.0.md`](CHANGELOG_v1.4_to_v2.0.md) · **v1.0 → v1.4:** [`CHANGELOG_v1.0_to_v1.4.md`](CHANGELOG_v1.0_to_v1.4.md)  
 **Interview Q&A:** [`QA_FOR_POC.md`](QA_FOR_POC.md)
@@ -48,7 +48,7 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 6 — RAG strategy end-to-end
 
-> “FR3 is catalog-only RAG — same hybrid ingest as v1.0. **v2.1.6** adds an internal playbook plus a **social phrase index** (~90 curated ES/EN/DE/FR utterances, fast in-memory match; playbook auto-learns novel help/greeting lines). Social vs catalog probe before any ack — ‘me puedes ayudar’ never gets a catalog progress chunk. **Four picks by default**, but the shopper can ask for more (e.g. ten options, cap twenty); the stream emits **product_batch** events so cards appear in the UI in chunks of four. Dynamic species inference handles iguanas and unseen pets without a fixed list. Grounding unchanged: same `site_id`, polite decline off-topic.”
+> “FR3 is catalog-only RAG — same hybrid ingest as v1.0. **v2.1.6** adds an internal playbook plus a **social phrase index** (~90 curated ES/EN/DE/FR utterances, fast in-memory match; playbook auto-learns novel help/greeting lines). Social vs catalog probe before any ack — ‘can you help me’ never gets a catalog progress chunk. **Four picks by default**, but the shopper can ask for more (e.g. ten options, cap twenty); the stream emits **product_batch** events so cards appear in the UI in chunks of four. Dynamic species inference handles iguanas and unseen pets without a fixed list. Grounding unchanged: same `site_id`, polite decline off-topic.”
 
 ---
 
@@ -60,13 +60,13 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 asy
 
 ## Slide 8 — Agents + per-agent LLMs
 
-> “**zooplus-conductor** maintains the playbook and stream — invisible in the UI. **social-agent** handles help and greetings without catalog boilerplate or redundant ‘Soy el zooplus Assistant’ intros. **phrase_index** matches help/greeting/thanks in milliseconds; learned rows merge at runtime. Catalog lane: intent, RAG, logic, synthesis. Reply language is agent-driven — no fixed locale whitelist.”
+> “**zooplus-conductor** maintains the playbook and stream — invisible in the UI. **social-agent** handles help and greetings without catalog boilerplate or redundant self-introduction intros. **phrase_index** matches help/greeting/thanks in milliseconds; learned rows merge at runtime. Catalog lane: intent, RAG, logic, synthesis. Reply language is agent-driven — no fixed locale whitelist.”
 
 ---
 
 ## Slide 9 — Guardrails + demo (v2.1.6 smart loop)
 
-> “FR4: pet catalog only, default-deny. Demo on 8090, shop 15: (A) ‘me puedes ayudar’ — social help, **no** ‘Still searching the catalog’ chunk; (B) ‘y para iguanas’ — scope reply without duplicate Hola intro; (C) ‘dame 10 opciones de comida para perros’ — up to ten product cards arriving in batches. Hard refresh if you tested an older build.”
+> “FR4: pet catalog only, default-deny. Demo on 8090, shop 15: (A) ‘can you help me’ — social help, **no** ‘Still searching the catalog’ chunk; (B) ‘and what about iguanas’ — scope reply without duplicate greeting intro; (C) ‘give me 10 dog food options’ — up to ten product cards arriving in batches. Hard refresh if you tested an older build.”
 
 ---
 
@@ -92,7 +92,7 @@ Full doc: [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md)
 
 ## Slide 14 — Release progress (v0.1.0 → v2.1.6) + Q&A
 
-> “Same five FRs, iterated on `releases`. **v0.1.0–v1.4**: hybrid RAG, streaming, live-loop UX. **v2.0–v2.1**: invisible conductor, playbook MD, social/catalog probe, agent-multilingual. **v2.1.3**: fast intent-first stream. **v2.1.4–5**: dynamic species, help/saludo detection, greeting dedupe. **v2.1.6** (current): four picks by default but shopper can ask for more, `product_batch` chunked cards, and the social phrase index. Happy to dive into any milestone or run the demo.”
+> “Same five FRs, iterated on `releases`. **v0.1.0–v1.4**: hybrid RAG, streaming, live-loop UX. **v2.0–v2.1**: invisible conductor, playbook MD, social/catalog probe, agent-multilingual. **v2.1.3**: fast intent-first stream. **v2.1.4–5**: dynamic species, help/greeting detection, greeting dedupe. **v2.1.6** (current): four picks by default but shopper can ask for more, `product_batch` chunked cards, and the social phrase index. Happy to dive into any milestone or run the demo.”
 
 ---
 
