@@ -23,6 +23,18 @@ from patch_interview_pptx_v14_live_loop import (  # type: ignore[import-not-foun
 from pptx import Presentation
 from pptx.util import Inches
 
+SLIDE5_LEFT_HYBRID = [
+    ("Problem we saw in the catalog", True),
+    ("• Vector search alone misses exact tokens (brands, SKUs, “grain-free”).", False),
+    ("• Pure keyword search misses intent (“puppy sensitive stomach”).", False),
+    ("Why this hybrid design", True),
+    ("• Chroma: semantic candidates from embedded product text (local, no API key).", False),
+    ("• BM25 on the same candidate pool: lexical match without a second DB.", False),
+    ("• Fuse 50% vector + 35% BM25 + 15% rating/sales/stock.", False),
+    ("PoC trade-off", True),
+    ("• Zero extra infra vs hosted vector DB; A/B via ZOOPLUS_RETRIEVAL_MODE=vector.", False),
+]
+
 SLIDE5_RIGHT_V20 = [
     ("Query path (hybrid default)", True),
     ("1. Hard filter site_id in Chroma metadata", False),
@@ -165,15 +177,55 @@ def build_release_progress_slide(slide, *, page: int) -> None:
     _set_progress_footer(slide)
 
 
-def _remove_stale_rag_middle_column(slide) -> None:
-    """Drop legacy centre column on slide 6 (v1.4 status* stream text)."""
+_CONTENT_TOP_LO = 1_150_000
+_CONTENT_TOP_HI = 6_200_000
+_CONTENT_LEFT_HI = 10_500_000
+
+
+def _clear_content_bullets(slide) -> None:
+    """Remove all panel bullet textboxes (avoids stacked v1.4/v2.x columns)."""
     for sh in list(slide.shapes):
         if not sh.has_text_frame:
             continue
-        text = sh.text or ""
-        if sh.left and 700_000 < sh.left < 2_000_000 and "status* → products" in text:
-            el = sh._element
-            el.getparent().remove(el)
+        top = sh.top or 0
+        left = sh.left or 0
+        if not (_CONTENT_TOP_LO < top < _CONTENT_TOP_HI):
+            continue
+        if left > _CONTENT_LEFT_HI:
+            continue
+        if left < 400_000:
+            continue
+        el = sh._element
+        el.getparent().remove(el)
+
+
+def _rebuild_two_columns(
+    slide,
+    left_lines: list[tuple[str, bool]],
+    right_lines: list[tuple[str, bool]],
+    *,
+    size: int = 14,
+) -> None:
+    """Wipe panel bullets and lay out exactly two columns (rag_slides geometry)."""
+    _clear_content_bullets(slide)
+    _rag_bullets(
+        slide,
+        Inches(0.82),
+        Inches(1.55),
+        Inches(5.6),
+        Inches(5.1),
+        left_lines,
+        size=size,
+    )
+    _rag_bullets(
+        slide,
+        Inches(6.55),
+        Inches(1.55),
+        Inches(5.9),
+        Inches(5.1),
+        right_lines,
+        size=size,
+    )
 
 
 def ensure_release_progress_slide(prs: Presentation) -> None:
@@ -196,16 +248,20 @@ def main() -> None:
     prs = Presentation(str(DECK))
 
     i5 = _find_slide(prs, "Why hybrid")
-    right5 = _right_column_bullets(prs.slides[i5])
-    if right5 is not None:
-        _fill(right5, SLIDE5_RIGHT_V20, size=14)
+    _rebuild_two_columns(
+        prs.slides[i5],
+        SLIDE5_LEFT_HYBRID,
+        SLIDE5_RIGHT_V20,
+        size=17,
+    )
 
     i6 = _find_slide(prs, "RAG strategy")
-    _remove_stale_rag_middle_column(prs.slides[i6])
-    _fix_left_column(prs.slides[i6], SLIDE6_LEFT_V20, size=14)
-    right6 = _right_column_bullets(prs.slides[i6])
-    if right6 is not None:
-        _fill(right6, SLIDE6_RIGHT_V20, size=14)
+    _rebuild_two_columns(
+        prs.slides[i6],
+        SLIDE6_LEFT_V20,
+        SLIDE6_RIGHT_V20,
+        size=14,
+    )
 
     i7 = _find_slide(prs, "Agentic architecture", "Agentic routing", "Live loop")
     _fix_left_column(prs.slides[i7], SLIDE7_LEFT_V20, size=14)
