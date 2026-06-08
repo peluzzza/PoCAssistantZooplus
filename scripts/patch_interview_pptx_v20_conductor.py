@@ -201,6 +201,7 @@ def main() -> None:
         _fill(right5, SLIDE5_RIGHT_V20, size=14)
 
     i6 = _find_slide(prs, "RAG strategy")
+    _remove_stale_rag_middle_column(prs.slides[i6])
     _fix_left_column(prs.slides[i6], SLIDE6_LEFT_V20, size=14)
     right6 = _right_column_bullets(prs.slides[i6])
     if right6 is not None:
