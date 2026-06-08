@@ -719,18 +719,18 @@ _INTRO_GREETING_RE = re.compile(
     r"^(?:¡?\s*)?(?:hola|hello|hi|hey|buenas)\b"
     r"(?:\s*[,!.])?\s*(?:soy el|soy la|i['']?m the|i am the|i'm)\s+"
     r"(?:the\s+)?zooplus\s+assistant\b"
-    r"(?:\s+for\s+(?:this\s+shop|shop\s+\d+|esta\s+tienda))?\s*",
+    r"(?:\s+for\s+(?:(?:this|our)\s+shop|shop\s+\d+|esta\s+tienda))?\s*",
     re.I,
 )
 
 _INTRO_ASSISTANT_ONLY_RE = re.compile(
     r"^(?:i['']?m the|i am the|soy el|soy la)\s+"
     r"(?:the\s+)?zooplus\s+assistant\b"
-    r"(?:\s+for\s+(?:this\s+shop|shop\s+\d+|esta\s+tienda))?\s*",
+    r"(?:\s+for\s+(?:(?:this|our)\s+shop|shop\s+\d+|esta\s+tienda))?\s*",
     re.I,
 )
 
-_SHOP_ORPHAN_RE = re.compile(r"^for\s+this\s+shop\s*[,.]?\s*", re.I)
+_SHOP_ORPHAN_RE = re.compile(r"^for\s+(?:this|our)\s+shop\s*[,.]?\s*", re.I)
 
 _CONTINUATION_QUERY_RE = re.compile(
     r"^(?:y\s+|and\s+|also\s+|además\s+|otra\s+cosa[,:]?\s+|"

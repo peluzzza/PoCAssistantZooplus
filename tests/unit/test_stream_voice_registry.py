@@ -122,10 +122,14 @@ def test_strip_intro_removes_shop_tail_not_orphan() -> None:
 
 
 def test_strip_intro_orphan_shop_fragment() -> None:
-    orphan = "for this shop. I'm here to help you find the best dog and cat products."
-    trimmed = svr.strip_leading_assistant_intro(orphan)
-    assert not trimmed.lower().startswith("for this shop")
-    assert trimmed.lower().startswith("i'm here")
+    for orphan in (
+        "for this shop. I'm here to help you find the best dog and cat products.",
+        "for our shop. I am here to help you find dog and cat products.",
+    ):
+        trimmed = svr.strip_leading_assistant_intro(orphan)
+        assert not trimmed.lower().startswith("for this shop")
+        assert not trimmed.lower().startswith("for our shop")
+        assert trimmed.lower().startswith(("i'm here", "i am here"))
 
 
 def test_dedupe_fallback_not_shop_orphan(playbook) -> None:
