@@ -29,6 +29,16 @@ _SOCIAL_HELP = re.compile(
     re.I,
 )
 
+_SHOPPING_INTENT = re.compile(
+    r"\b("
+    r"looking\s+for|searching\s+for|i\s+need|i\s+want|find\s+me|show\s+me|recommend|"
+    r"suggest|options?\s+for|food\s+for|treats?\s+for|"
+    r"light\s+food|dry\s+food|wet\s+food|grain[- ]free|sensitive\s+stomach|"
+    r"puppy|kitten|dogs?|cats?|perros?|gatos?"
+    r")\b",
+    re.I,
+)
+
 _OFF_TOPIC_HARD = re.compile(
     r"\b(weather|traffic|president|news\s+headline|bitcoin|crypto|"
     r"for\s+humans|human\s+food|search\s+the\s+internet|ignore\s+all\s+previous|"
@@ -49,10 +59,22 @@ def looks_like_off_topic(query: str) -> bool:
     return False
 
 
+def has_shopping_request(query: str) -> bool:
+    """Product search intent — wins over trailing 'can you help me out?' phrasing."""
+    text = (query or "").strip()
+    if not text:
+        return False
+    if looks_like_catalog_search(text) or looks_like_price_filtered_catalog(text):
+        return True
+    return bool(_SHOPPING_INTENT.search(text))
+
+
 def looks_like_social_help_request(query: str) -> bool:
     """Help / capabilities ask — social lane, never catalog."""
     text = (query or "").strip()
     if not text:
+        return False
+    if has_shopping_request(text):
         return False
     from src.agents.phrase_index import match_social_help
     from src.agents.stream_voice_registry import learn_social_help_phrase, matches_playbook_social_help

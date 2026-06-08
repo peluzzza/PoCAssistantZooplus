@@ -27,6 +27,7 @@ def synthesize_answer(
 
         return synthesize_template(query, products)
 
+    from src.agents.prompts import CUSTOMER_VOICE
     from src.llm.language_context import current_reply_language_instruction
     from src.llm.opencode import _build_prompt, synthesize_opencode, synthesize_opencode_with_agents
 
@@ -36,6 +37,7 @@ def synthesize_answer(
         for p in (
             instructions_skill_context(site_id=site_id),
             handoff_context or "",
+            CUSTOMER_VOICE,
             f"Write as zooplus Assistant. {lang_line} No numbered product list (UI shows cards).",
         )
         if p

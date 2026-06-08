@@ -169,10 +169,15 @@ def social_reply(
             else ""
         )
         greet_hint = " Open with a warm hello." if kind == "greeting" else ""
+        help_hint = (
+            " No system manual — just invite their pet/product question."
+            if kind == "help"
+            else ""
+        )
         fast_prompt = (
             f"{SOCIAL_SYSTEM}\n\n{_context_for_kind(kind, query, intent)}\n\n"
             f"site_id={site_id}\nCustomer: {query}\n"
-            f"Reply as zooplus Assistant in 2-3 short sentences.{greet_hint}{no_intro} {lang_line}"
+            f"Reply as zooplus Assistant in 2-3 short sentences.{greet_hint}{help_hint}{no_intro} {lang_line}"
         )
         raw = run_opencode_agent(
             wrap_prompt_with_agent(agent_id, fast_prompt),
@@ -196,7 +201,7 @@ def social_reply(
     lang_line = current_reply_language_instruction(query, site_id=site_id)
     prompt = (
         f"{ctx}\n\nsite_id={site_id}\nCustomer: {query}\n"
-        f"Reply as zooplus Assistant (2-5 sentences). {lang_line}"
+        f"Reply as zooplus Assistant (2-4 sentences, professional and polite). {lang_line}"
     )
 
     def _ok(raw: str) -> str | None:

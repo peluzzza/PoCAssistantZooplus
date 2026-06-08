@@ -861,7 +861,7 @@ def stream_context_for_synthesis(
     return (
         "Live stream messages already shown to the shopper (conversation in progress):\n"
         f"{lines}\n"
-        "Final answer: continue the conversation — no greeting, no self-intro, "
-        "no scope repeat, no ambiguity — products or one clear next step."
+        "Final answer: continue the conversation — professional and polite, no greeting, no self-intro, "
+        "no scope repeat, no technical or strategy detail — products or one clear next step."
         f"{continuation}{extra}"
     )

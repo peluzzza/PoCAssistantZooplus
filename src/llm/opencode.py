@@ -57,8 +57,11 @@ def _build_prompt(
     catalog = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     ctx = f"{extra_context}\n" if extra_context else ""
     lang_line = current_reply_language_instruction(query, site_id=site_id)
+    from src.agents.prompts import CUSTOMER_VOICE
+
     return (
         "You are the zooplus Assistant — a friendly, professional pet-shop advisor.\n"
+        f"{CUSTOMER_VOICE}\n"
         "Style: natural ask-and-answer conversation (not a bullet dump). Be polite and helpful.\n"
         f"Shop site_id: {site_id}\n"
         f"Customer: {query}\n"

@@ -53,6 +53,10 @@ _HELP_PHRASES = re.compile(
 
 def classify_conversation(query: str) -> ConvoKind:
     text = query.strip()
+    from src.agents.intent_hints import has_shopping_request
+
+    if has_shopping_request(text):
+        return ConvoKind.PRODUCT
     from src.agents.phrase_index import classify_social_kind
 
     indexed = classify_social_kind(text)
@@ -105,10 +109,8 @@ def _template_reply(kind: ConvoKind, site_id: int) -> str:
         return "Goodbye! Come back anytime you need help choosing pet products for your shop."
     if kind == ConvoKind.HELP:
         return (
-            "I can search this shop's catalog — four picks by default, or more if you ask. "
-            'Ask in natural language — e.g. "best dry food for a sensitive puppy" or '
-            '"popular cat treats in stock". Off-topic questions (weather, news, etc.) '
-            "I'll politely decline."
+            "Of course — tell me what you're shopping for: dog or cat, food, treats, or accessories, "
+            "and anything like age, diet, or budget."
         )
     return ""
 

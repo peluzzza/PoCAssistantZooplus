@@ -175,7 +175,15 @@ def _repair_agentic_misroute(query: str, decision: IntentDecision) -> IntentDeci
 def try_obvious_social_intent(query: str) -> IntentDecision | None:
     """Clear social turns — skip OpenCode intent; one LLM call for the reply only."""
     from src.agents.handoff import TOPIC_SHOP_SOCIAL
+    from src.agents.intent_hints import has_shopping_request
     from src.llm.conversation import ConvoKind, classify_conversation
+
+    if (
+        has_shopping_request(query)
+        or looks_like_catalog_search(query)
+        or looks_like_price_filtered_catalog(query)
+    ):
+        return None
 
     if looks_like_help_about_shop(query):
         return IntentDecision(
@@ -208,7 +216,15 @@ def try_obvious_social_intent(query: str) -> IntentDecision | None:
 
 def try_fast_conversational_intent(query: str) -> IntentDecision | None:
     """Skip OpenCode for obvious social turns (latency); policy routing stays agentic for catalog/decline."""
+    from src.agents.intent_hints import has_shopping_request
     from src.llm.conversation import ConvoKind, classify_conversation
+
+    if (
+        has_shopping_request(query)
+        or looks_like_catalog_search(query)
+        or looks_like_price_filtered_catalog(query)
+    ):
+        return None
 
     if looks_like_help_about_shop(query):
         return IntentDecision(

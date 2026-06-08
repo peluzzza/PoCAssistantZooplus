@@ -9,7 +9,9 @@ from src.agents.intent_agent import (
     try_fast_catalog_intent,
     try_fast_conversational_intent,
 )
-from src.agents.intent_hints import looks_like_catalog_search
+from src.agents.intent_hints import has_shopping_request, looks_like_catalog_search, looks_like_social_help_request
+from src.agents.intent_agent import try_obvious_social_intent
+from src.agents.stream_voice_registry import probe_instant_lane
 from src.api.app import app
 from src.llm.conversation import classify_conversation
 from src.rag.catalog_lexicon import build_lexicon_from_raw, persist_lexicon, reload_lexicon
@@ -20,6 +22,24 @@ pytestmark = pytest.mark.unit
 def test_fast_intent_disabled_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ZOOPLUS_FAST_INTENT", raising=False)
     assert not fast_intent_enabled()
+
+
+def test_shopping_with_trailing_help_is_catalog_not_social() -> None:
+    q = "well I'm looking for some light food for my dogs can you help me out"
+    assert has_shopping_request(q)
+    assert not looks_like_social_help_request(q)
+    assert classify_conversation(q).value == "product"
+    assert try_obvious_social_intent(q) is None
+    assert probe_instant_lane(q, 3) == "catalog"
+
+
+def test_pure_help_still_social() -> None:
+    q = "can you help me"
+    assert not has_shopping_request(q)
+    assert looks_like_social_help_request(q)
+    decision = try_obvious_social_intent(q)
+    assert decision is not None
+    assert decision.social_kind == "help"
 
 
 def test_help_services_classified() -> None:
