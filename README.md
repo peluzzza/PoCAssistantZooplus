@@ -209,19 +209,17 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | Branch / tag | Meaning |
 |--------------|---------|
 | **`releases`** | Interview / take-home line — use wizard here |
-| **`main`** | Full dev history, matrix tooling, QA, speaker script, [**work history**](docs/PROJECT_WORK_HISTORY.md) |
+| **`main`** | Full dev history, matrix tooling, [**work history**](docs/PROJECT_WORK_HISTORY.md) |
 
 ## Interview / submission
 
 - Checklist: [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md)
 - **Feature catalog:** [`docs/PROJECT_FEATURES.md`](docs/PROJECT_FEATURES.md)
 - **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
-- **Q&A prep (main only):** [`docs/deliverables/v0.1/QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md)
-- **Speaker script (main only):** [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](docs/deliverables/v0.1/PRESENTATION_15MIN.md)
 
 ### Work history — `PROJECT_WORK_HISTORY.md`
 
-[`docs/PROJECT_WORK_HISTORY.md`](docs/PROJECT_WORK_HISTORY.md) is a **chronological project diary** (English): every commit across all branches, in order, told as a narrative — goals per phase, what shipped, bugs, reverts, rollbacks, and branch promotion (`feature` → `dev` → `main` → `releases`). Available on **`main`** and **`releases`** (QA and speaker script remain **main only**).
+[`docs/PROJECT_WORK_HISTORY.md`](docs/PROJECT_WORK_HISTORY.md) is a **chronological project diary** (English): every commit across all branches, in order, told as a narrative — goals per phase, what shipped, bugs, reverts, rollbacks, and branch promotion (`feature` → `dev` → `main` → `releases`). Available on **`main`** and **`releases`**.
 
 | Section | What you get |
 |---------|----------------|
