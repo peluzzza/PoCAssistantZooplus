@@ -217,12 +217,19 @@ Of course — I'm checking this shop's catalog now…
 - Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T00:29:46+00:00
 - Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:28:33+00:00
 - Hello! I'm the zooplus Assistant for this shop | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:31:58+00:00
+- Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:34:44+00:00
+- Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:35:29+00:00
+- I am the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:47:51+00:00
+- Hello! I am the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:50:44+00:00
+- Hello! I'm the zooplus Assistant | leading_intro_stripped | ×1 | conductor_dedupe | 2026-06-08T21:50:49+00:00
 
 ## learned_species
 
 <!-- conductor auto-append: match → label_es | label_en -->
 - serpiente|serpientes → serpientes | serpientes
+- some|some → some | some
 
 ## learned_social_help
 
 <!-- conductor auto-append: phrase | reason | count -->
+- what can you tell me about your services | social_help_detected | ×1 | intent_hints | 2026-06-08T21:47:28+00:00

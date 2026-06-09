@@ -97,8 +97,6 @@ py -3 scripts/patch_interview_pptx_agentic_ux.py   # refresh pro deck
 | 8 | Agents | Per-agent LLMs + `shopper_status` |
 | 9 | Guardrails + demo | Stream UX, multilingual, fast demos |
 
-Speaker notes: [`PRESENTATION_15MIN.md`](PRESENTATION_15MIN.md)
-
 ---
 
 ## 9. Main commits (2086daf → HEAD)

@@ -1,7 +1,6 @@
 # Coding Task — checklist (1:1 with the .docx)
 
 **Brief:** [`../../instructions/Coding Task.docx`](../../instructions/Coding%20Task.docx)  
-**Speaker script:** [`PRESENTATION_15MIN.md`](PRESENTATION_15MIN.md)  
 **PPT (pro):** [`zooplus-assistant-interview-15min-pro.pptx`](zooplus-assistant-interview-15min-pro.pptx)
 
 Check `[x]` when you have rehearsed each row.
@@ -88,5 +87,5 @@ py -3 -m pytest tests/acceptance -m acceptance -q
 
 ## Interview materials
 
-- [ ] Pro PPTX opened and rehearsed ([`PRESENTATION_15MIN.md`](PRESENTATION_15MIN.md))
+- [ ] Pro PPTX opened and rehearsed
 - [ ] Local server `:8090` tested

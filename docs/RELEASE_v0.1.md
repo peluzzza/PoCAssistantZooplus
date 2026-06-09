@@ -27,4 +27,3 @@ Full guide: [`QUICKSTART.md`](QUICKSTART.md)
 | Acceptance criteria | [`docs/instructions/ACCEPTANCE.md`](instructions/ACCEPTANCE.md) |
 | Checklist | [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](deliverables/v0.1/CODING_TASK_CHECKLIST.md) |
 | **Presentation (pro)** | [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx) |
-| Speaker script | [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](deliverables/v0.1/PRESENTATION_15MIN.md) |

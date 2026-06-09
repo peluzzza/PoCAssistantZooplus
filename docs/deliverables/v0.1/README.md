@@ -7,7 +7,6 @@
 | Item | Path |
 |------|------|
 | **Presentation (pro)** | [`zooplus-assistant-interview-15min-pro.pptx`](zooplus-assistant-interview-15min-pro.pptx) |
-| Speaker script | [`PRESENTATION_15MIN.md`](PRESENTATION_15MIN.md) |
 | **Changelog v0.1.2 → v0.1.3** | [`CHANGELOG_v0.1.2_to_v0.1.3.md`](CHANGELOG_v0.1.2_to_v0.1.3.md) |
 | Checklist | [`CODING_TASK_CHECKLIST.md`](CODING_TASK_CHECKLIST.md) |
 | Future roadmap (summary) | [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md) |

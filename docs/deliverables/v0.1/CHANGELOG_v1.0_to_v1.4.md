@@ -69,5 +69,3 @@ py -3 scripts/patch_interview_pptx_v14_live_loop.py
 ```
 
 Slides **6–9** updated: RAG stream, live-loop architecture, social-agent chunks, demo talking points.
-
-Speaker notes: [`PRESENTATION_15MIN.md`](PRESENTATION_15MIN.md)
