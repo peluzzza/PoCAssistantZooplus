@@ -208,14 +208,34 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| **`releases`** | Interview / take-home line — use wizard here; includes [**work history**](docs/PROJECT_WORK_HISTORY.md) |
-| **`main`** | Full dev history, matrix tooling, QA, speaker script |
+| **`releases`** | Interview / take-home line — use wizard here |
+| **`main`** | Full dev history, matrix tooling, QA, speaker script, [**work history**](docs/PROJECT_WORK_HISTORY.md) |
 
 ## Interview / submission
 
 - Checklist: [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md)
+- **Feature catalog:** [`docs/PROJECT_FEATURES.md`](docs/PROJECT_FEATURES.md)
 - **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
-- **Work history:** [`docs/PROJECT_WORK_HISTORY.md`](docs/PROJECT_WORK_HISTORY.md) — English chronological diary of every commit (goals, bugs, reverts, branch promotion). Regenerate on `main` with `py -3 scripts/build_work_history.py`.
+- **Q&A prep (main only):** [`docs/deliverables/v0.1/QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md)
+- **Speaker script (main only):** [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](docs/deliverables/v0.1/PRESENTATION_15MIN.md)
+
+### Work history — `PROJECT_WORK_HISTORY.md`
+
+[`docs/PROJECT_WORK_HISTORY.md`](docs/PROJECT_WORK_HISTORY.md) is a **chronological project diary** (English): every commit across all branches, in order, told as a narrative — goals per phase, what shipped, bugs, reverts, rollbacks, and branch promotion (`feature` → `dev` → `main` → `releases`). Available on **`main`** and **`releases`** (QA and speaker script remain **main only**).
+
+| Section | What you get |
+|---------|----------------|
+| **Prologue** | Brief, branch model, tags (`v0.1.0` … **v2.1.6**) |
+| **10 chapters** | Story by era (bootstrap, RAG, agentic, conductor, v2.1.6 polish…) |
+| **Per-chapter tables** | Expandable commit lists with dates and branch refs |
+| **Appendix A** | Full commit-by-commit index |
+| **Appendix B** | Errors, reverts, and lessons learned |
+
+Regenerate after new milestones:
+
+```powershell
+py -3 scripts/build_work_history.py
+```
 
 ## Docs
 
@@ -228,4 +248,5 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md) | Tag verify |
 | [`docs/deliverables/v0.1/README.md`](docs/deliverables/v0.1/README.md) | Interview deliverable pack |
 | [`docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md`](docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md) | Current releases line (v2.1.6) |
-| [`docs/PROJECT_WORK_HISTORY.md`](docs/PROJECT_WORK_HISTORY.md) | **Work history** — full git narrative in English (10 chapters + appendices) |
+| [`docs/PROJECT_FEATURES.md`](docs/PROJECT_FEATURES.md) | **Feature catalog** — shopper + technical capabilities (v2.1.6) |
+| [`docs/PROJECT_WORK_HISTORY.md`](docs/PROJECT_WORK_HISTORY.md) | **Work history** — full git narrative (English); see section above |

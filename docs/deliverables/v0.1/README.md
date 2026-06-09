@@ -11,6 +11,7 @@
 | **Changelog v2.0 → v2.1** | [`CHANGELOG_v2.0_to_v2.1.md`](CHANGELOG_v2.0_to_v2.1.md) |
 | **Changelog v0.1.2 → v0.1.3** | [`CHANGELOG_v0.1.2_to_v0.1.3.md`](CHANGELOG_v0.1.2_to_v0.1.3.md) |
 | Checklist | [`CODING_TASK_CHECKLIST.md`](CODING_TASK_CHECKLIST.md) |
+| Feature catalog | [`../../PROJECT_FEATURES.md`](../../PROJECT_FEATURES.md) — shopper + technical capabilities |
 | Work history | [`../../PROJECT_WORK_HISTORY.md`](../../PROJECT_WORK_HISTORY.md) — full git narrative (English) |
 | Future roadmap (summary) | [`FUTURE_IMPROVEMENTS.md`](FUTURE_IMPROVEMENTS.md) |
 
