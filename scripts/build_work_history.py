@@ -120,7 +120,6 @@ def assign_chapters(commits: list[dict]) -> dict[str, list[dict]]:
 def narrative_bullets(chapter: str) -> list[str]:
     narratives: dict[str, list[str]] = {
         "Chapter 1 — Foundation (3 Jun, afternoon)": [
-            "**Goal:** deliver the Coding Task from scratch in a single afternoon.",
             "Bootstrap the repo (P0), explore the dataset (T1 EDA), index Chroma with `site_id` (T2).",
             "CI with ruff, unit, integration, e2e; first fix for an invalid GitHub Actions workflow.",
             "Dual-lane pipeline: topic guard, MCP, ACP, async orchestrator — **FR1–FR4** underway.",
