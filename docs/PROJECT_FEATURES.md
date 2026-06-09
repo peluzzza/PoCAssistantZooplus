@@ -6,6 +6,8 @@
 
 Capability inventory for the **current** implementation — shopper-visible behavior, API contract, agentic stack, RAG, guardrails, and DevEx. For the commit-by-commit story see the work history; for interview slides see the deliverable pack.
 
+**Source map:** [§15 Feature → source files](#15-feature--source-files) — where each capability lives in the repo and what that module is responsible for.
+
 ---
 
 ## At a glance
@@ -318,7 +320,7 @@ Full list: [`.env.example`](../.env.example).
 
 | Artifact | Branch | Path |
 |----------|--------|------|
-| **This feature catalog** | main + releases | `docs/PROJECT_FEATURES.md` |
+| **This feature catalog** (incl. §15 source map) | main + releases | `docs/PROJECT_FEATURES.md` |
 | Work history | main + releases | `docs/PROJECT_WORK_HISTORY.md` |
 | Interview PPT (14 slides, FR code panels) | releases | `docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx` |
 | Coding Task checklist | releases | `docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md` |
@@ -345,7 +347,165 @@ Full list: [`.env.example`](../.env.example).
 
 ---
 
-## 14. Not in scope (PoC) — see roadmap
+## 15. Feature → source files
+
+Paths are relative to the repository root. Use this section when you need to **read, demo, or extend** a specific capability.
+
+### 15.1 API layer and contracts
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| FastAPI app bootstrap | `src/api/app.py` | Registers routers, middleware, static UI mount |
+| **FR1** `POST /chat` | `src/api/routes/chat.py` → `src/lanes/orchestrator.py` | Async handler; binds shopper language; delegates to dual-lane orchestrator |
+| **FR1** `POST /chat/stream` | `src/api/routes/chat.py` → `src/lanes/stream.py` | NDJSON generator; three routing paths (social / catalog / pending probe) |
+| Request / response schema | `src/models/chat.py` | `ChatRequest`, `ChatResponse`, `RetrievedProduct`, `ChatRuntimeMeta` |
+| Health / ready / metrics | `src/api/routes/system.py` | `/health`, `/ready` (Chroma dir), `/metrics` snapshot |
+| MCP HTTP tools | `src/api/routes/mcp.py`, `src/mcp_server/server.py` | `topic_check`, `catalog_search` for external agents |
+| Shopper language binding | `src/llm/language_context.py`, `src/llm/language.py` | `Accept-Language` + query detection for agent prompts |
+| Per-request model override | `src/agents/request_context.py` | `preferred_model` from UI debug selector |
+
+### 15.2 Streaming UX (v2.1.6)
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| NDJSON event assembly | `src/lanes/stream.py` | Emits `typing`, `chunk`, `topic`, `product_batch`, `products`, `done` |
+| Social fast path | `src/lanes/stream.py` (`probe_instant_lane` branch) | Cancels slow intent when phrase index says social |
+| Catalog fast path + parallel RAG | `src/lanes/stream.py` (`_run_catalog_pipeline`) | Opening chunk + retrieval/synthesis while intent may still run |
+| Conductor progress ticks | `src/lanes/stream.py` → `src/agents/conductor_orchestrator.py` | `conductor_tick`, `conductor_status_text`, anti-repeat dedupe |
+| Timed v1.4 chunks (fallback) | `src/lanes/stream.py` (`_emit_timed_chunks`) | One social chunk per interval while catalog runs |
+| `product_batch` pacing | `src/lanes/stream.py` (`_yield_catalog_finish`) | Splits cards into batches of `product_batch_size()` |
+| Session turn cancellation | `src/cache/session_turn.py` | `session_id` + `bump_session_turn` / `is_current_turn` |
+| Answer dedupe vs chunks | `src/agents/conductor_orchestrator.py` | `dedupe_answer_against_chunks` before final `done` |
+| Orphan / tool JSON cleanup | `src/llm/answer_sanitize.py` | `normalize_shopper_answer` on every shopper-facing reply |
+| Runtime settings | `src/config.py` | `ZOOPLUS_STREAM_MODE`, chunk intervals, `apply_settings()` |
+
+### 15.3 Intent routing and social lanes
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| Intent classification (agentic) | `src/agents/intent_agent.py` | `classify_intent`, `IntentDecision`, timeout + topic fallback |
+| Obvious social shortcut | `src/agents/intent_agent.py` | `try_obvious_social_intent` — greetings/help without waiting for full agent |
+| Shopping vs help disambiguation | `src/agents/intent_hints.py` | `has_shopping_request`, `looks_like_social_help_request` |
+| Policy-only off-topic hints | `src/agents/intent_hints.py` | `looks_like_off_topic`, catalog browse / price heuristics |
+| Social replies (blocking + stream) | `src/agents/social_agent.py` | `social_reply`, `social_chunk_reply`; greeting-specific finalize |
+| **CUSTOMER_VOICE** prompts | `src/agents/prompts.py` | Tone rules injected into social + synthesis paths |
+| Agent handoff brief | `src/agents/handoff.py` | `build_handoff` — context passed to process lane / synthesis |
+| Intent timeout fallback | `src/lanes/orchestrator.py`, `src/lanes/stream.py` | `_classify_intent_bounded` → `_fallback_intent_decision` at 22s |
+| Fast regex paths (CI only) | `src/agents/intent_agent.py` | Gated by `ZOOPLUS_FAST_INTENT=1` |
+| Lexicon repair (opt-in) | `src/agents/intent_agent.py` | `ZOOPLUS_INTENT_REPAIR=1` uses `src/rag/catalog_lexicon.py` |
+
+### 15.4 Phrase index, playbook, and stream voice
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| YAML phrase seed (~90 utterances) | `src/agents/data/social_phrases.yaml` | ES/EN/DE/FR help, greeting, thanks seeds |
+| Fast phrase matcher | `src/agents/phrase_index.py` | Normalized in-memory match; merge with playbook rows |
+| Instant lane probe | `src/agents/stream_voice_registry.py` | `probe_instant_lane` — social vs catalog vs pending |
+| Catalog opening copy | `src/agents/stream_voice_registry.py` | `format_catalog_opening`, `progress_phrase` |
+| Species inference (dynamic) | `src/agents/stream_voice_registry.py` | `infer_non_catalog_species_labels` — iguana, etc. |
+| Greeting intro strip / dedupe | `src/agents/stream_voice_registry.py` | `strip_leading_assistant_intro`, mid-session dedupe |
+| Playbook template | `src/agents/conductor_playbook.md` | Seed forbidden phrases and species ack templates |
+| Runtime learned playbook | `artifacts/memory/conductor_playbook.md` | Auto-learned rows (gitignored in dev; synced at runtime) |
+| Playbook learn toggle | `src/agents/stream_voice_registry.py` | `ZOOPLUS_STREAM_VOICE_LEARN` |
+
+### 15.5 Catalog process lane and synthesis
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| Blocking orchestrator | `src/lanes/orchestrator.py` | Cache check → intent → parallel prefetch → process lane |
+| Process lane execution | `src/lanes/process.py` | Price filter, cap slice, synthesis dispatch |
+| ACP dispatch envelope | `src/acp/envelopes.py`, `src/acp/dispatcher.py` | `ChatProcessEnvelope`, bounded `dispatch_process` |
+| OpenCode subprocess | `src/llm/opencode.py` | `run_opencode_agent`; auth dir; CUSTOMER_VOICE wrapper |
+| Grounded synthesis | `src/llm/synthesis.py` | Catalog answer from `retrieved_products`; cascade |
+| Template fallback | `src/llm/template.py` | Deterministic answers when `ZOOPLUS_SYNTHESIS_MODE=template` |
+| Agent cascade retries | `src/agents/agent_cascade.py` | `ZOOPLUS_AGENT_CASCADE` — model/agent fallbacks |
+| Agent registry + models | `src/agents/registry.py`, `src/agents/agent_models.py` | Chain resolution; per-agent model from `opencode.json` |
+| OpenCode agent definitions | `.opencode/agents/zooplus-*.md` | System prompts per role (conductor, intent, social, synthesis…) |
+| OpenCode model config | `.opencode/config-cli/opencode.json` | Go speed ladder: mimo, deepseek, qwen, minimax per agent |
+| Run metadata | `src/agents/run_meta.py` | `meta.llm_agent`, `meta.llm_model` for UI badge |
+
+### 15.6 RAG, ingest, and retrieval
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| Raw catalog | `data/raw/product_catalog_dataset.json` | Source of truth — never edited in place |
+| HTML normalization | `src/rag/normalize.py` | Strip tags before indexing |
+| Chunking (one row = one doc) | `src/rag/chunking.py` | Build index documents + metadata |
+| Ingest pipeline | `src/rag/pipeline.py` | Delete/recreate collection; write manifest |
+| Ingest CLI | `cli/commands/ingest.py` | `python -m cli ingest` entry point |
+| Chroma store | `src/rag/store/chroma_store.py` | Persistent `zooplus_variants` collection |
+| Vector backend abstraction | `src/rag/store/vector_backend.py` | Local Chroma; `managed` placeholder |
+| Hybrid search | `src/rag/hybrid.py` | Fuse vector + lexical + business signals |
+| BM25 lexical | `src/rag/lexical.py` | Keyword scoring on Chroma candidate pool |
+| Business rerank | `src/rag/rerank.py` | Rating, sales, stock weighting |
+| Public retrieve API | `src/rag/retrieve.py` | `search_catalog(query, site_id, n_results)` |
+| EUR price band parse | `src/rag/price_filter.py` | Multilingual range extraction + filter hits |
+| Dynamic pick count | `src/rag/recommendation_count.py` | `parse_requested_product_count`, `retrieval_pool_size` |
+| Cap enforcement | `src/guardian/engine.py` | `resolve_recommendation_count`, `default_recommendations`, `absolute_max_recommendations` |
+| Routing lexicon | `src/rag/catalog_lexicon.py` | `routing_lexicon.json`; `has_catalog_signal` for intent repair |
+| Golden query eval | `cli/commands/evaluate.py` | Retrieval regression CLI |
+| EDA CLI | `cli/commands/eda.py` | Dataset exploration artifact |
+
+### 15.7 Guardrails and policy
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| Constraint policy | `src/guardian/constraints.yaml` | Allowed/decline intents, caps, timeouts, grounding rules |
+| Policy engine | `src/guardian/engine.py` | `topic_check`, `load_constraints`, `polite_decline_for` |
+| Topic guard benchmark (G1) | `src/guardian/benchmark.py` | Load-test helper for p95 latency |
+| Interactive lane helper | `src/lanes/interactive.py` | `run_topic_guard` async wrapper |
+| Security test matrix | `tests/security/test_guardrails.py` | Injection / off-topic regression |
+
+### 15.8 Chat UI (frontend)
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| HTML shell | `static/ui/index.html` | Shop selector, chat area, product card template |
+| Stream client | `static/ui/app.js` | `POST /chat/stream` reader; `product_batch` card reveal; `session_id` |
+| Styling | `static/ui/styles.css` | Bubbles, cards, typing indicator |
+| UI static routes | `src/api/routes/ui.py` | `/ui/`, `/api/ui/config`, `/api/ui/models` |
+| Model list for selector | `src/llm/opencode_models.py` | `models_for_ui`, `list_opencode_models` |
+
+### 15.9 Caching and observability
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| TTL chat cache | `src/cache/ttl_cache.py` | In-process cache for repeat `/chat` queries |
+| Redis mirror (optional) | `src/cache/redis_store.py` | Shared cache when `ZOOPLUS_CACHE_BACKEND=redis` |
+| Request metrics | `src/observability/metrics.py` | Counters surfaced at `/metrics` |
+| HTTP middleware | `src/observability/middleware.py` | Request timing / logging hooks |
+| Outcome recording | `src/lanes/orchestrator.py` | `record_chat_outcome` per lane |
+
+### 15.10 Configuration, scripts, and tests
+
+| Feature | Primary files | What they do |
+|---------|---------------|--------------|
+| Environment template | `.env.example` | Profile A (template) vs Profile B (OpenCode agentic) |
+| Central settings | `src/config.py` | Parses env; `Settings` dataclass; `apply_settings()` |
+| Setup wizard | `scripts/setup_wizard.ps1` | Install, ingest, optional OpenCode login |
+| Dev server | `scripts/run_dev.ps1` | Uvicorn on `ZOOPLUS_DEV_PORT` (8090) |
+| Release verify | `scripts/run_release_verify.ps1` | End-to-end interview-line checks |
+| Quality gates | `scripts/run_quality_gates.py` | ruff + pytest suites |
+| PPT regeneration | `scripts/patch_interview_pptx_fr1_async.py`, `scripts/patch_interview_pptx_v20_conductor.py` | FR code panels + v2.1.6 deck |
+| **FR1–FR5 acceptance** | `tests/acceptance/test_coding_task_brief.py` | Brief-aligned B1–B9 style checks |
+| Stream integration | `tests/integration/test_chat_stream.py` | NDJSON event contract |
+| Intent oracle | `tests/agentic/test_intent_oracle.py` | Deterministic intent regression |
+| Use-case matrix | `tests/social/test_use_cases_matrix.py`, `tests/acceptance/test_use_cases_matrix_catalog.py` | Broad conversational + catalog coverage |
+| v2.1.6 unit tests | `tests/unit/test_intent_hints.py`, `tests/unit/test_stream_voice_registry.py`, `tests/unit/test_recommendation_count.py`, `tests/unit/test_phrase_index.py` | Shopping+help, greeting, dynamic picks, phrase index |
+
+### 15.11 How to trace a single shopper message
+
+1. **Entry** — `src/api/routes/chat.py` binds language, calls `stream_chat_events` or `handle_chat`.
+2. **Probe** — `src/agents/stream_voice_registry.py` (`probe_instant_lane`) + `src/agents/phrase_index.py`.
+3. **Classify** — `src/agents/intent_agent.py` (or fast social shortcut); fallback in `src/guardian/engine.py` / topic rules.
+4. **Social** — `src/agents/social_agent.py` + `src/agents/prompts.py` (`CUSTOMER_VOICE`).
+5. **Catalog** — `src/rag/retrieve.py` → `src/rag/hybrid.py` → `src/rag/price_filter.py` → `src/lanes/process.py` → `src/llm/synthesis.py`.
+6. **Stream polish** — `src/agents/conductor_orchestrator.py` chunks + `src/llm/answer_sanitize.py` + `product_batch` in `src/lanes/stream.py`.
+7. **UI** — `static/ui/app.js` renders events; badge from `meta` in `done`.
+
+---
+
+## 16. Not in scope (PoC) — see roadmap
 
 - Versioned constraints + prompt-injection scanner (P0)
 - Structured intent facets before retrieval (`pet_type`, category) (P0)
