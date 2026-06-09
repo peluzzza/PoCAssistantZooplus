@@ -209,7 +209,7 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | Branch / tag | Meaning |
 |--------------|---------|
 | **`releases`** | Interview / take-home line — use wizard here |
-| **`main`** | Full dev history, matrix tooling, QA, speaker script, work history |
+| **`main`** | Full dev history, matrix tooling, QA, speaker script, [**work history book**](docs/HISTORIA_DEL_PROYECTO.md) |
 
 ## Interview / submission
 
@@ -217,7 +217,24 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 - **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
 - **Q&A prep (main only):** [`docs/deliverables/v0.1/QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md)
 - **Speaker script (main only):** [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](docs/deliverables/v0.1/PRESENTATION_15MIN.md)
-- **Work history book (main only):** [`docs/HISTORIA_DEL_PROYECTO.md`](docs/HISTORIA_DEL_PROYECTO.md) — regenerate with `py -3 scripts/build_work_history.py`
+
+### Work history — `HISTORIA_DEL_PROYECTO.md`
+
+[`docs/HISTORIA_DEL_PROYECTO.md`](docs/HISTORIA_DEL_PROYECTO.md) is a **chronological project diary**: every commit across all branches, in order, told as a narrative — goals per phase, what shipped, bugs, reverts, rollbacks, and branch promotion (`feature` → `dev` → `main` → `releases`). Available on **`main`** and **`releases`** (QA and speaker script remain **main only**).
+
+| Section | What you get |
+|---------|----------------|
+| **Prólogo** | Brief, branch model, tags (`v0.1.0` … **v2.1.6**) |
+| **10 chapters** | Story by era (bootstrap, RAG, agentic, conductor, v2.1.6 polish…) |
+| **Per-chapter tables** | Expandable commit lists with dates and branch refs |
+| **Apéndice A** | Full commit-by-commit index |
+| **Apéndice B** | Errors, reverts, and lessons learned |
+
+Regenerate after new milestones:
+
+```powershell
+py -3 scripts/build_work_history.py
+```
 
 ## Docs
 
@@ -230,3 +247,4 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md) | Tag verify |
 | [`docs/deliverables/v0.1/README.md`](docs/deliverables/v0.1/README.md) | Interview deliverable pack |
 | [`docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md`](docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md) | Current releases line (v2.1.6) |
+| [`docs/HISTORIA_DEL_PROYECTO.md`](docs/HISTORIA_DEL_PROYECTO.md) | **Work history book** — full git narrative; see section above |
