@@ -16,7 +16,7 @@
 | Area | Before (v2.0) | Now (v2.1) |
 |------|----------------|------------|
 | Instant ack | Catalog template on every turn | **Lane probe** — social vs catalog |
-| `hola que tal` | Wrong catalog chunk + repeat greeting | **One** social bubble |
+| `hello, how are you?` | Wrong catalog chunk + repeat greeting | **One** social bubble |
 | Phrase policy | Hardcoded in Python | **`conductor_playbook.md`** + auto-learn |
 | Language | Mostly ES/EN heuristic | **Agent-driven multilingual** — query, headers, shop; no fixed locale list |
 | Final answer | Sometimes repeated scope/hello | Dedupe vs live chunks + synthesis hint |

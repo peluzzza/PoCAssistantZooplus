@@ -18,7 +18,7 @@ Frame this as **smarter orchestration behind the same shopper shell**, not a new
 | Feature | What the shopper sees | Why it matters |
 |--------|------------------------|----------------|
 | **Invisible conductor** | Same bubbles + typing as v1.4 | System admin is hidden; only zooplus Assistant voice |
-| **Brief-driven chunks** | Each message follows a fresh conductor brief | Fixes repeated “solo perros y gatos / no tortugas” loops |
+| **Brief-driven chunks** | Each message follows a fresh conductor brief | Fixes repeated scope-disclaimer loops (dogs/cats only, no turtles) |
 | **JSON step loop** | `emit_message` → `wait` → `complete` per tick | Explicit orchestration instead of fixed timer-only chunks |
 | **Anti-repeat rules** | Scope disclaimer once per turn; later ticks = progress | Natural dialogue arc before product cards |
 | **Mode switch** | `ZOOPLUS_STREAM_MODE=conductor` (default) · `timed` = v1.4 fallback | Safe rollback without touching v1.0 tag |
@@ -41,8 +41,8 @@ Frame this as **smarter orchestration behind the same shopper shell**, not a new
 
 ## Demo script (slide 9)
 
-1. **A:** `hola` → fast social, no catalog
-2. **B:** `gatos y tortugas 20–50€` → 2–3 **different** bubbles; scope said once; then progress
+1. **A:** `hello` → fast social, no catalog
+2. **B:** `cats and turtles 20–50 euros` → 2–3 **different** bubbles; scope said once; then progress
 3. **C:** `what is the weather` → polite decline, empty `retrieved_products`
 
 **URL:** `http://127.0.0.1:8090/ui/` · shop Spain (`site_id` 15)

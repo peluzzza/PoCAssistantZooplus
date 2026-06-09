@@ -54,9 +54,9 @@ You can say: *“We iterated on progress feedback in v1.1–v1.2 and landed on v
 
 ## Demo script (slide 9)
 
-1. **Spain shop (15)** — *“hola qué tal”* → quick social, no products.
-2. **Catalog loop** — *“opciones para perros y gatos no más de 20€”* → typing, 2–3 conversational bubbles, then answer + cards.
-3. **Decline** — *“qué tiempo hace”* → polite boundary.
+1. **Spain shop (15)** — *“hello, how are you?”* → quick social, no products.
+2. **Catalog loop** — *“dog and cat food options under 20 euros”* → typing, 2–3 conversational bubbles, then answer + cards.
+3. **Decline** — *“what is the weather?”* → polite boundary.
 
 Hard refresh the UI (`Ctrl+Shift+R`) before demo if you patched the deck or pulled `releases`.
 
