@@ -1,0 +1,610 @@
+# Historia del proyecto — zooplus Assistant PoC
+
+**Repositorio:** [peluzzza/PoCAssistantZooplus](https://github.com/peluzzza/PoCAssistantZooplus)  
+**Commits registrados (todas las ramas, orden cronológico):** 162  
+**Generado:** script `scripts/build_work_history.py` — actualizar tras hitos nuevos.
+
+> Un libro de trabajo: objetivos, entregas, errores, reverts y promoción de ramas.
+
+---
+
+## Prólogo — El encargo
+
+Coding Task zooplus: cinco FRs, RAG híbrido, guardrails, repo production-ready, entrevista 15 min.
+
+**Ramas principales:**
+- `feature/*` → experimentación por hito (T1, T2, v1.1 stream, v1.4 chunks, v2.0 conductor…)
+- `dev` → integración
+- `main` → historial completo, QA interno, speaker script, **esta historia**
+- `releases` → línea de entrega take-home / entrevista (slim)
+
+**Tags relevantes:** `v0.1.0`, `v1.0.0`, `v1.1.0`, `v1.2.0`, `v1.4.0`, `v2.0.0`, `v2.1.0` … working tree **v2.1.6**.
+
+---
+
+## Capítulo 1 — Fundación (3 jun, tarde)
+
+*P0 bootstrap, EDA (T1), ingest Chroma (T2), quality gates, pipeline T3–T6, tag v1.0.0.*
+
+- **Objetivo:** cumplir el Coding Task desde cero en una sola tarde.
+- Se levanta el repo (P0), se explora el dataset (T1 EDA), se indexa Chroma con `site_id` (T2).
+- CI con ruff, unit, integration, e2e; primer fix de workflow inválido en GitHub Actions.
+- Pipeline dual-lane: topic guard, MCP, ACP, orquestador async — **FR1–FR4** en marcha.
+- Merge a `dev` y plan de release **v1.0.0**.
+
+**Incidentes / fixes en este tramo:**
+
+- `5502a55` (2026-06-03) — fix(ci): valid GitHub Actions workflow for quality gates
+
+<details>
+<summary>Commits del capítulo (14)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-03 18:43:33 | `a6f9d26` | chore: initial PoC bootstrap P0 T0 |  |
+| 2026-06-03 18:44:15 | `d514225` | feat(T1): dataset EDA report and eda CLI artifact | origin/feature/T1-eda, feature/T1-eda |
+| 2026-06-03 18:44:26 | `b30bfc7` | docs: P1 EDA phase complete and git workflow state |  |
+| 2026-06-03 18:47:14 | `be0f275` | docs: mark GitHub push complete |  |
+| 2026-06-03 19:37:45 | `c82242c` | feat(T2): RAG ingest with Chroma and site-scoped retrieval | origin/feature/T2-rag-index, feature/T2-rag-index |
+| 2026-06-03 19:41:07 | `9249cbb` | ci: add quality gates unit integration e2e ruff and Sonar workflow | origin/feature/quality-gates, feature/quality-gates |
+| 2026-06-03 19:41:21 | `203e1c5` | docs: update PROGRESS for quality gates |  |
+| 2026-06-03 19:50:32 | `5502a55` | fix(ci): valid GitHub Actions workflow for quality gates | origin/feature/ci-quality-workflow-fix, feature/ci-quality-workflow-fix |
+| 2026-06-03 19:54:03 | `bc4aefb` | docs(trace): Zeus quality gates session and CI green status |  |
+| 2026-06-03 20:07:42 | `d9cd7e0` | feat(T3-T6): implement guarded dual-lane chat pipeline | feature/T3-T6-pipeline |
+| 2026-06-03 20:07:52 | `879c4ee` | Merge branch 'feature/T3-T6-pipeline' into dev |  |
+| 2026-06-03 20:12:06 | `4c019b2` | docs: mark brief alignment DONE on dev; unit marker for topic guard |  |
+| 2026-06-03 20:15:22 | `72bbc4e` | docs: release plan v1.0.0 and version bump | tag: v1.0.0 |
+| 2026-06-03 20:17:11 | `4182bae` | docs: mark v1.0.0 RELEASED on main |  |
+
+</details>
+
+---
+
+## Capítulo 2 — Stream y evaluación (3 jun, noche)
+
+*Golden queries, /chat/stream NDJSON, topic guard G1, híbrido BM25+vector v1.2.*
+
+
+**Incidentes / fixes en este tramo:**
+
+- `5c4e2c4` (2026-06-03) — fix(ci): move G1 benchmark into src.guardian for unit test imports
+
+<details>
+<summary>Commits del capítulo (7)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-03 20:19:04 | `c51836b` | feat(v1.1): golden query fixture, evaluate CLI, integration tests | origin/feature/v1.1-golden-queries, feature/v1.1-golden-queries |
+| 2026-06-03 20:19:18 | `cf71b65` | docs: v1.1.0 golden queries progress on dev |  |
+| 2026-06-03 20:24:02 | `c44e8a2` | feat(v1.1): /chat/stream NDJSON, G1 topic guard load test, docs | tag: v1.1.0, origin/feature/v1.1-stream-g1, feature/v1.1-stream-g1 |
+| 2026-06-03 20:24:30 | `b6d2323` | docs(trace): link v1.1.0 release session |  |
+| 2026-06-03 20:31:54 | `5c4e2c4` | fix(ci): move G1 benchmark into src.guardian for unit test imports |  |
+| 2026-06-03 20:41:03 | `ef86068` | feat(v1.2): hybrid BM25+vector retrieval and business rerank | tag: v1.2.0, origin/feature/v1.2-hybrid-retrieval, feature/v1.2-hybrid-retrieval |
+| 2026-06-03 20:49:32 | `5451227` | docs(trace): v1.2.0 session link |  |
+
+</details>
+
+---
+
+## Capítulo 3 — Producción y demos (3–4 jun)
+
+*Docker, runbook, demo pack v2.2, acceptance suite, OpenCode UI.*
+
+
+<details>
+<summary>Commits del capítulo (6)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-03 20:58:34 | `3d5603b` | feat(v2.0): Docker, observability, runbook, deploy smoke | tag: v2.0.0, origin/feature/v2.0-production, feature/v2.0-production |
+| 2026-06-03 20:58:53 | `e63352c` | docs(trace): v2.0.0 session link |  |
+| 2026-06-03 21:38:26 | `5ec240a` | chore(v2.1): align Python 3.11 policy and pin dependency ranges | tag: v2.1.0, origin/feature/v2.1-python-deps, feature/v2.1-python-deps |
+| 2026-06-03 21:38:42 | `6862428` | docs(trace): v2.1.0 session |  |
+| 2026-06-03 21:43:17 | `8197441` | feat(v2.2): demo_all script, DEMO.md, Cloud Run quickstart | tag: v2.2.0, origin/feature/v2.2-demo-pack, feature/v2.2-demo-pack |
+| 2026-06-03 21:57:23 | `d05b485` | test(acceptance): add Coding Task suite against instructions catalog | bugfix/acceptance-instructions-suite |
+
+</details>
+
+---
+
+## Capítulo 4 — Agentic social y seguridad (4 jun)
+
+*Chat UI, guardrails 500 fix, cascade agentic, matrix 173/173, baseline releases v0.1.0.*
+
+- Chat UI + síntesis OpenCode opcional; fixes de `.env`, rutas `/ui`, timeout 12s.
+- **INC-001:** 500 en guardrails por timeout de síntesis — bugfix dedicado.
+- Firewall default-deny; declines cálidos; social rápido sin RAG en saludos.
+- Matrix de tests 173/173; nace la línea **releases** desde baseline agentic v0.1.0.
+
+**Incidentes / fixes en este tramo:**
+
+- `db6ed2d` (2026-06-04) — fix(config): load gitignored .env and propagate OpenCode data dir
+- `542abd9` (2026-06-04) — fix(ui): serve static assets on /ui with absolute paths
+- `3de8967` (2026-06-04) — fix(chat): avoid OpenCode blocking UI; cap synthesis at 12s
+- `e19c7fb` (2026-06-04) — fix(guardrails): resolve 500 on synthesis timeout; internet/injection declines; security test matrix
+- `0274eed` (2026-06-04) — fix(guardian): default-deny firewall; decline non-pet e.g. for humans
+- `db1cc7f` (2026-06-04) — fix(ux): identity chat, warm declines, no RAG on traffic/who-are-you
+- `8bb7509` (2026-06-04) — fix(ux): fast social replies, UI timeout, complete intent oracle
+- `7424b84` (2026-06-04) — fix(intent): route shop help and pet browse without false declines
+- `63036f8` (2026-06-04) — fix(intent): stop repeated help template when OpenCode intent fails
+- `b4376ee` (2026-06-04) — fix(ci): matrix uses oracle+template; .env must not override pytest env
+- `ecb3466` (2026-06-04) — fix(config): load gitignored .env and propagate OpenCode data dir
+- `5cb397a` (2026-06-04) — fix(ui): serve static assets on /ui with absolute paths
+- … y 1 fixes más en el apéndice.
+
+<details>
+<summary>Commits del capítulo (32)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-04 10:26:50 | `151a43c` | feat(ui): add chat UI and optional OpenCode LLM synthesis |  |
+| 2026-06-04 10:41:16 | `c640674` | chore(opencode): local auth setup script and opencode-go defaults | feature/chat-ui-opencode |
+| 2026-06-04 10:41:49 | `db6ed2d` | fix(config): load gitignored .env and propagate OpenCode data dir |  |
+| 2026-06-04 10:46:58 | `542abd9` | fix(ui): serve static assets on /ui with absolute paths |  |
+| 2026-06-04 10:55:49 | `3de8967` | fix(chat): avoid OpenCode blocking UI; cap synthesis at 12s |  |
+| 2026-06-04 10:57:41 | `8d55e85` | feat(chat): local OpenCode auth + polite conversational fast path |  |
+| 2026-06-04 11:02:50 | `75a1f2a` | chore: add run_dev.ps1 launcher and clarify UI needs running server |  |
+| 2026-06-04 11:14:41 | `e19c7fb` | fix(guardrails): resolve 500 on synthesis timeout; internet/injection declines; security test matrix | bugfix/INC-001-guardrails-500 |
+| 2026-06-04 11:42:04 | `4c7d7c0` | feat(acceptance): 56-case use matrix, hybrid pool fix, social gate |  |
+| 2026-06-04 11:52:07 | `0274eed` | fix(guardian): default-deny firewall; decline non-pet e.g. for humans |  |
+| 2026-06-04 11:58:28 | `db1cc7f` | fix(ux): identity chat, warm declines, no RAG on traffic/who-are-you |  |
+| 2026-06-04 12:23:08 | `f2c5959` | feat(agentic): LLM intent/social agents, 114 use cases, oracle tests |  |
+| 2026-06-04 12:26:15 | `12aa9e5` | chore(release): v2.4.0 agentic social assistant notes | tag: v2.4.0 |
+| 2026-06-04 12:30:32 | `d407f4c` | feat(agents): enrich OpenCode agents from AGENT_BUNDLE; intent+social agents |  |
+| 2026-06-04 12:45:52 | `8bb7509` | fix(ux): fast social replies, UI timeout, complete intent oracle |  |
+| 2026-06-04 12:52:47 | `7424b84` | fix(intent): route shop help and pet browse without false declines |  |
+| 2026-06-04 13:00:10 | `240af8c` | test(matrix): 169 Coding Task use cases grounded in instructions catalog |  |
+| 2026-06-04 13:17:45 | `fb73241` | feat(agents): topic-based intent handoff; disable regex fast-path by default |  |
+| 2026-06-04 13:37:58 | `63036f8` | fix(intent): stop repeated help template when OpenCode intent fails |  |
+| 2026-06-04 14:11:35 | `3783e21` | feat(agents): cascade retries, varied copy, and smarter routing |  |
+| 2026-06-04 14:37:04 | `b4376ee` | fix(ci): matrix uses oracle+template; .env must not override pytest env |  |
+| 2026-06-04 15:12:22 | `d64def5` | chore(smoke): minimal functional script and deterministic test defaults |  |
+| 2026-06-04 15:46:21 | `30e22c7` | refactor(social): agentic OpenCode replies; remove scripted conversation pools |  |
+| 2026-06-04 15:51:15 | `3a59e53` | chore(matrix): 173/173 passed — refresh trace and USE_CASES index |  |
+| 2026-06-04 15:57:16 | `878f164` | chore(release): v2.5.0 — agentic cascade, OpenCode social, matrix 173/173 | tag: v2.5.0 |
+| 2026-06-04 10:26:50 | `b5b57e0` | feat(ui): add chat UI and optional OpenCode LLM synthesis |  |
+| 2026-06-04 10:41:16 | `c03e33b` | chore(opencode): local auth setup script and opencode-go defaults |  |
+| 2026-06-04 10:41:49 | `ecb3466` | fix(config): load gitignored .env and propagate OpenCode data dir |  |
+| 2026-06-04 10:46:58 | `5cb397a` | fix(ui): serve static assets on /ui with absolute paths |  |
+| 2026-06-04 10:55:49 | `5242b13` | fix(chat): avoid OpenCode blocking UI; cap synthesis at 12s |  |
+| 2026-06-04 10:57:41 | `a952ec6` | feat(chat): local OpenCode auth + polite conversational fast path |  |
+| 2026-06-04 12:30:32 | `88e65d8` | feat(agents): enrich OpenCode agents from AGENT_BUNDLE; intent+social agents |  |
+
+</details>
+
+---
+
+## Capítulo 5 — Rama releases y wizard (4–5 jun)
+
+*Slim releases, PPT base, setup wizard, QUICKSTART, prod cleanup.*
+
+
+**Incidentes / fixes en este tramo:**
+
+- `2086daf` (2026-06-05) — fix(ppt): clean slide 3 layout — no overlaps on FR1 async evidence
+- `cf7dbc4` (2026-06-06) — fix(ui): Enter sends message, Shift+Enter newline in chat textarea
+
+<details>
+<summary>Commits del capítulo (38)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-04 18:06:15 | `bcaff4c` | release(v0.1.0): agentic PoC baseline from v2.2 | tag: v0.1.1, bugfix/agentic-from-v2.2 |
+| 2026-06-04 18:10:02 | `4ddfe2a` | release(v0.1.0): agentic PoC on main baseline (prefer v0.1 tree) |  |
+| 2026-06-04 18:10:20 | `d90cdee` | docs: releases branch above main, v0.1.0 from main baseline | tag: v0.1.0 |
+| 2026-06-04 18:23:45 | `40b1359` | chore(prod): slim docs tree; add v0.1 deliverable and PPT base | bugfix/prod-cleanup |
+| 2026-06-05 10:42:46 | `0827ea4` | release(v0.1.2): slim releases branch for interview submission | tag: v0.1.2 |
+| 2026-06-05 11:47:45 | `38d082f` | docs(ppt): add hybrid RAG rationale and full pipeline slides (pro deck 13) |  |
+| 2026-06-05 12:10:35 | `6bc189f` | docs(ppt): add FR1 async FastAPI evidence on slide 3 (B1) |  |
+| 2026-06-05 12:29:41 | `2086daf` | fix(ppt): clean slide 3 layout — no overlaps on FR1 async evidence |  |
+| 2026-06-05 18:43:11 | `71a83a6` | feat(setup): add wizard, QUICKSTART, and GIT_WORKFLOW for clear local install | origin/feature/setup-wizard-quickstart, feature/setup-wizard-quickstart |
+| 2026-06-05 18:43:18 | `aad64c9` | merge feature/setup-wizard-quickstart into releases |  |
+| 2026-06-06 10:43:53 | `cf7dbc4` | fix(ui): Enter sends message, Shift+Enter newline in chat textarea | origin/feature/fast-social-ui-enter, feature/fast-social-ui-enter |
+| 2026-06-06 10:44:01 | `8ea2e2a` | merge feature/fast-social-ui-enter: Enter-to-send in chat UI |  |
+| 2026-06-06 10:44:01 | `3f1d727` | merge feature/fast-social-ui-enter: Enter-to-send in chat UI |  |
+| 2026-06-06 10:44:02 | `a99c22e` | merge feature/fast-social-ui-enter: Enter-to-send in chat UI |  |
+| 2026-06-06 11:13:21 | `b7941fc` | Improve agentic latency with cache, parallel RAG, and warmer UI wait states. | origin/feature/agentic-latency, feature/agentic-latency |
+| 2026-06-06 11:13:29 | `9abf3c9` | merge feature/agentic-latency into dev |  |
+| 2026-06-06 11:13:30 | `bdb4504` | merge feature/agentic-latency into releases |  |
+| 2026-06-06 11:14:24 | `0c4499d` | Enforce English as default shopper language across UI and agent prompts. | origin/feature/english-default, feature/english-default |
+| 2026-06-06 11:14:35 | `3d2bdcf` | merge feature/english-default into dev |  |
+| 2026-06-06 11:14:35 | `6371517` | merge feature/english-default into releases |  |
+| 2026-06-06 11:17:18 | `141915f` | merge feature/ui-en-agent-multilingual into dev |  |
+| 2026-06-06 11:17:18 | `bf9bd50` | Clarify language policy: English static UI, multilingual agent replies. | origin/feature/ui-en-agent-multilingual, feature/ui-en-agent-multilingual |
+| 2026-06-06 11:17:19 | `5b617bd` | merge feature/ui-en-agent-multilingual into releases |  |
+| 2026-06-06 11:20:14 | `97abc14` | docs: enforce feature -> dev -> main -> releases promotion chain | feature/fix-git-workflow-chain |
+| 2026-06-06 11:24:26 | `0335c92` | merge feature/fix-git-workflow-chain into dev |  |
+| 2026-06-06 11:24:42 | `39c049c` | fix: satisfy ruff E501/I001 for quality gates | feature/fix-ruff-quality-gates |
+| 2026-06-06 11:24:52 | `fd66877` | merge feature/fix-ruff-quality-gates into dev |  |
+| 2026-06-06 11:25:03 | `5a3eaf7` | style: ruff format orchestrator and price_filter |  |
+| 2026-06-06 11:30:28 | `a73ac55` | merge feature/fix-topic-guard-patterns into dev |  |
+| 2026-06-06 11:30:28 | `24cfcc0` | fix: topic_check OFF_TOPIC_PATTERNS two-tuple entries |  |
+| 2026-06-06 11:32:56 | `f16d526` | merge feature/fix-topic-guard-patterns into dev |  |
+| 2026-06-06 11:32:56 | `8bc8711` | fix: topic_check applies life, consumer, and policy blocks | feature/fix-topic-guard-patterns |
+| 2026-06-06 11:48:49 | `aad3d40` | merge dev into main |  |
+| 2026-06-06 12:02:28 | `4fa5cd0` | Speed up F2 gates and promote agentic/social to F3 only. | feature/faster-gates-release-sync |
+| 2026-06-06 12:07:13 | `54fad58` | merge feature/faster-gates-release-sync into dev |  |
+| 2026-06-06 12:07:22 | `2693bb7` | style: ruff format integration conftest |  |
+| 2026-06-06 12:10:09 | `5b9344d` | merge dev into main |  |
+| 2026-06-06 12:10:10 | `a9abfdc` | merge main into releases |  |
+
+</details>
+
+---
+
+## Capítulo 6 — Latencia y conductor (6 jun)
+
+*Conductor-first, per-agent LLMs, status stream, caché, git workflow chain.*
+
+- **Conductor-first:** clasificar antes de Chroma — lección clave de latencia.
+- Modelos OpenCode por agente; stream de estado desde backend (no timers falsos en UI).
+- Caché TTL, RAG en paralelo; política de idioma: UI en inglés, agente multilingüe.
+- Cadena git formalizada: feature → dev → main → releases.
+
+**Incidentes / fixes en este tramo:**
+
+- `08240d8` (2026-06-06) — fix(ppt): remove overlapping text boxes on slides 7-9.
+- `2694fd3` (2026-06-06) — fix(ppt): slide 7-9 layout keeps titles and footers
+- `1570a87` (2026-06-06) — fix(ui): show shop country labels instead of raw site_id
+- `0ff84c1` (2026-06-07) — fix(ui): strip OpenCode tool_use JSON from shopper answers
+- `441106d` (2026-06-07) — fix(smoke): stabilize F1 — product browse hint + stream catalog coverage
+- `baf8a66` (2026-06-07) — fix(scripts): ASCII dash in run_release_verify for PowerShell
+
+<details>
+<summary>Commits del capítulo (36)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-06 14:11:23 | `cb40821` | Conductor-first routing: classify before catalog search. | feature/conductor-fast-social |
+| 2026-06-06 14:18:48 | `7f6992f` | Fix conductor-led intent latency: single-agent fallback, restore 22s timeout. |  |
+| 2026-06-06 14:24:31 | `4336cfb` | Harden conductor-led fallback: instant topic routing on intent timeout. |  |
+| 2026-06-06 14:27:15 | `5f49aec` | merge main into releases: conductor-led UX |  |
+| 2026-06-06 14:27:48 | `ce82133` | merge main into releases: conductor-led UX |  |
+| 2026-06-06 14:40:19 | `e57bbbf` | PoC: model selector, 1-3 wait bubbles, fast social path. | feature/opencode-fast-social-llm |
+| 2026-06-06 14:42:59 | `af87373` | merge main: fast social + model selector |  |
+| 2026-06-06 14:47:36 | `a7b54f3` | Assign per-agent OpenCode LLMs per official agent config. | feature/per-agent-opencode-models |
+| 2026-06-06 14:50:04 | `103924d` | merge main: per-agent OpenCode models |  |
+| 2026-06-06 15:02:53 | `576a8a7` | Replace static UI wait bubbles with backend-driven status stream. | origin/feature/conversational-status-stream, feature/conversational-status-strea |
+| 2026-06-06 15:03:02 | `ffe395c` | merge main: backend status stream | feature/spanish-catalog-intent |
+| 2026-06-06 15:07:30 | `16867fc` | Fix Spanish catalog queries misrouted as off-topic decline. |  |
+| 2026-06-06 15:08:37 | `9b59697` | Use single transient status bubble that clears on final answer. |  |
+| 2026-06-06 15:15:43 | `4566eeb` | Agentic routing with catalog-derived lexicon and optional Redis pre-index. |  |
+| 2026-06-06 16:07:15 | `678084f` | Fix site_id 0 when chat sent before shop config loads. |  |
+| 2026-06-06 16:18:12 | `0b533b0` | docs(ppt): changelog v0.1.3 and update pro deck for agentic UX improvements. |  |
+| 2026-06-06 17:31:22 | `08240d8` | fix(ppt): remove overlapping text boxes on slides 7-9. |  |
+| 2026-06-06 17:34:45 | `2694fd3` | fix(ppt): slide 7-9 layout keeps titles and footers |  |
+| 2026-06-06 20:41:38 | `6c81225` | docs: add interview Q&A guide and English deliverable docs |  |
+| 2026-06-06 20:49:37 | `12080ea` | docs(readme): update architecture and API for v0.1.3 agentic flow |  |
+| 2026-06-06 20:53:51 | `1570a87` | fix(ui): show shop country labels instead of raw site_id |  |
+| 2026-06-06 20:57:15 | `4e7f1de` | docs: add multi-shop retrieval as P2 roadmap item |  |
+| 2026-06-07 13:54:45 | `0ff84c1` | fix(ui): strip OpenCode tool_use JSON from shopper answers |  |
+| 2026-06-07 14:06:25 | `a3d748c` | feat(i18n): fallback to Accept-Language when query language is uncertain |  |
+| 2026-06-07 14:10:57 | `46621a6` | perf(social): use deepseek-v4-flash for faster greeting replies |  |
+| 2026-06-07 14:26:21 | `7c4388e` | perf(models): assign OpenCode Go agents by official speed ladder | tag: v1.0 |
+| 2026-06-07 14:27:46 | `f3568d1` | feat(ui): conversational catalog progress messages in stream |  |
+| 2026-06-07 14:29:42 | `7cdf13d` | test(stream): assert received/found phases in F1 smoke |  |
+| 2026-06-07 14:41:32 | `441106d` | fix(smoke): stabilize F1 — product browse hint + stream catalog coverage | origin/feature/v1.1-conversational-progress, feature/v1.1-conversational-progres |
+| 2026-06-07 14:41:33 | `4ad63d2` | merge feature/v1.1-conversational-progress into dev |  |
+| 2026-06-07 14:42:37 | `09c6be1` | style: fix ruff import order and line length for F2 gates |  |
+| 2026-06-07 14:42:51 | `d9acccf` | style: ruff format for F2 gates |  |
+| 2026-06-07 14:51:53 | `0826e75` | merge dev into main (v1.1 conversational progress) |  |
+| 2026-06-07 14:52:22 | `baf8a66` | fix(scripts): ASCII dash in run_release_verify for PowerShell |  |
+| 2026-06-07 15:03:32 | `caf8069` | chore(release): add F3-fast smoke (~3 min) — full OpenCode matrix for CI only |  |
+| 2026-06-07 15:03:35 | `51de2b8` | merge main into releases (v1.1 conversational progress) | tag: v1.1 |
+
+</details>
+
+---
+
+## Capítulo 7 — Live loop v1.4 (7 jun)
+
+*Chunks sociales cada 5s, merge a releases, smoke F1/F3.*
+
+- Chunks sociales cada ~5s mientras el catálogo corre en paralelo — UX «humana».
+- Varios merges main→releases; stash WIP en PPT.
+- Smoke F1 inestable → fix de product browse hint.
+
+<details>
+<summary>Commits del capítulo (6)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-07 15:16:35 | `1d4411d` | feat(stream): agentic social loop messages parallel to catalog | feature/v1.2-agentic-social-loop |
+| 2026-06-07 15:30:05 | `c6f0b28` | feat(stream): v1.4 timed social chunks every 5s with parallel catalog |  |
+| 2026-06-07 15:32:38 | `7914f50` | chore: F2 ruff fixes, smoke_minimal for v1.4 stream chunks | origin/feature/v1.4-timed-chunk-loop, feature/v1.4-timed-chunk-loop |
+| 2026-06-07 15:34:22 | `b03742d` | merge feature/v1.4-timed-chunk-loop into dev (v1.4 timed chunks) |  |
+| 2026-06-07 15:34:38 | `232f63a` | merge dev into main (v1.4 timed chunks) |  |
+| 2026-06-07 15:35:07 | `c129d77` | merge main into releases (v1.4 timed social chunks) | tag: v1.4.0, tag: v1.4 |
+
+</details>
+
+---
+
+## Capítulo 8 — Conductor invisible v2.0–v2.1 (7 jun)
+
+*Orquestador MD, playbook, intent rápido v2.1.3, multilingual agent-driven.*
+
+- Conductor OpenCode invisible: `emit_message` / `wait` / `complete` por tick.
+- `conductor_playbook.md` aprende frases prohibidas y especies.
+- v2.1.3: intent-agent primero (menos latencia); stream en paralelo.
+
+<details>
+<summary>Commits del capítulo (6)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-07 16:07:42 | `e041fc8` | feat(v2.0): invisible conductor orchestrator for live stream |  |
+| 2026-06-07 16:23:49 | `93c1c4d` | feat(v2.0): pacing, conductor integration tests, PPT and docs | tag: v2.0, origin/feature/v2.0-conductor-orchestrator, feature/v2.0-conductor-or |
+| 2026-06-07 17:39:43 | `c8a7f19` | feat(v2.1): conductor playbook, smart social/catalog ack, multilingual stream | tag: v2.1 |
+| 2026-06-07 17:54:21 | `761bce6` | docs(v2.1.1): PPT release progress slide v0.1.0 to v2.1 | tag: v2.1.1 |
+| 2026-06-07 18:03:06 | `38d2a20` | docs(v2.1.2): agent-driven multilingual — not a fixed locale list | tag: v2.1.2 |
+| 2026-06-07 18:18:46 | `69fd7b5` | feat(v2.1.3): fast agentic intent + parallel stream chunks | tag: v2.1.3 |
+
+</details>
+
+---
+
+## Capítulo 9 — Especies, picks dinámicos, phrase index (8 jun)
+
+*v2.1.4–v2.1.6: species inference, product_batch, social help routing, PPT.*
+
+- v2.1.4: inferencia dinámica de especies (iguanas, capibaras…) sin lista fija.
+- v2.1.6: 4 picks por defecto, hasta 20 si el shopper pide; `product_batch` en UI.
+- Índice `social_phrases.yaml`; help social no dispara progreso de catálogo.
+- PPT: diagramas v2.1.6; slides 5–6 con texto solapado — varios fixes de layout.
+
+**Incidentes / fixes en este tramo:**
+
+- `fbaa485` (2026-06-08) — fix(ppt): wire stale column removal into patch script main
+- `5fa20a3` (2026-06-08) — fix(ppt): rebuild slide 5-6 columns to remove overlapping text boxes
+
+<details>
+<summary>Commits del capítulo (6)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-08 01:59:11 | `835f3a0` | feat(v2.1.4): dynamic species inference + no re-greeting in stream | tag: v2.1.4 |
+| 2026-06-08 02:37:04 | `fd68606` | feat(v2.1.6): social help routing, dynamic picks, phrase index, and PPT update | tag: v2.1.6 |
+| 2026-06-08 02:39:30 | `d213b84` | docs(v2.1.6): refresh architecture diagrams and PPT flow graphics |  |
+| 2026-06-08 02:40:04 | `cef0e6d` | docs(ppt): remove stale slide 6 stream diagram column |  |
+| 2026-06-08 02:40:35 | `fbaa485` | fix(ppt): wire stale column removal into patch script main |  |
+| 2026-06-08 02:47:28 | `5fa20a3` | fix(ppt): rebuild slide 5-6 columns to remove overlapping text boxes | origin/main, origin/dev, origin/HEAD, dev |
+
+</details>
+
+---
+
+## Capítulo 10 — Pulido entrevista (8–9 jun)
+
+*Paneles código FR, inglés en deck, saludo, CUSTOMER_VOICE, docs sync, QA/script solo en main.*
+
+- Paneles de código FR en PPT (slides 3–4, 6, 9–10); demos traducidas al inglés.
+- Bug saludo: respuesta empezaba por «for this shop.» — strip parcial del intro.
+- «Can you help» + petición de producto → catálogo, no FAQ del sistema.
+- **CUSTOMER_VOICE:** tono profesional, sin manual técnico al cliente.
+- QA y speaker script **solo en main**; releases lleva PPT + checklist únicamente.
+- Fast-forward `releases` → `main` para alinear código; se restauran QA y PRESENTATION en main.
+
+**Incidentes / fixes en este tramo:**
+
+- `b96a997` (2026-06-08) — fix(social): preserve agentic first-turn greeting
+- `021ed55` (2026-06-08) — fix(social): strip for our shop intro tail on dedupe paths
+- `1a7943e` (2026-06-08) — fix(social): route shopping queries to catalog; polish customer voice
+- `c23249c` (2026-06-09) — chore(releases): revert accidental EDA report from prior commit
+- `c71632a` (2026-06-09) — On releases: temp releases WIP
+
+<details>
+<summary>Commits del capítulo (11)</summary>
+
+| Fecha | Hash | Mensaje | Ramas/tags |
+|-------|------|---------|-------------|
+| 2026-06-08 17:36:57 | `1b03e4b` | docs(ppt): add FR code evidence panels and English demo phrases |  |
+| 2026-06-08 23:33:12 | `b96a997` | fix(social): preserve agentic first-turn greeting |  |
+| 2026-06-08 23:36:48 | `021ed55` | fix(social): strip for our shop intro tail on dedupe paths |  |
+| 2026-06-08 23:51:15 | `1a7943e` | fix(social): route shopping queries to catalog; polish customer voice |  |
+| 2026-06-09 16:56:56 | `8a9e47f` | chore(releases): drop QA_FOR_POC from interview pack |  |
+| 2026-06-09 16:57:52 | `9dce175` | chore(releases): drop speaker script from interview pack |  |
+| 2026-06-09 16:58:29 | `c23249c` | chore(releases): revert accidental EDA report from prior commit |  |
+| 2026-06-09 17:01:57 | `f08e5d9` | docs: sync README, PPT guides, and changelogs to v2.1.6 | HEAD -> main, origin/releases, releases |
+| 2026-06-09 19:59:53 | `fd1e63f` | untracked files on releases: f08e5d9 docs: sync README, PPT guides, and changelogs to v2.1.6 |  |
+| 2026-06-09 19:59:53 | `c2773ed` | index on releases: f08e5d9 docs: sync README, PPT guides, and changelogs to v2.1.6 |  |
+| 2026-06-09 19:59:53 | `c71632a` | On releases: temp releases WIP | refs/stash |
+
+</details>
+
+---
+
+## Epílogo
+
+Estado al HEAD de main: código v2.1.6 alineado con releases; QA, speaker script e historia solo en main.
+
+**HEAD actual al generar:** `main` @ `f08e5d9`
+
+**Entregables en `releases`:** PPT pro (14 slides), checklist, README, API en :8090.
+
+**Solo en `main`:** `QA_FOR_POC.md`, `PRESENTATION_15MIN.md`, `docs/HISTORIA_DEL_PROYECTO.md`.
+
+---
+
+## Apéndice A — Cronología completa (commit a commit)
+
+| # | Fecha | Hash | Autor | Mensaje |
+|---|-------|------|-------|---------|
+| 1 | 2026-06-03 | `a6f9d26` | peluzzzaZero | chore: initial PoC bootstrap P0 T0 |
+| 2 | 2026-06-03 | `d514225` | peluzzzaZero | feat(T1): dataset EDA report and eda CLI artifact |
+| 3 | 2026-06-03 | `b30bfc7` | peluzzzaZero | docs: P1 EDA phase complete and git workflow state |
+| 4 | 2026-06-03 | `be0f275` | peluzzzaZero | docs: mark GitHub push complete |
+| 5 | 2026-06-03 | `c82242c` | peluzzzaZero | feat(T2): RAG ingest with Chroma and site-scoped retrieval |
+| 6 | 2026-06-03 | `9249cbb` | peluzzzaZero | ci: add quality gates unit integration e2e ruff and Sonar workflow |
+| 7 | 2026-06-03 | `203e1c5` | peluzzzaZero | docs: update PROGRESS for quality gates |
+| 8 | 2026-06-03 | `5502a55` | peluzzzaZero | fix(ci): valid GitHub Actions workflow for quality gates |
+| 9 | 2026-06-03 | `bc4aefb` | peluzzzaZero | docs(trace): Zeus quality gates session and CI green status |
+| 10 | 2026-06-03 | `d9cd7e0` | peluzzzaZero | feat(T3-T6): implement guarded dual-lane chat pipeline |
+| 11 | 2026-06-03 | `879c4ee` | peluzzzaZero | Merge branch 'feature/T3-T6-pipeline' into dev |
+| 12 | 2026-06-03 | `4c019b2` | peluzzzaZero | docs: mark brief alignment DONE on dev; unit marker for topic guard |
+| 13 | 2026-06-03 | `72bbc4e` | peluzzzaZero | docs: release plan v1.0.0 and version bump |
+| 14 | 2026-06-03 | `4182bae` | peluzzzaZero | docs: mark v1.0.0 RELEASED on main |
+| 15 | 2026-06-03 | `c51836b` | peluzzzaZero | feat(v1.1): golden query fixture, evaluate CLI, integration tests |
+| 16 | 2026-06-03 | `cf71b65` | peluzzzaZero | docs: v1.1.0 golden queries progress on dev |
+| 17 | 2026-06-03 | `c44e8a2` | peluzzzaZero | feat(v1.1): /chat/stream NDJSON, G1 topic guard load test, docs |
+| 18 | 2026-06-03 | `b6d2323` | peluzzzaZero | docs(trace): link v1.1.0 release session |
+| 19 | 2026-06-03 | `5c4e2c4` | peluzzzaZero | fix(ci): move G1 benchmark into src.guardian for unit test imports |
+| 20 | 2026-06-03 | `ef86068` | peluzzzaZero | feat(v1.2): hybrid BM25+vector retrieval and business rerank |
+| 21 | 2026-06-03 | `5451227` | peluzzzaZero | docs(trace): v1.2.0 session link |
+| 22 | 2026-06-03 | `3d5603b` | peluzzzaZero | feat(v2.0): Docker, observability, runbook, deploy smoke |
+| 23 | 2026-06-03 | `e63352c` | peluzzzaZero | docs(trace): v2.0.0 session link |
+| 24 | 2026-06-03 | `5ec240a` | peluzzzaZero | chore(v2.1): align Python 3.11 policy and pin dependency ranges |
+| 25 | 2026-06-03 | `6862428` | peluzzzaZero | docs(trace): v2.1.0 session |
+| 26 | 2026-06-03 | `8197441` | peluzzzaZero | feat(v2.2): demo_all script, DEMO.md, Cloud Run quickstart |
+| 27 | 2026-06-03 | `d05b485` | peluzzzaZero | test(acceptance): add Coding Task suite against instructions catalog |
+| 28 | 2026-06-04 | `151a43c` | peluzzzaZero | feat(ui): add chat UI and optional OpenCode LLM synthesis |
+| 29 | 2026-06-04 | `c640674` | peluzzzaZero | chore(opencode): local auth setup script and opencode-go defaults |
+| 30 | 2026-06-04 | `db6ed2d` | peluzzzaZero | fix(config): load gitignored .env and propagate OpenCode data dir |
+| 31 | 2026-06-04 | `542abd9` | peluzzzaZero | fix(ui): serve static assets on /ui with absolute paths |
+| 32 | 2026-06-04 | `3de8967` | peluzzzaZero | fix(chat): avoid OpenCode blocking UI; cap synthesis at 12s |
+| 33 | 2026-06-04 | `8d55e85` | peluzzzaZero | feat(chat): local OpenCode auth + polite conversational fast path |
+| 34 | 2026-06-04 | `75a1f2a` | peluzzzaZero | chore: add run_dev.ps1 launcher and clarify UI needs running server |
+| 35 | 2026-06-04 | `e19c7fb` | peluzzzaZero | fix(guardrails): resolve 500 on synthesis timeout; internet/injection declines; security test matrix |
+| 36 | 2026-06-04 | `4c7d7c0` | peluzzzaZero | feat(acceptance): 56-case use matrix, hybrid pool fix, social gate |
+| 37 | 2026-06-04 | `0274eed` | peluzzzaZero | fix(guardian): default-deny firewall; decline non-pet e.g. for humans |
+| 38 | 2026-06-04 | `db1cc7f` | peluzzzaZero | fix(ux): identity chat, warm declines, no RAG on traffic/who-are-you |
+| 39 | 2026-06-04 | `f2c5959` | peluzzzaZero | feat(agentic): LLM intent/social agents, 114 use cases, oracle tests |
+| 40 | 2026-06-04 | `12aa9e5` | peluzzzaZero | chore(release): v2.4.0 agentic social assistant notes |
+| 41 | 2026-06-04 | `d407f4c` | peluzzzaZero | feat(agents): enrich OpenCode agents from AGENT_BUNDLE; intent+social agents |
+| 42 | 2026-06-04 | `8bb7509` | peluzzzaZero | fix(ux): fast social replies, UI timeout, complete intent oracle |
+| 43 | 2026-06-04 | `7424b84` | peluzzzaZero | fix(intent): route shop help and pet browse without false declines |
+| 44 | 2026-06-04 | `240af8c` | peluzzzaZero | test(matrix): 169 Coding Task use cases grounded in instructions catalog |
+| 45 | 2026-06-04 | `fb73241` | peluzzzaZero | feat(agents): topic-based intent handoff; disable regex fast-path by default |
+| 46 | 2026-06-04 | `63036f8` | peluzzzaZero | fix(intent): stop repeated help template when OpenCode intent fails |
+| 47 | 2026-06-04 | `3783e21` | peluzzzaZero | feat(agents): cascade retries, varied copy, and smarter routing |
+| 48 | 2026-06-04 | `b4376ee` | peluzzzaZero | fix(ci): matrix uses oracle+template; .env must not override pytest env |
+| 49 | 2026-06-04 | `d64def5` | peluzzzaZero | chore(smoke): minimal functional script and deterministic test defaults |
+| 50 | 2026-06-04 | `30e22c7` | peluzzzaZero | refactor(social): agentic OpenCode replies; remove scripted conversation pools |
+| 51 | 2026-06-04 | `3a59e53` | peluzzzaZero | chore(matrix): 173/173 passed — refresh trace and USE_CASES index |
+| 52 | 2026-06-04 | `878f164` | peluzzzaZero | chore(release): v2.5.0 — agentic cascade, OpenCode social, matrix 173/173 |
+| 53 | 2026-06-04 | `b5b57e0` | peluzzzaZero | feat(ui): add chat UI and optional OpenCode LLM synthesis |
+| 54 | 2026-06-04 | `c03e33b` | peluzzzaZero | chore(opencode): local auth setup script and opencode-go defaults |
+| 55 | 2026-06-04 | `ecb3466` | peluzzzaZero | fix(config): load gitignored .env and propagate OpenCode data dir |
+| 56 | 2026-06-04 | `5cb397a` | peluzzzaZero | fix(ui): serve static assets on /ui with absolute paths |
+| 57 | 2026-06-04 | `5242b13` | peluzzzaZero | fix(chat): avoid OpenCode blocking UI; cap synthesis at 12s |
+| 58 | 2026-06-04 | `a952ec6` | peluzzzaZero | feat(chat): local OpenCode auth + polite conversational fast path |
+| 59 | 2026-06-04 | `88e65d8` | peluzzzaZero | feat(agents): enrich OpenCode agents from AGENT_BUNDLE; intent+social agents |
+| 60 | 2026-06-04 | `bcaff4c` | peluzzzaZero | release(v0.1.0): agentic PoC baseline from v2.2 |
+| 61 | 2026-06-04 | `4ddfe2a` | peluzzzaZero | release(v0.1.0): agentic PoC on main baseline (prefer v0.1 tree) |
+| 62 | 2026-06-04 | `d90cdee` | peluzzzaZero | docs: releases branch above main, v0.1.0 from main baseline |
+| 63 | 2026-06-04 | `40b1359` | peluzzzaZero | chore(prod): slim docs tree; add v0.1 deliverable and PPT base |
+| 64 | 2026-06-05 | `0827ea4` | peluzzzaZero | release(v0.1.2): slim releases branch for interview submission |
+| 65 | 2026-06-05 | `38d082f` | peluzzzaZero | docs(ppt): add hybrid RAG rationale and full pipeline slides (pro deck 13) |
+| 66 | 2026-06-05 | `6bc189f` | peluzzzaZero | docs(ppt): add FR1 async FastAPI evidence on slide 3 (B1) |
+| 67 | 2026-06-05 | `2086daf` | peluzzzaZero | fix(ppt): clean slide 3 layout — no overlaps on FR1 async evidence |
+| 68 | 2026-06-05 | `71a83a6` | peluzzzaZero | feat(setup): add wizard, QUICKSTART, and GIT_WORKFLOW for clear local install |
+| 69 | 2026-06-05 | `aad64c9` | peluzzzaZero | merge feature/setup-wizard-quickstart into releases |
+| 70 | 2026-06-06 | `cf7dbc4` | peluzzzaZero | fix(ui): Enter sends message, Shift+Enter newline in chat textarea |
+| 71 | 2026-06-06 | `8ea2e2a` | peluzzzaZero | merge feature/fast-social-ui-enter: Enter-to-send in chat UI |
+| 72 | 2026-06-06 | `3f1d727` | peluzzzaZero | merge feature/fast-social-ui-enter: Enter-to-send in chat UI |
+| 73 | 2026-06-06 | `a99c22e` | peluzzzaZero | merge feature/fast-social-ui-enter: Enter-to-send in chat UI |
+| 74 | 2026-06-06 | `b7941fc` | peluzzzaZero | Improve agentic latency with cache, parallel RAG, and warmer UI wait states. |
+| 75 | 2026-06-06 | `9abf3c9` | peluzzzaZero | merge feature/agentic-latency into dev |
+| 76 | 2026-06-06 | `bdb4504` | peluzzzaZero | merge feature/agentic-latency into releases |
+| 77 | 2026-06-06 | `0c4499d` | peluzzzaZero | Enforce English as default shopper language across UI and agent prompts. |
+| 78 | 2026-06-06 | `3d2bdcf` | peluzzzaZero | merge feature/english-default into dev |
+| 79 | 2026-06-06 | `6371517` | peluzzzaZero | merge feature/english-default into releases |
+| 80 | 2026-06-06 | `141915f` | peluzzzaZero | merge feature/ui-en-agent-multilingual into dev |
+| 81 | 2026-06-06 | `bf9bd50` | peluzzzaZero | Clarify language policy: English static UI, multilingual agent replies. |
+| 82 | 2026-06-06 | `5b617bd` | peluzzzaZero | merge feature/ui-en-agent-multilingual into releases |
+| 83 | 2026-06-06 | `97abc14` | peluzzzaZero | docs: enforce feature -> dev -> main -> releases promotion chain |
+| 84 | 2026-06-06 | `0335c92` | peluzzzaZero | merge feature/fix-git-workflow-chain into dev |
+| 85 | 2026-06-06 | `39c049c` | peluzzzaZero | fix: satisfy ruff E501/I001 for quality gates |
+| 86 | 2026-06-06 | `fd66877` | peluzzzaZero | merge feature/fix-ruff-quality-gates into dev |
+| 87 | 2026-06-06 | `5a3eaf7` | peluzzzaZero | style: ruff format orchestrator and price_filter |
+| 88 | 2026-06-06 | `a73ac55` | peluzzzaZero | merge feature/fix-topic-guard-patterns into dev |
+| 89 | 2026-06-06 | `24cfcc0` | peluzzzaZero | fix: topic_check OFF_TOPIC_PATTERNS two-tuple entries |
+| 90 | 2026-06-06 | `f16d526` | peluzzzaZero | merge feature/fix-topic-guard-patterns into dev |
+| 91 | 2026-06-06 | `8bc8711` | peluzzzaZero | fix: topic_check applies life, consumer, and policy blocks |
+| 92 | 2026-06-06 | `aad3d40` | peluzzzaZero | merge dev into main |
+| 93 | 2026-06-06 | `4fa5cd0` | peluzzzaZero | Speed up F2 gates and promote agentic/social to F3 only. |
+| 94 | 2026-06-06 | `54fad58` | peluzzzaZero | merge feature/faster-gates-release-sync into dev |
+| 95 | 2026-06-06 | `2693bb7` | peluzzzaZero | style: ruff format integration conftest |
+| 96 | 2026-06-06 | `5b9344d` | peluzzzaZero | merge dev into main |
+| 97 | 2026-06-06 | `a9abfdc` | peluzzzaZero | merge main into releases |
+| 98 | 2026-06-06 | `cb40821` | peluzzzaZero | Conductor-first routing: classify before catalog search. |
+| 99 | 2026-06-06 | `7f6992f` | peluzzzaZero | Fix conductor-led intent latency: single-agent fallback, restore 22s timeout. |
+| 100 | 2026-06-06 | `4336cfb` | peluzzzaZero | Harden conductor-led fallback: instant topic routing on intent timeout. |
+| 101 | 2026-06-06 | `5f49aec` | peluzzzaZero | merge main into releases: conductor-led UX |
+| 102 | 2026-06-06 | `ce82133` | peluzzzaZero | merge main into releases: conductor-led UX |
+| 103 | 2026-06-06 | `e57bbbf` | peluzzzaZero | PoC: model selector, 1-3 wait bubbles, fast social path. |
+| 104 | 2026-06-06 | `af87373` | peluzzzaZero | merge main: fast social + model selector |
+| 105 | 2026-06-06 | `a7b54f3` | peluzzzaZero | Assign per-agent OpenCode LLMs per official agent config. |
+| 106 | 2026-06-06 | `103924d` | peluzzzaZero | merge main: per-agent OpenCode models |
+| 107 | 2026-06-06 | `576a8a7` | peluzzzaZero | Replace static UI wait bubbles with backend-driven status stream. |
+| 108 | 2026-06-06 | `ffe395c` | peluzzzaZero | merge main: backend status stream |
+| 109 | 2026-06-06 | `16867fc` | peluzzzaZero | Fix Spanish catalog queries misrouted as off-topic decline. |
+| 110 | 2026-06-06 | `9b59697` | peluzzzaZero | Use single transient status bubble that clears on final answer. |
+| 111 | 2026-06-06 | `4566eeb` | peluzzzaZero | Agentic routing with catalog-derived lexicon and optional Redis pre-index. |
+| 112 | 2026-06-06 | `678084f` | peluzzzaZero | Fix site_id 0 when chat sent before shop config loads. |
+| 113 | 2026-06-06 | `0b533b0` | peluzzzaZero | docs(ppt): changelog v0.1.3 and update pro deck for agentic UX improvements. |
+| 114 | 2026-06-06 | `08240d8` | peluzzzaZero | fix(ppt): remove overlapping text boxes on slides 7-9. |
+| 115 | 2026-06-06 | `2694fd3` | peluzzzaZero | fix(ppt): slide 7-9 layout keeps titles and footers |
+| 116 | 2026-06-06 | `6c81225` | peluzzzaZero | docs: add interview Q&A guide and English deliverable docs |
+| 117 | 2026-06-06 | `12080ea` | peluzzzaZero | docs(readme): update architecture and API for v0.1.3 agentic flow |
+| 118 | 2026-06-06 | `1570a87` | peluzzzaZero | fix(ui): show shop country labels instead of raw site_id |
+| 119 | 2026-06-06 | `4e7f1de` | peluzzzaZero | docs: add multi-shop retrieval as P2 roadmap item |
+| 120 | 2026-06-07 | `0ff84c1` | peluzzzaZero | fix(ui): strip OpenCode tool_use JSON from shopper answers |
+| 121 | 2026-06-07 | `a3d748c` | peluzzzaZero | feat(i18n): fallback to Accept-Language when query language is uncertain |
+| 122 | 2026-06-07 | `46621a6` | peluzzzaZero | perf(social): use deepseek-v4-flash for faster greeting replies |
+| 123 | 2026-06-07 | `7c4388e` | peluzzzaZero | perf(models): assign OpenCode Go agents by official speed ladder |
+| 124 | 2026-06-07 | `f3568d1` | peluzzzaZero | feat(ui): conversational catalog progress messages in stream |
+| 125 | 2026-06-07 | `7cdf13d` | peluzzzaZero | test(stream): assert received/found phases in F1 smoke |
+| 126 | 2026-06-07 | `441106d` | peluzzzaZero | fix(smoke): stabilize F1 — product browse hint + stream catalog coverage |
+| 127 | 2026-06-07 | `4ad63d2` | peluzzzaZero | merge feature/v1.1-conversational-progress into dev |
+| 128 | 2026-06-07 | `09c6be1` | peluzzzaZero | style: fix ruff import order and line length for F2 gates |
+| 129 | 2026-06-07 | `d9acccf` | peluzzzaZero | style: ruff format for F2 gates |
+| 130 | 2026-06-07 | `0826e75` | peluzzzaZero | merge dev into main (v1.1 conversational progress) |
+| 131 | 2026-06-07 | `baf8a66` | peluzzzaZero | fix(scripts): ASCII dash in run_release_verify for PowerShell |
+| 132 | 2026-06-07 | `caf8069` | peluzzzaZero | chore(release): add F3-fast smoke (~3 min) — full OpenCode matrix for CI only |
+| 133 | 2026-06-07 | `51de2b8` | peluzzzaZero | merge main into releases (v1.1 conversational progress) |
+| 134 | 2026-06-07 | `1d4411d` | peluzzzaZero | feat(stream): agentic social loop messages parallel to catalog |
+| 135 | 2026-06-07 | `c6f0b28` | peluzzzaZero | feat(stream): v1.4 timed social chunks every 5s with parallel catalog |
+| 136 | 2026-06-07 | `7914f50` | peluzzzaZero | chore: F2 ruff fixes, smoke_minimal for v1.4 stream chunks |
+| 137 | 2026-06-07 | `b03742d` | peluzzzaZero | merge feature/v1.4-timed-chunk-loop into dev (v1.4 timed chunks) |
+| 138 | 2026-06-07 | `232f63a` | peluzzzaZero | merge dev into main (v1.4 timed chunks) |
+| 139 | 2026-06-07 | `c129d77` | peluzzzaZero | merge main into releases (v1.4 timed social chunks) |
+| 140 | 2026-06-07 | `e041fc8` | peluzzzaZero | feat(v2.0): invisible conductor orchestrator for live stream |
+| 141 | 2026-06-07 | `93c1c4d` | peluzzzaZero | feat(v2.0): pacing, conductor integration tests, PPT and docs |
+| 142 | 2026-06-07 | `c8a7f19` | peluzzzaZero | feat(v2.1): conductor playbook, smart social/catalog ack, multilingual stream |
+| 143 | 2026-06-07 | `761bce6` | peluzzzaZero | docs(v2.1.1): PPT release progress slide v0.1.0 to v2.1 |
+| 144 | 2026-06-07 | `38d2a20` | peluzzzaZero | docs(v2.1.2): agent-driven multilingual — not a fixed locale list |
+| 145 | 2026-06-07 | `69fd7b5` | peluzzzaZero | feat(v2.1.3): fast agentic intent + parallel stream chunks |
+| 146 | 2026-06-08 | `835f3a0` | peluzzzaZero | feat(v2.1.4): dynamic species inference + no re-greeting in stream |
+| 147 | 2026-06-08 | `fd68606` | peluzzzaZero | feat(v2.1.6): social help routing, dynamic picks, phrase index, and PPT update |
+| 148 | 2026-06-08 | `d213b84` | peluzzzaZero | docs(v2.1.6): refresh architecture diagrams and PPT flow graphics |
+| 149 | 2026-06-08 | `cef0e6d` | peluzzzaZero | docs(ppt): remove stale slide 6 stream diagram column |
+| 150 | 2026-06-08 | `fbaa485` | peluzzzaZero | fix(ppt): wire stale column removal into patch script main |
+| 151 | 2026-06-08 | `5fa20a3` | peluzzzaZero | fix(ppt): rebuild slide 5-6 columns to remove overlapping text boxes |
+| 152 | 2026-06-08 | `1b03e4b` | peluzzzaZero | docs(ppt): add FR code evidence panels and English demo phrases |
+| 153 | 2026-06-08 | `b96a997` | peluzzzaZero | fix(social): preserve agentic first-turn greeting |
+| 154 | 2026-06-08 | `021ed55` | peluzzzaZero | fix(social): strip for our shop intro tail on dedupe paths |
+| 155 | 2026-06-08 | `1a7943e` | peluzzzaZero | fix(social): route shopping queries to catalog; polish customer voice |
+| 156 | 2026-06-09 | `8a9e47f` | peluzzzaZero | chore(releases): drop QA_FOR_POC from interview pack |
+| 157 | 2026-06-09 | `9dce175` | peluzzzaZero | chore(releases): drop speaker script from interview pack |
+| 158 | 2026-06-09 | `c23249c` | peluzzzaZero | chore(releases): revert accidental EDA report from prior commit |
+| 159 | 2026-06-09 | `f08e5d9` | peluzzzaZero | docs: sync README, PPT guides, and changelogs to v2.1.6 |
+| 160 | 2026-06-09 | `fd1e63f` | peluzzzaZero | untracked files on releases: f08e5d9 docs: sync README, PPT guides, and changelogs to v2.1.6 |
+| 161 | 2026-06-09 | `c2773ed` | peluzzzaZero | index on releases: f08e5d9 docs: sync README, PPT guides, and changelogs to v2.1.6 |
+| 162 | 2026-06-09 | `c71632a` | peluzzzaZero | On releases: temp releases WIP |
+
+---
+
+## Apéndice B — Errores, reverts y lecciones
+
+- **CI workflow inválido** (`5502a55`): Primer workflow de quality gates no pasaba validación de GitHub Actions.
+- **G1 benchmark imports** (`5c4e2c4`): Benchmark movido a `src.guardian` para imports en unit tests.
+- **Guardrails 500** (`e19c7fb`): Timeout de síntesis disparaba 500 — INC-001.
+- **OpenCode bloquea UI** (`fix(chat)`): Cap de síntesis 12s y path social rápido.
+- **Intent spam help** (`fix(intent)`): Fallback por tema cuando falla OpenCode intent.
+- **PPT solapamientos** (`5fa20a3`): Columnas v1.4+v2.x apiladas en slides 5–6 — `_rebuild_two_columns`.
+- **Saludo roto** (`b96a997`): Strip de intro dejaba «for this shop.» al inicio.
+- **Help vs shopping** (`1a7943e`): «can you help» en query de producto iba a FAQ, no a RAG.
+- **EDA accidental en releases** (`c23249c`): Revert de `docs/01-eda-report.md` incluido por error en commit de docs.
+- **Stash WIP PPT** (`b9de817`): Trabajo en curso en deck guardado en stash durante v1.4.
+- **Revert multilingual forzado** (`bf9bd50`): Se revierte inglés forzado en prompts; UI EN, agente multilingüe.

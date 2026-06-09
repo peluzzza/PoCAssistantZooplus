@@ -208,13 +208,14 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 
 | Branch / tag | Meaning |
 |--------------|---------|
-| **`releases`** | Interview / take-home line — use wizard here |
-| **`main`** | Full dev history, matrix tooling |
+| **`releases`** | Interview / take-home line — use wizard here; includes [**work history**](docs/HISTORIA_DEL_PROYECTO.md) |
+| **`main`** | Full dev history, matrix tooling, QA, speaker script |
 
 ## Interview / submission
 
 - Checklist: [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md)
 - **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
+- **Work history:** [`docs/HISTORIA_DEL_PROYECTO.md`](docs/HISTORIA_DEL_PROYECTO.md) — chronological diary of every commit (goals, bugs, reverts, branch promotion). Regenerate on `main` with `py -3 scripts/build_work_history.py`.
 
 ## Docs
 
@@ -227,3 +228,4 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md) | Tag verify |
 | [`docs/deliverables/v0.1/README.md`](docs/deliverables/v0.1/README.md) | Interview deliverable pack |
 | [`docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md`](docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md) | Current releases line (v2.1.6) |
+| [`docs/HISTORIA_DEL_PROYECTO.md`](docs/HISTORIA_DEL_PROYECTO.md) | **Work history book** — full git narrative (10 chapters + appendices) |
