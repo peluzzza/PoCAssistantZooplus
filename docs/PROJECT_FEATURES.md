@@ -1,23 +1,38 @@
 # Project features — zooplus Assistant PoC
 
-**Version:** v2.1.6 (releases interview line)  
-**Related:** [`README.md`](../README.md) · [`PROJECT_WORK_HISTORY.md`](PROJECT_WORK_HISTORY.md) · [`02-rag-architecture.md`](02-rag-architecture.md)
+**Line:** `releases` / `main` @ **v2.1.6**  
+**Last aligned with codebase:** 2026-06-09  
+**Related:** [`README.md`](../README.md) · [`PROJECT_WORK_HISTORY.md`](PROJECT_WORK_HISTORY.md) · [`02-rag-architecture.md`](02-rag-architecture.md) · [`CHANGELOG_v2.1.4_to_v2.1.6.md`](deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md)
 
-This document lists **what the project does** — shopper-facing capabilities and the technical features that implement them. It reflects the current codebase and the evolution captured in the work history.
+Capability inventory for the **current** implementation — shopper-visible behavior, API contract, agentic stack, RAG, guardrails, and DevEx. For the commit-by-commit story see the work history; for interview slides see the deliverable pack.
 
 ---
 
-## 1. Coding Task — functional requirements (FR1–FR5)
+## At a glance
 
-| ID | Feature | What it means in this repo |
-|----|---------|----------------------------|
-| **FR1** | Async FastAPI chat API | `POST /chat` and `POST /chat/stream`; `async def` handlers; blocking work (Chroma, OpenCode) in `asyncio.to_thread` |
-| **FR2** | Structured response contract | `{ answer, retrieved_products, meta }` — same schema for blocking and streaming (`done` event) |
-| **FR3** | Catalog-only RAG | Ingest from `data/raw/product_catalog_dataset.json`; answers grounded in `retrieved_products`; no invented SKUs |
-| **FR4** | Pet-catalog guardrails | Default-deny topic guard; off-topic → polite decline, empty product list; no Chroma on decline/social lanes |
-| **FR5** | Production-oriented layout | `src/`, `cli/`, Docker, tests, runbook, quality gates, setup wizard |
+| Area | What ships today |
+|------|------------------|
+| **Brief** | FR1–FR5 (async API, RAG grounding, pet guardrails, production layout) |
+| **Catalog** | Hybrid Chroma+BM25, `site_id` filter, EUR price bands, 4 default / 20 max picks |
+| **Agentic** | Intent-agent first, invisible conductor stream, 7 OpenCode roles + template fallbacks |
+| **Social** | Phrase index + playbook, fast probe, shopping+help → catalog, CUSTOMER_VOICE |
+| **Stream** | NDJSON: `typing` → `chunk*` → `topic` → `product_batch*` / `products` → `done` |
+| **UI** | `/ui/` shop picker, live stream, model badge from real `meta`, optional model override |
+| **Ops** | Wizard, Docker, smoke/verify scripts, quality gates, optional Redis cache |
 
-**Mandatory brief query** (acceptance / demo):
+---
+
+## 1. Coding Task — FR1–FR5
+
+| ID | Requirement | Implementation |
+|----|-------------|----------------|
+| **FR1** | Async FastAPI `POST /chat` | `src/api/routes/chat.py` — `async def`; Chroma + OpenCode in `asyncio.to_thread` |
+| **FR2** | `{ answer, retrieved_products }` (+ `meta`) | `src/models/chat.py` — Pydantic contract; stream `done` event matches |
+| **FR3** | RAG on provided JSON only | `data/raw/product_catalog_dataset.json` → Chroma; `must_ground_in_retrieval` |
+| **FR4** | Pet-catalog guardrails | `src/guardian/constraints.yaml` default-deny; decline/social skip retrieval |
+| **FR5** | Production-oriented repo | `src/`, `cli/`, Docker, tests, runbook, wizard, CI quality gates |
+
+**Acceptance query** (B1–B3 demo):
 
 ```json
 {
@@ -26,224 +41,317 @@ This document lists **what the project does** — shopper-facing capabilities an
 }
 ```
 
+**Policies (acceptance):** P1 default 4 / max 20 picks · P2 decline → empty list · P3 300 variants ingested.
+
 ---
 
-## 2. Shopper-facing features
+## 2. Shopper-facing capabilities (v2.1.6)
 
-### 2.1 Catalog search and recommendations
+### 2.1 Catalog recommendations
 
-- Hybrid product search over the **300-variant** catalog (100 products × 3 shops).
-- **Default 4** grounded recommendations; shopper can ask for more (up to **20**).
-- **EUR price-band filtering** — parses ranges in multiple languages (`between`, `entre`, etc.).
-- **Dynamic species inference** — handles dogs, cats, and unseen pets (e.g. iguanas) without a fixed species whitelist.
-- **Shop-scoped results** — every query is filtered by `site_id` (Germany `1`, UK `3`, Spain `15`).
-- Grounded synthesis — LLM or template answers only from retrieved hits; `must_ground_in_retrieval: true`.
+| Feature | Behavior |
+|---------|----------|
+| Hybrid search | Semantic (Chroma) + BM25 on candidate pool + business rerank |
+| Shop scope | Hard filter `site_id` — Germany `1`, UK `3`, Spain `15` |
+| Pick count | Default **4**; parses natural language counts (ES/EN/DE/FR words & digits) up to **20** |
+| Price filter | EUR bands — `between 40 and 60`, `entre X y Y`, etc. (`src/rag/price_filter.py`) |
+| Species | Dynamic inference for in-scope and out-of-scope pets (e.g. iguanas) — no fixed whitelist |
+| Grounding | Synthesis only from retrieved hits; template fallback on LLM timeout |
+| Empty retrieval | Policy message from `constraints.yaml`; no invented SKUs |
 
-### 2.2 Conversational assistant (non-catalog)
+### 2.2 Conversational (no catalog)
 
-- **Greetings, thanks, pure help** — fast social lane, no RAG, no fake “searching catalog” progress.
-- **Shopping + help in one message** — e.g. “light food for my dogs… can you help?” routes to **catalog**, not FAQ.
-- **Off-topic decline** — weather, news, competitors, non-pet products → polite boundary, empty `retrieved_products`.
-- **CUSTOMER_VOICE** — professional, concise replies; no internal strategy or tech exposition to shoppers.
-- **Multilingual replies** — language detected from the shopper message; fallback to `Accept-Language`, then shop locale.
-- **Mid-session dedupe** — strips repeated assistant intros; natural first-turn `hello`.
+| Feature | Behavior |
+|---------|----------|
+| Greetings / thanks / pure help | Social lane — no Chroma, no catalog progress chunk |
+| **Shopping + help** | `has_shopping_request()` wins — e.g. “light food for dogs… can you help?” → **catalog** |
+| Off-topic | Weather, news, competitors, non-pet, injection patterns → polite decline |
+| **CUSTOMER_VOICE** | Professional associate tone; no search/RAG/strategy exposition (`src/agents/prompts.py`) |
+| Language | Query language → `Accept-Language` → shop locale (`bind_shopper_language_async`) |
+| Greeting quality | First-turn `hello` preserved; mid-session intro dedupe (`stream_voice_registry.py`) |
+| Social kinds | `greeting`, `identity`, `thanks`, `help`, `bye`, `clarify` |
 
-### 2.3 Streaming UX (`/chat/stream`)
+### 2.3 Live demo script (slide 9 / PPT)
 
-| Event | Shopper experience |
+| Step | Query (shop 15) | Expected |
+|------|-----------------|----------|
+| A | `can you help me` | Social help — **no** “searching catalog” chunk |
+| B | `and what about iguanas` | Scope reply — no duplicate greeting intro |
+| C | `give me 10 dog food options` | Up to 10 cards via **`product_batch`** waves |
+| Extra | `hello` (shop 3) | Natural full greeting |
+| Extra | `looking for light food for my dogs… can you help me out?` | **Catalog**, not help FAQ |
+
+---
+
+## 3. Streaming protocol (`POST /chat/stream`)
+
+**Media type:** `application/x-ndjson` (one JSON object per line).
+
+### 3.1 Event types (actual code)
+
+| Event | Payload highlights |
 |-------|-------------------|
-| `typing` | Typing indicator between chunks |
-| `chunk` / `status` | Real backend progress while intent/RAG runs (not fake client timers) |
-| `topic` | Lane decision metadata (debug / UI badges) |
-| `product_batch` | Product cards revealed in **batches of 4** when count > 4 |
-| `products` | All cards at once when ≤ 4 picks |
-| `done` | Final answer + full product list + `meta` |
+| `typing` | `{ chunk, active }` — indicator before a bubble |
+| `chunk` | `{ chunk, elapsed_s, text }` — progress / social copy from backend |
+| `topic` | `{ decision: ALLOW\|DECLINE, reason_code }` — lane metadata |
+| `product_batch` | `{ batch, retrieved_products[] }` — cards in groups of **4** when total > 4 |
+| `products` | `{ retrieved_products[] }` — all cards at once when ≤ 4 |
+| `done` | `{ answer, retrieved_products, meta }` — final contract |
 
-**Stream modes:** `ZOOPLUS_STREAM_MODE=conductor` (default, invisible orchestrator) · `timed` (v1.4 fallback).
+> Note: v2.1.6 stream uses **`chunk`**, not a separate `status` event type.
 
-### 2.4 Chat UI
-
-- Browser UI at `/ui/` — shop picker (Germany / UK / Spain), streamed bubbles, product cards.
-- Optional **OpenCode model selector** (debug) — `preferred_model` in request body.
-- Enter to send; backend-driven status bubble (single transient indicator).
-- Static UI copy in **English**; agent replies follow shopper language.
-
----
-
-## 3. Agentic orchestration
-
-### 3.1 Lanes and routing
+### 3.2 Three routing paths (`src/lanes/stream.py`)
 
 ```mermaid
-flowchart LR
-  Q[Query] --> PROBE[Fast probe]
-  PROBE --> PHRASE[Phrase index + playbook]
-  PROBE -->|social| SOC[Social agent]
-  Q --> INT[Intent agent + policy]
-  INT -->|conversational| SOC
-  INT -->|decline_off_topic| SOC
-  INT -->|catalog_search| RAG[Hybrid RAG + synthesis]
-  SOC --> OUT[Answer]
-  RAG --> OUT
+flowchart TB
+  Q[Query + session_id] --> PROBE{probe_instant_lane}
+  PROBE -->|social| FAST_SOC[try_obvious_social_intent → done]
+  PROBE -->|catalog| FAST_CAT[opening chunk + parallel catalog pipeline]
+  PROBE -->|pending| WAIT[intent wait chunk]
+  WAIT --> INT[intent-agent bounded 22s]
+  INT -->|social/decline| SOC[social_reply → done]
+  INT -->|catalog| CAT[catalog pipeline + conductor/timed chunks]
+  FAST_CAT --> COND[conductor or timed chunks while RAG runs]
+  COND --> FIN[product_batch / products + done]
+  CAT --> FIN
 ```
 
-| Lane | RAG | Products |
+1. **Social probe** — phrase index / playbook says social → immediate social reply (intent task cancelled).
+2. **Catalog probe** — obvious catalog → catalog opening chunk + **parallel** retrieval/synthesis while intent still runs; re-route to social if intent disagrees.
+3. **Pending** — optional wait chunk while `zooplus-intent-agent` classifies → then catalog or social path.
+
+**Session safety:** `session_id` + turn counter — new message **cancels** in-flight stream (`src/cache/session_turn.py`).
+
+**Stream modes:**
+
+| Mode | Env | Behavior |
 |------|-----|----------|
+| **Conductor** (default) | `ZOOPLUS_STREAM_MODE=conductor` | Invisible `zooplus-conductor` ticks; `ZOOPLUS_CONDUCTOR_FAST_STATUS=1` uses lightweight status text |
+| **Timed** (fallback) | `ZOOPLUS_STREAM_MODE=timed` | v1.4-style social chunk every `ZOOPLUS_CHUNK_INTERVAL_SECONDS` (default 5s) |
+
+**UX pacing:** `ZOOPLUS_CHUNK_MIN_TYPING_SECONDS`, `ZOOPLUS_CHUNK_MIN_PAUSE_SECONDS`; UI reveals `product_batch` before final `done`.
+
+---
+
+## 4. Blocking API (`POST /chat`)
+
+- Same `{ site_id, query, preferred_model?, session_id? }` body.
+- Classify → (prefetch catalog hits in parallel if `catalog_search`) → process lane → JSON response.
+- **TTL chat cache** when `ZOOPLUS_CACHE=1` — repeat identical `site_id`+query returns cached response (`src/cache/ttl_cache.py`).
+- Swagger at `/docs` — FR1 async evidence.
+
+---
+
+## 5. Agentic orchestration
+
+### 5.1 Lanes
+
+| Lane | Retrieval | `retrieved_products` |
+|------|-----------|----------------------|
 | `conversational` | No | `[]` |
 | `decline_off_topic` | No | `[]` |
-| `catalog_search` | Yes | 4–20 grounded picks |
+| `catalog_search` | Yes | 4–20 grounded `RetrievedProduct` objects |
 
-- **Conductor-first** — classify before Chroma (key latency win vs greeting → 30s RAG).
-- **Fast probe** (`probe_instant_lane`) — phrase index routes obvious social/help before catalog chunks.
-- **Intent agent** (`zooplus-intent-agent`) — primary classifier; conductor intent is **opt-in** (`ZOOPLUS_CONDUCTOR_INTENT=0` default).
-- **Topic fallback** — on intent timeout/failure, rules-based routing without extra LLM round-trip.
+### 5.2 Classification stack
 
-### 3.2 OpenCode agents (per-role LLMs)
+| Layer | Module | When |
+|-------|--------|------|
+| Phrase index | `phrase_index.py` + `social_phrases.yaml` | Fast social/help/greeting match (~90 seed phrases ES/EN/DE/FR) |
+| Playbook | `conductor_playbook.md` (runtime learn) | Forbidden repeats, species labels, learned help lines |
+| Stream probe | `probe_instant_lane()` | Before catalog ack (conductor mode only) |
+| Intent agent | `zooplus-intent-agent` | **Primary** classifier (`ZOOPLUS_CONDUCTOR_INTENT=0` default) |
+| Conductor intent | `zooplus-conductor` | Opt-in slow path (`ZOOPLUS_CONDUCTOR_INTENT=1`) |
+| Topic fallback | `_fallback_intent_decision` | On intent timeout (22s) — no extra OpenCode round-trip |
+| Lexicon repair | `ZOOPLUS_INTENT_REPAIR=1` | Opt-in catalog-signal repair when agent mis-declines |
+| Fast regex paths | `ZOOPLUS_FAST_INTENT=1` | **Tests/CI only** — not production default |
 
-| Agent | Role |
-|-------|------|
-| `zooplus-conductor` | Invisible stream orchestration, playbook updates |
-| `zooplus-intent-agent` | Lane classification |
-| `zooplus-social-agent` | Greetings, help, thanks, declines |
-| `zooplus-synthesis` | Grounded catalog answer from retrieved products |
-| `zooplus-topic-guard` | Policy / scope checks |
-| `zooplus-rag-worker` / `zooplus-logic-worker` | Retrieval and process-lane helpers |
+### 5.3 OpenCode agents (`.opencode/config-cli/opencode.json`)
 
-- **One model per agent** in `.opencode/config-cli/opencode.json` (speed ladder).
-- **Cascade fallbacks** — template synthesis, topic-based intent if OpenCode is slow or down.
-- **Layered timeouts** — intent 22s, synthesis 18s, dispatch 40s (configurable in `constraints.yaml`).
+| Agent | Model (Go speed ladder) | Role |
+|-------|-------------------------|------|
+| `zooplus-conductor` | `opencode-go/minimax-m2.7` | Invisible stream orchestration |
+| `zooplus-intent-agent` | `opencode-go/mimo-v2.5` | JSON lane classification |
+| `zooplus-social-agent` | `opencode-go/deepseek-v4-flash` | Greetings, help, declines |
+| `zooplus-topic-guard` | `opencode-go/qwen3.7-plus` | Scope / policy |
+| `zooplus-rag-worker` | `opencode-go/deepseek-v4-pro` | Retrieval worker |
+| `zooplus-logic-worker` | `opencode-go/minimax-m2.7` | Rank + cap fallback |
+| `zooplus-synthesis` | `opencode-go/qwen3.6-plus` | Grounded catalog prose |
 
-### 3.3 Playbook and phrase index
+- **Per-request override:** `preferred_model` from UI debug selector.
+- **Agent chains:** `ZOOPLUS_*_AGENT_CHAIN` env vars (see `.env.example`).
+- **Cascade:** `ZOOPLUS_AGENT_CASCADE=1` — retries / fallbacks per role.
+- **Fallbacks:** `ZOOPLUS_SYNTHESIS_MODE=template` deterministic answers; topic fallback for intent.
 
-- **`conductor_playbook.md`** — auto-learns species labels, help phrases, forbidden repeats (invisible to shoppers).
-- **`social_phrases.yaml`** — ~90 curated ES/EN/DE/FR utterances; in-memory fast match; runtime merge with playbook.
-- **Catalog-derived lexicon** (`routing_lexicon.json`) — brands/tokens from ingest for multilingual routing (no hardcoded dog/cat lists).
+### 5.4 Process lane (catalog)
 
----
+`ChatProcessEnvelope` → ACP `dispatch_process` → `run_process_lane` — price filter, cap slice, synthesis, sanitize answer, dedupe vs live stream chunks.
 
-## 4. RAG and retrieval (technical)
-
-| Feature | Detail |
-|---------|--------|
-| **Vector store** | Local Chroma (`artifacts/index/chroma`), collection `zooplus_variants` |
-| **Chunking** | One document per catalog row (300 rows; no sub-chunking at PoC scale) |
-| **HTML normalize** | `src/rag/normalize.py` strips tags before index |
-| **Hybrid retrieval** | Chroma semantic + BM25 lexical on candidate pool + business-signal rerank (50% / 35% / 15%) |
-| **Vector-only A/B** | `ZOOPLUS_RETRIEVAL_MODE=vector` |
-| **Site filter** | Hard `where site_id = X` on every query (B5) |
-| **Quality gates** | Min hybrid score 0.30; empty retrieval message from policy |
-| **Idempotent ingest** | `python -m cli ingest` — safe rebuild |
-| **Managed backend hook** | `ZOOPLUS_VECTOR_BACKEND=managed` placeholder for production |
-
-**Metadata per vector:** `site_id`, `article_id`, `variant_id`, `pet_type`, `brands`, `price`, `stock_units`, `has_ingredients`.
+**Timeouts** (`constraints.yaml`): intent 22s · synthesis 18s · dispatch 40s.
 
 ---
 
-## 5. Guardrails and policy
+## 6. RAG and data pipeline
 
-- **Default-deny firewall** — `src/guardian/constraints.yaml`; only `allowed_intents` pass.
-- **Decline intents** — weather, datetime, general knowledge, non-pet, competitors.
-- **No RAG on decline/social** — index not queried when lane is not catalog.
-- **Prompt scope rules** — synthesis forbidden from inventing SKUs/prices.
-- **MCP tools** (same host) — `topic_check`, `catalog_search` for external agent integration.
-- **ACP process lane** — internal dispatch envelope for catalog processing.
+| Component | Detail |
+|-----------|--------|
+| **Source** | `data/raw/product_catalog_dataset.json` (300 rows, never edited in place) |
+| **Normalize** | HTML strip (`src/rag/normalize.py`) |
+| **Chunking** | One document per sellable row |
+| **Index** | Chroma collection `zooplus_variants` under `artifacts/index/chroma` |
+| **Chroma ID** | `{site_id}:{locale}:{article_id}:{variant_id}` (+ `:dupN` if needed) |
+| **Hybrid fusion** | ~50% vector + ~35% BM25 + ~15% business signals (`hybrid.py`, `rerank.py`) |
+| **A/B** | `ZOOPLUS_RETRIEVAL_MODE=vector` |
+| **Lexicon** | `routing_lexicon.json` from ingest — multilingual routing without hand-built pet lists |
+| **Pool sizing** | Scales with requested count and price band (`retrieval_pool_size`) |
+| **Quality** | Min hybrid score 0.30; weak signals → empty retrieval message |
+| **Ingest CLI** | `python -m cli ingest` — idempotent rebuild |
+| **Readiness** | `GET /ready` checks index directory |
 
----
-
-## 6. API surface
-
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /chat` | Blocking JSON response |
-| `POST /chat/stream` | NDJSON event stream (UI default) |
-| `GET /health` | Liveness |
-| `GET /ready` | Chroma index readiness |
-| `GET /docs` | Swagger (FR1 evidence) |
-| `GET /ui/` | Static chat UI |
-
-**Request body:** `{ site_id, query, preferred_model? }`
-
-**Response `meta` (when LLM runs):** `lane`, `intent_source`, `llm_agent`, `llm_model`, `dispatch_id`, etc.
+**`RetrievedProduct` fields:** `article_id`, `product_id`, `variant_id`, `product_name`, `variant_name`, `price`, `currency`, `pet_type`, `brands`, `relevance_score`, `recommendation_reason`.
 
 ---
 
-## 7. Operations, DevEx, and quality
+## 7. Guardrails and integration surfaces
 
-| Feature | Detail |
-|---------|--------|
-| **Setup wizard** | `scripts/setup_wizard.ps1` — deps, ingest, optional OpenCode login |
-| **Dev launcher** | `scripts/run_dev.ps1` — uvicorn on `:8090` |
-| **Docker** | `docker compose up` — containerized API |
-| **Template profile** | `ZOOPLUS_SYNTHESIS_MODE=template` — CI without OpenCode |
-| **Smoke scripts** | `smoke_minimal.ps1` (~2 min), `run_release_verify.ps1` (incl. OpenCode social) |
-| **Quality gates** | `run_quality_gates.py` — ruff, unit, integration, e2e |
-| **Acceptance suite** | B1–B9 + Coding Task matrix (173 use cases on main line) |
-| **Golden queries** | Fixture + evaluate CLI for retrieval regression |
-| **Git workflow** | `feature` → `dev` → `main` → `releases` |
-| **Optional Redis** | `ZOOPLUS_CACHE_BACKEND=redis` — shared TTL cache across replicas |
-| **In-process cache** | TTL cache for intent/retrieval (128 entries default) |
+- **Default-deny** — `allowed_intents` vs `decline_intents` in `constraints.yaml`.
+- **No index on wrong lane** — social/decline never call `search_catalog`.
+- **MCP tools** — `GET /mcp/tools`, `POST /mcp/tools/topic_check`, `POST /mcp/tools/catalog_search`.
+- **ACP** — internal process dispatch (`src/acp/dispatcher.py`).
+- **Answer sanitize** — strips tool JSON / orphan intros (`answer_sanitize.py`).
+- **Metrics** — `GET /metrics` basic counters (`src/observability/metrics.py`).
 
 ---
 
-## 8. Configuration knobs (summary)
+## 8. Chat UI and runtime config
 
-| Variable | Effect |
-|----------|--------|
-| `ZOOPLUS_SYNTHESIS_MODE=template` | Deterministic answers, no OpenCode |
-| `ZOOPLUS_RETRIEVAL_MODE=vector` | Vector-only retrieval |
-| `ZOOPLUS_CONDUCTOR_INTENT=1` | Opt-in conductor before RAG |
-| `ZOOPLUS_STREAM_MODE=conductor` \| `timed` | Stream chunk strategy |
-| `ZOOPLUS_CACHE_BACKEND=redis` | Shared cache |
-| `ZOOPLUS_VECTOR_BACKEND=managed` | Placeholder for hosted vector DB |
+| URL | Purpose |
+|-----|---------|
+| `/ui/` | Chat UI (root `/` redirects here) |
+| `GET /api/ui/config` | Shops, labels, synthesis mode, agent models, stream endpoint |
+| `GET /api/ui/models` | OpenCode model list for debug selector (`?refresh=1`) |
 
----
-
-## 9. Data and multi-shop
-
-| Fact | Implication |
-|------|-------------|
-| 300 catalog rows | 3 shops × 100 variants |
-| Shops | `1` de-DE, `3` en-GB, `15` es-ES |
-| Pet types in data | Primarily DOGS / CATS |
-| `site_id` required | B5 isolation — no cross-shop leakage in one request |
+**UI features:** shop selector (1/3/15), streamed bubbles, gradual product cards, agent/model badge from response `meta`, Enter-to-send, session id for stream cancellation.
 
 ---
 
-## 10. Documentation and deliverables
+## 9. API reference (complete)
 
-| Artifact | Location |
-|----------|----------|
-| Interview PPT (14 slides, FR code panels) | `docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx` |
-| Coding Task checklist | `docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md` |
-| Changelogs (v0.1 → v2.1.6) | `docs/deliverables/v0.1/CHANGELOG_*.md` |
-| Future roadmap | `docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md` |
-| Work history (narrative) | `docs/PROJECT_WORK_HISTORY.md` |
-| Q&A + speaker script | `main` only — `QA_FOR_POC.md`, `PRESENTATION_15MIN.md` |
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/chat` | Blocking JSON |
+| `POST` | `/chat/stream` | NDJSON (UI default) |
+| `GET` | `/health` | Liveness |
+| `GET` | `/ready` | Chroma index present |
+| `GET` | `/metrics` | Observability snapshot |
+| `GET` | `/docs` | OpenAPI / Swagger |
+| `GET` | `/ui/`, `/ui/{asset}` | Static chat assets |
+| `GET` | `/api/ui/config`, `/api/ui/models` | UI bootstrap |
+| `GET/POST` | `/mcp/tools/*` | MCP-compatible tools |
 
 ---
 
-## 11. Version milestones (selected)
+## 10. Runtime profiles and configuration
 
-| Tag / line | Headline capability |
-|------------|---------------------|
+### Profile A — Template (CI / fastest)
+
+```env
+ZOOPLUS_INTENT_MODE=oracle
+ZOOPLUS_SYNTHESIS_MODE=template
+ZOOPLUS_AGENT_CASCADE=0
+```
+
+### Profile B — OpenCode agentic (interview demo, wizard default)
+
+```env
+ZOOPLUS_INTENT_MODE=agentic
+ZOOPLUS_SYNTHESIS_MODE=opencode
+ZOOPLUS_SOCIAL_SYNTHESIS=agentic
+ZOOPLUS_AGENT_CASCADE=1
+ZOOPLUS_CONDUCTOR_INTENT=0
+```
+
+### Key variables
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `ZOOPLUS_RETRIEVAL_MODE` | `hybrid` | `vector` for A/B |
+| `ZOOPLUS_STREAM_MODE` | `conductor` | `timed` = v1.4 chunks |
+| `ZOOPLUS_CONDUCTOR_INTENT` | `0` | `1` = opt-in conductor classification |
+| `ZOOPLUS_CONDUCTOR_FAST_STATUS` | `1` | Lightweight conductor status chunks |
+| `ZOOPLUS_CACHE` | `1` | In-process TTL cache |
+| `ZOOPLUS_CACHE_BACKEND` | `memory` | `redis` + `ZOOPLUS_REDIS_URL` for shared cache |
+| `ZOOPLUS_CACHE_TTL_SECONDS` | `600` | Cache TTL |
+| `ZOOPLUS_CACHE_MAX_ENTRIES` | `128` | Cache size |
+| `ZOOPLUS_FAST_INTENT` | `0` | Regex fast-path (tests only) |
+| `ZOOPLUS_INTENT_REPAIR` | `0` | Lexicon repair after mis-decline |
+| `ZOOPLUS_STREAM_VOICE_LEARN` | `1` | Playbook auto-learn |
+| `ZOOPLUS_DEV_PORT` | `8090` | Dev server port |
+| `ZOOPLUS_OPENCODE_TIMEOUT` | `15` | OpenCode subprocess cap |
+| `ZOOPLUS_CHUNK_INTERVAL_SECONDS` | `5` | Timed mode interval |
+| `ZOOPLUS_MAX_CHUNK_MESSAGES` | `5` | Max progress chunks per turn |
+
+Full list: [`.env.example`](../.env.example).
+
+---
+
+## 11. Operations, testing, and delivery
+
+| Tool | Purpose |
+|------|---------|
+| `scripts/setup_wizard.ps1` | Deps, ingest, OpenCode setup |
+| `scripts/run_dev.ps1` | Uvicorn dev server |
+| `scripts/smoke_minimal.ps1` | ~2 min smoke, no OpenCode |
+| `scripts/run_release_verify.ps1` | Release verify incl. OpenCode social |
+| `scripts/run_quality_gates.py` | ruff + unit + integration + e2e |
+| `scripts/build_work_history.py` | Regenerate `PROJECT_WORK_HISTORY.md` |
+| `docker compose up` | Containerized API |
+| `python -m cli ingest` | Build / rebuild index |
+| `python -m cli evaluate` | Golden query evaluation |
+
+**Test coverage highlights:** acceptance B1–B9 · golden queries · intent oracle · stream smoke F1/F3 · security matrix (173 cases on `main`) · hybrid retrieval unit tests.
+
+**Git promotion:** `feature/*` → `dev` → `main` → `releases`.
+
+---
+
+## 12. Documentation and deliverables
+
+| Artifact | Branch | Path |
+|----------|--------|------|
+| **This feature catalog** | main + releases | `docs/PROJECT_FEATURES.md` |
+| Work history | main + releases | `docs/PROJECT_WORK_HISTORY.md` |
+| Interview PPT (14 slides, FR code panels) | releases | `docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx` |
+| Coding Task checklist | releases | `docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md` |
+| Changelogs | releases | `docs/deliverables/v0.1/CHANGELOG_*.md` |
+| Future roadmap | releases | `docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md` |
+| Q&A + speaker script | **main only** | `QA_FOR_POC.md`, `PRESENTATION_15MIN.md` |
+| RAG deep dive | both | `docs/02-rag-architecture.md` |
+| EDA report | main | `docs/01-eda-report.md` |
+
+---
+
+## 13. Version milestones
+
+| Version | Capability added |
+|---------|------------------|
 | v1.0.0 | Dual-lane pipeline, Chroma ingest, topic guard |
 | v1.1.0 | `/chat/stream` NDJSON |
 | v1.2.0 | Hybrid BM25 + vector + rerank |
 | v1.4.0 | Timed social chunks parallel to catalog |
 | v2.0.0 | Invisible conductor orchestrator |
-| v2.1.3 | Fast intent-first stream |
-| v2.1.4 | Dynamic species inference |
-| **v2.1.6** | Dynamic picks, `product_batch`, phrase index, CUSTOMER_VOICE, shopping+help routing |
+| v2.1.0–v2.1.3 | Playbook, lane probe, fast intent-first stream |
+| v2.1.4 | Dynamic species inference, greeting dedupe |
+| **v2.1.6** | Dynamic picks, `product_batch`, phrase index, CUSTOMER_VOICE, shopping+help routing, English PPT code panels |
 
 ---
 
-## 12. Explicitly out of scope (PoC) — see roadmap
+## 14. Not in scope (PoC) — see roadmap
 
-- Managed vector DB in production
-- Automated catalog re-ingest / CDC
-- Prompt-injection scanner and versioned policy packs (P0 roadmap)
-- Multi-shop search in one request (`site_ids[]`)
-- Photo search, voice channel, promo slots during stream
-- Cross-encoder reranker at scale
+- Versioned constraints + prompt-injection scanner (P0)
+- Structured intent facets before retrieval (`pet_type`, category) (P0)
+- Managed vector DB + automated re-ingest / CDC (P1)
+- Multi-shop `site_ids[]` in one request (P2)
+- Photo search, voice channel, promo slots during stream (P2–P3)
+- Cross-encoder reranker at millions-of-SKU scale
 
-Full scale-out plan: [`FUTURE_IMPROVEMENTS.md`](deliverables/v0.1/FUTURE_IMPROVEMENTS.md).
+Details: [`FUTURE_IMPROVEMENTS.md`](deliverables/v0.1/FUTURE_IMPROVEMENTS.md).
