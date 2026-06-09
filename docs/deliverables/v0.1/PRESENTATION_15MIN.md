@@ -7,7 +7,7 @@
 Regenerate slides: `py -3 scripts/patch_interview_pptx_fr1_async.py` → `py -3 scripts/patch_interview_pptx_v20_conductor.py` (wires FR code panels on slides 4, 6, 9, 10). Optional base: `patch_interview_pptx_rag_slides.py`, `patch_interview_pptx_v14_live_loop.py`.
 
 **Changelog v2.1.4 → v2.1.6:** [`CHANGELOG_v2.1.4_to_v2.1.6.md`](CHANGELOG_v2.1.4_to_v2.1.6.md) · **v2.0 → v2.1:** [`CHANGELOG_v2.0_to_v2.1.md`](CHANGELOG_v2.0_to_v2.1.md) · **v1.4 → v2.0:** [`CHANGELOG_v1.4_to_v2.0.md`](CHANGELOG_v1.4_to_v2.0.md)  
-**Interview Q&A:** [`QA_FOR_POC.md`](QA_FOR_POC.md) · **Work history (main only):** [`../../HISTORIA_DEL_PROYECTO.md`](../../HISTORIA_DEL_PROYECTO.md)
+**Interview Q&A:** [`QA_FOR_POC.md`](QA_FOR_POC.md) · **Work history:** [`../../PROJECT_WORK_HISTORY.md`](../../PROJECT_WORK_HISTORY.md)
 
 ---
 
@@ -48,7 +48,7 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_fr1_async.py` → `py -3 
 
 ## Slide 6 — RAG strategy end-to-end
 
-> “FR3 is catalog-only RAG — same hybrid ingest as v1.0. **v2.1.6** adds an internal playbook plus a **social phrase index** (~90 curated ES/EN/DE/FR utterances, fast in-memory match; playbook auto-learns novel help/greeting lines). Social vs catalog probe before any ack — ‘me puedes ayudar’ never gets a catalog progress chunk. **Four picks by default**, but the shopper can ask for more (e.g. ten options, cap twenty); the stream emits **product_batch** events so cards appear in the UI in chunks of four. Dynamic species inference handles iguanas and unseen pets without a fixed list. Grounding unchanged: same `site_id`, polite decline off-topic.”
+> “FR3 is catalog-only RAG — same hybrid ingest as v1.0. **v2.1.6** adds an internal playbook plus a **social phrase index** (~90 curated ES/EN/DE/FR utterances, fast in-memory match; playbook auto-learns novel help/greeting lines). Social vs catalog probe before any ack — pure help such as ‘can you help me’ never gets a catalog progress chunk. **Four picks by default**, but the shopper can ask for more (e.g. ten options, cap twenty); the stream emits **product_batch** events so cards appear in the UI in chunks of four. Dynamic species inference handles iguanas and unseen pets without a fixed list. Grounding unchanged: same `site_id`, polite decline off-topic.”
 
 ---
 
@@ -60,7 +60,7 @@ Regenerate slides: `py -3 scripts/patch_interview_pptx_fr1_async.py` → `py -3 
 
 ## Slide 8 — Agents + per-agent LLMs
 
-> “**zooplus-conductor** maintains the playbook and stream — invisible in the UI. **social-agent** handles help and greetings without catalog boilerplate or redundant ‘Soy el zooplus Assistant’ intros. **phrase_index** matches help/greeting/thanks in milliseconds; learned rows merge at runtime. Catalog lane: intent, RAG, logic, synthesis. Reply language is agent-driven — no fixed locale whitelist.”
+> “**zooplus-conductor** maintains the playbook and stream — invisible in the UI. **social-agent** handles help and greetings without catalog boilerplate or redundant assistant re-intros mid-session. **phrase_index** matches help/greeting/thanks in milliseconds; learned rows merge at runtime. Catalog lane: intent, RAG, logic, synthesis. Reply language is agent-driven — no fixed locale whitelist.”
 
 ---
 
