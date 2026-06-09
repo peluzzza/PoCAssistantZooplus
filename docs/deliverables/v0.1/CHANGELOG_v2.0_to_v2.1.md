@@ -1,7 +1,7 @@
 # What's new — v2.0 → v2.1 (interview line)
 
 **Tagged on releases:** `v2.0` — invisible conductor + paced stream.  
-**v2.1 (current working tree):** conductor playbook + smart social/catalog ack.
+**v2.1.x:** conductor playbook + smart social/catalog ack. **Latest:** see [`CHANGELOG_v2.1.4_to_v2.1.6.md`](CHANGELOG_v2.1.4_to_v2.1.6.md).
 
 ---
 
@@ -25,16 +25,15 @@
 
 ---
 
-## Demo script (slide 9)
+## Demo script (slide 9 — superseded by v2.1.6)
 
-1. **A:** `hola que tal` → single social reply (Spain shop 15)
-2. **B:** `hamsters tortugas perros hasta 50€` → scoped ack, progress, products
-3. **C:** greet in any language → agent replies in kind
+See [`CHANGELOG_v2.1.4_to_v2.1.6.md`](CHANGELOG_v2.1.4_to_v2.1.6.md) for current English demo lines (`can you help me`, iguanas, 10 dog food options).
 
 ---
 
 ## Regenerate deck
 
 ```bash
+py -3 scripts/patch_interview_pptx_fr1_async.py
 py -3 scripts/patch_interview_pptx_v20_conductor.py
 ```

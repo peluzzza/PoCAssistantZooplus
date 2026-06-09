@@ -14,9 +14,9 @@ See [`QUICKSTART.md`](QUICKSTART.md) for template vs OpenCode profiles.
 ## Features
 
 - Shop selector (`site_id` 1, 3, 15)
-- Calls `POST /chat` with the same contract as the Coding Task
-- Product cards from `retrieved_products`
-- Badge shows synthesis mode (`template` vs `opencode`)
+- Calls **`POST /chat/stream`** (NDJSON) for live progress and **`product_batch`** card chunks; Swagger uses `POST /chat`
+- Product cards from `retrieved_products` (default 4 picks; up to 20 if the shopper asks)
+- Badge shows active agent/model from response `meta`
 
 ## OpenCode LLM (optional)
 
@@ -58,8 +58,8 @@ See [`QUICKSTART.md`](QUICKSTART.md) for template vs OpenCode profiles.
    ZOOPLUS_OPENCODE_DATA_DIR=.opencode/data
    ```
 
-5. Restart API: `uvicorn src.api.app:app --reload --port 8080`
+5. Restart API: `.\scripts\run_dev.ps1` (port **8090**)
 
-**Conversation:** greetings (`Hello`), thanks, and help skip catalog search and reply politely. Product questions use RAG + OpenCode (or template fallback within ~12s).
+**Conversation:** greetings and pure help (`can you help me`) stay social — polite, concise, no system-manual tone. **Shopping queries** (even with “can you help me out?”) use catalog RAG + OpenCode (or template fallback). Stream shows progress chunks; larger result sets arrive via `product_batch`.
 
 See [`.env.example`](../.env.example) for all variables.

@@ -1,6 +1,6 @@
-# Release v0.1.0 — `releases` branch
+# Release line — `releases` branch
 
-**Tag:** `v0.1.0` on branch `releases` (slim interview / take-home line).
+**Baseline tag:** `v0.1.0` · **Current interview line:** v2.1.6 (see [`deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md`](deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md)).
 
 ## Verify
 

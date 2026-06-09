@@ -68,7 +68,7 @@ Live demo in UI or curl — [ ] rehearsed
 
 | ID | Rule | Done |
 |----|------|------|
-| **P1** | Max 4 products | [ ] |
+| **P1** | Default 4 products; up to 20 if shopper asks | [ ] |
 | **P2** | Decline → answer, empty list | [ ] |
 | **P3** | 300 variants ingested | [ ] |
 

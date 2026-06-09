@@ -67,7 +67,7 @@ flowchart TB
 
 1. **Fast probe** (`probe_instant_lane`) uses the **phrase index** + playbook to route obvious social/help turns before catalog progress chunks appear.
 2. **Intent** (`zooplus-intent-agent` + policy probes) classifies into `conversational`, `decline_off_topic`, or `catalog_search`. Conductor intent is **opt-in** (`ZOOPLUS_CONDUCTOR_INTENT=0` default) for lower latency.
-3. **Social lane** — greetings, help (`me puedes ayudar`), thanks — via `zooplus-social-agent`; no RAG; dedupe strips repeated intros.
+3. **Social lane** — greetings, pure help (`can you help me`), thanks — via `zooplus-social-agent`; no RAG; first-turn greetings stay natural; mid-session dedupe strips repeated intros. **Shopping + help** (e.g. “light food for my dogs… can you help?”) routes to **catalog**, not help FAQ.
 4. **Catalog lane** — hybrid retrieval, optional EUR price filter, **`resolve_recommendation_count()`** (default **4**, shopper can ask up to **20**), grounded synthesis.
 5. **Stream** (`/chat/stream`) — `typing` → `chunk*` → `product_batch*` (cards in batches of 4) → `done`.
 6. **Playbook** (`conductor_playbook.md`) auto-learns species, help phrases, and forbidden repeats — invisible to shoppers.
@@ -140,7 +140,7 @@ The UI paces **chunk** messages and reveals **product_batch** cards gradually be
 | `decline_off_topic` | No | `[]` — weather, news, non-pet, competitors |
 | `catalog_search` | Yes | Default 4 products; up to 20 if shopper asks (same `site_id`) |
 
-Multilingual shopper replies; static UI copy stays English. Reply language: **detected from the shopper message** when clear; if ambiguous or odd characters, falls back to the browser **`Accept-Language`** header (then shop locale). Pick a shop (**Germany**, **UK**, or **Spain**) before sending (UI blocks Send until config loads).
+Multilingual shopper replies; static UI copy stays English. Replies are **professional and concise** — no internal strategy or tech exposition to shoppers (`CUSTOMER_VOICE` in agent prompts). Reply language: **detected from the shopper message** when clear; if ambiguous, falls back to **`Accept-Language`** (then shop locale). Pick a shop (**Germany**, **UK**, or **Spain**) before sending.
 
 ## Manual setup (without wizard)
 
@@ -226,3 +226,4 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Operations |
 | [`docs/RELEASE_v0.1.md`](docs/RELEASE_v0.1.md) | Tag verify |
 | [`docs/deliverables/v0.1/README.md`](docs/deliverables/v0.1/README.md) | Interview deliverable pack |
+| [`docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md`](docs/deliverables/v0.1/CHANGELOG_v2.1.4_to_v2.1.6.md) | Current releases line (v2.1.6) |

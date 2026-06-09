@@ -89,7 +89,7 @@ flowchart LR
 
 | Step | Module | Notes |
 |------|--------|-------|
-| Social probe | `phrase_index.py`, `stream_voice_registry.py` | Help/greeting before catalog ack |
+| Social probe | `phrase_index.py`, `stream_voice_registry.py` | Pure help/greeting before catalog ack; shopping+help → catalog |
 | Retrieval pool | `recommendation_count.py` | Default 4; pool scales when shopper asks for more |
 | Cap | `guardian/engine.py` | `absolute_max_recommendations: 20` |
 | Stream | `lanes/stream.py` | `product_batch` NDJSON when count > 4 |
