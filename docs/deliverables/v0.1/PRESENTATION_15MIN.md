@@ -6,8 +6,7 @@
 
 Regenerate slides: `py -3 scripts/patch_interview_pptx_rag_slides.py` · FR1 async: `py -3 scripts/patch_interview_pptx_fr1_async.py` · **v2.0 conductor + FR code panels:** `py -3 scripts/patch_interview_pptx_v20_conductor.py` (includes slides 5–9 + FR2–FR5 code evidence) · optional: `py -3 scripts/patch_interview_pptx_fr_code_panels.py`
 
-**Changelog v2.0 → v2.1:** [`CHANGELOG_v2.0_to_v2.1.md`](CHANGELOG_v2.0_to_v2.1.md) · **v1.4 → v2.0:** [`CHANGELOG_v1.4_to_v2.0.md`](CHANGELOG_v1.4_to_v2.0.md) · **v1.0 → v1.4:** [`CHANGELOG_v1.0_to_v1.4.md`](CHANGELOG_v1.0_to_v1.4.md)  
-**Interview Q&A:** [`QA_FOR_POC.md`](QA_FOR_POC.md)
+**Changelog v2.0 → v2.1:** [`CHANGELOG_v2.0_to_v2.1.md`](CHANGELOG_v2.0_to_v2.1.md) · **v1.4 → v2.0:** [`CHANGELOG_v1.4_to_v2.0.md`](CHANGELOG_v1.4_to_v2.0.md) · **v1.0 → v1.4:** [`CHANGELOG_v1.0_to_v1.4.md`](CHANGELOG_v1.0_to_v1.4.md)
 
 ---
 
