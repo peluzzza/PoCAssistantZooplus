@@ -209,12 +209,15 @@ Summary for interview slides: [`docs/deliverables/v0.1/FUTURE_IMPROVEMENTS.md`](
 | Branch / tag | Meaning |
 |--------------|---------|
 | **`releases`** | Interview / take-home line — use wizard here |
-| **`main`** | Full dev history, matrix tooling |
+| **`main`** | Full dev history, matrix tooling, QA, speaker script, work history |
 
 ## Interview / submission
 
 - Checklist: [`docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md`](docs/deliverables/v0.1/CODING_TASK_CHECKLIST.md)
 - **Presentation (pro):** [`docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx`](docs/deliverables/v0.1/zooplus-assistant-interview-15min-pro.pptx)
+- **Q&A prep (main only):** [`docs/deliverables/v0.1/QA_FOR_POC.md`](docs/deliverables/v0.1/QA_FOR_POC.md)
+- **Speaker script (main only):** [`docs/deliverables/v0.1/PRESENTATION_15MIN.md`](docs/deliverables/v0.1/PRESENTATION_15MIN.md)
+- **Work history book (main only):** [`docs/HISTORIA_DEL_PROYECTO.md`](docs/HISTORIA_DEL_PROYECTO.md) — regenerate with `py -3 scripts/build_work_history.py`
 
 ## Docs
 
