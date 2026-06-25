@@ -1,9 +1,10 @@
 # Future improvements (presentation summary)
 
-**Order:** **2 → 3 → 8 → 9 → 4 → 5 → 7 → 1 → 6** (full analysis on `main`)
+**Order:** **0 → 2 → 3 → 8 → 9 → 4 → 5 → 7 → 1 → 6** (full analysis on `main`)
 
 | # | Topic | Priority | One line |
 |---|--------|----------|----------|
+| 0 | LangGraph state-graph orchestration | **P0 — done** | Already explored end-to-end on `feature/lg-catalog-probe-intent`: every node calls this repo's own functions verbatim, no re-implemented logic. Closed 3 real gaps (`preferred_model` override, chat cache, dispatch timeout) found in an earlier, looser translation. Foundational — shapes how every other roadmap item below gets implemented. |
 | 2 | Constraints v2 + prompt-injection | **P0** | Versioned policy + layered scanner + security CI |
 | 3 | Agent / intent structure for filtering | **P0** | Intent facets (pet_type, price) → deterministic RAG |
 | 8 | RAG re-ingest & vector DB refresh | **P1** | Scheduled catalog sync; blue/green index; no stale SKUs |
@@ -15,7 +16,7 @@
 | 6 | Voice for the assistant | **P3** | STT/TTS on same `/chat` contract |
 | 10 | Multi-shop retrieval (UI + API) | **P2** | Optional all-shops or `site_ids[]`; Chroma `$in`, merge/dedup, locale-aware product cards |
 
-**Interview line (45s):** Slide 11 = P0 trust · Slide 12 = P1 scale + fresh index · Slide 13 = photo/voice/promos + Q&A.
+**Interview line (45s):** Slides 11–13 = LangGraph foundation (Phase 0, done) · Slide 14 = P0 trust · Slide 15 = P1 scale + fresh index · Slide 16 = photo/voice/promos + Q&A.
 
 ---
 

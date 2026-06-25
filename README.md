@@ -185,6 +185,7 @@ If OpenCode fails or times out, the API **falls back to template synthesis** or 
 
 ## Roadmap
 
+0. **LangGraph state-graph orchestration — already explored, done.** Faithful node/edge translation of the legacy orchestrator, on the standalone showcase branch `feature/lg-catalog-probe-intent` (not merged into `dev`/`main`/`releases`). Foundational — shapes how every item below would get implemented. See slides 11–13 of the interview deck.
 1. Harden constraints + prompt-injection defense (versioned policy packs).
 2. Structured intent filters (`pet_type`, price band, category) for better retrieval.
 3. LLM provider abstraction (OpenCode local · HTTP API in cloud).
